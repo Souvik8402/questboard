@@ -1,0 +1,102 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { getSession } from '@/lib/auth'
+import { isSupabaseConfigured } from '@/lib/config'
+import { getSkills } from '@/lib/queries'
+import { ButtonLink } from '@/components/ui/Button'
+import { Notice, Panel } from '@/components/ui/Panel'
+import { IconArrowLeft, IconCoins, IconShield, IconUsers } from '@/components/ui/Icons'
+import { NewQuestForm } from './NewQuestForm'
+
+export const metadata: Metadata = {
+  title: 'Post a quest',
+  description:
+    'Post paid work for IIT (BHU) Varanasi students — one-off tasks, weekly help, part-time roles or internships.',
+}
+
+export default async function NewQuestPage() {
+  const [session, skills] = await Promise.all([getSession(), getSkills()])
+
+  const needsAuth = isSupabaseConfigured && !session
+  const needsOnboarding = isSupabaseConfigured && session && !session.profile?.onboarded_at
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link
+        href="/quests"
+        className="inline-flex items-center gap-1.5 text-[13px] text-dim transition-colors hover:text-cyan"
+      >
+        <IconArrowLeft className="size-3.5" />
+        All quests
+      </Link>
+
+      <div className="mt-5 space-y-2">
+        <p className="eyebrow">Hire from campus</p>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <span className="text-chalk">Post a </span>
+          <span className="gradient-text">quest</span>
+        </h1>
+        <p className="max-w-xl text-[14.5px] leading-relaxed text-mist">
+          Anyone can post — you do not need an institute email. Only verified IIT BHU students can
+          claim it.
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        {[
+          { icon: <IconCoins className="size-4" />, label: 'Free to post', hint: 'No listing fee, no cut' },
+          { icon: <IconUsers className="size-4" />, label: 'Verified students only', hint: '@itbhu.ac.in, via Google' },
+          { icon: <IconShield className="size-4" />, label: 'Your number stays private', hint: 'Until you accept someone' },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-xl border border-line bg-white/[0.02] px-3.5 py-3"
+          >
+            <p className="flex items-center gap-2 text-[12.5px] font-medium text-chalk">
+              <span className="text-cyan">{item.icon}</span>
+              {item.label}
+            </p>
+            <p className="mt-0.5 pl-6 text-[11.5px] text-dim">{item.hint}</p>
+          </div>
+        ))}
+      </div>
+
+      {needsAuth ? (
+        <Panel className="mt-8 p-6">
+          <h2 className="text-base font-semibold text-chalk">Sign in to post</h2>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed text-mist">
+            Any email works for posting — Google, or a password account. We ask for an account so
+            students know who they are talking to, and so you can manage applicants.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <ButtonLink href="/login?next=/quests/new">Sign in or sign up</ButtonLink>
+            <ButtonLink href="/quests" variant="ghost">
+              Browse quests first
+            </ButtonLink>
+          </div>
+        </Panel>
+      ) : needsOnboarding ? (
+        <div className="mt-8">
+          <Notice tone="info" title="One step first">
+            Finish your profile — name and role — and you can post straight away.{' '}
+            <Link href="/onboarding?next=/quests/new" className="underline hover:text-chalk">
+              Go to setup
+            </Link>
+          </Notice>
+        </div>
+      ) : (
+        <div className="mt-8">
+          {!isSupabaseConfigured && (
+            <div className="mb-5">
+              <Notice tone="warn" title="Demo mode">
+                The form works and validates, but nothing can be saved without a database. Add your
+                Supabase keys to <span className="hud">.env.local</span> to go live.
+              </Notice>
+            </div>
+          )}
+          <NewQuestForm skills={skills} />
+        </div>
+      )}
+    </div>
+  )
+}
