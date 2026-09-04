@@ -71,7 +71,7 @@ export function NavClient({
             </svg>
           </span>
           <span className="text-[15px] font-semibold tracking-tight text-chalk">
-            Quest<span className="text-cyan">Board</span>
+            Gig<span className="text-cyan">Nest</span>
           </span>
         </Link>
 

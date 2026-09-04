@@ -11,7 +11,7 @@ import { PasswordForm } from './PasswordForm'
 
 export const metadata: Metadata = {
   title: 'Sign in',
-  description: `Sign in to QuestBoard. ${INSTITUTE_NAME} students verify with Google; anyone can create a hirer account.`,
+  description: `Sign in to GigNest. ${INSTITUTE_NAME} students verify with Google; anyone can create a hirer account.`,
 }
 
 const OAUTH_ERRORS: Record<string, string> = {
@@ -163,7 +163,7 @@ export default async function LoginPage({
 
         <p className="mt-6 text-center text-[11.5px] leading-relaxed text-dimmer">
           By continuing you agree that payments are settled directly between hirer and student.
-          QuestBoard does not hold funds.
+          GigNest does not hold funds.
         </p>
       </Panel>
     </div>

@@ -37,7 +37,7 @@ export function Footer() {
                 </svg>
               </span>
               <span className="text-[15px] font-semibold tracking-tight text-chalk">
-                Quest<span className="text-cyan">Board</span>
+                Gig<span className="text-cyan">Nest</span>
               </span>
             </Link>
             <p className="max-w-xs text-[13px] leading-relaxed text-dim">
