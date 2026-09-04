@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   return {
     title: profile.full_name ?? 'Profile',
-    description: `${ROLE_LABEL[profile.role]} on QuestBoard${
+    description: `${ROLE_LABEL[profile.role]} on GigNest${
       profile.department ? ` · ${profile.department}` : ''
     }.`,
   }

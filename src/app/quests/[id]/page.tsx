@@ -315,7 +315,7 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
               </li>
             </ul>
             <p className="mt-4 border-t border-line pt-3 text-[11.5px] leading-relaxed text-dim">
-              Money changes hands directly — QuestBoard does not hold payments. Agree the terms in
+              Money changes hands directly — GigNest does not hold payments. Agree the terms in
               writing before you start.
             </p>
           </Panel>

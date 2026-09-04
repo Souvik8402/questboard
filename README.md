@@ -1,4 +1,4 @@
-# QuestBoard
+# GigNest
 
 Paid work around Varanasi, posted by anyone, claimed only by verified
 **IIT (BHU) Varanasi** students.
@@ -117,7 +117,7 @@ switches off the moment the two `NEXT_PUBLIC_SUPABASE_*` keys are present.
 ### 4. GitHub → Vercel
 
 ```bash
-git remote add origin https://github.com/YOUR-USER/questboard.git
+git remote add origin https://github.com/YOUR-USER/gignest.git
 ```
 
 ```bash

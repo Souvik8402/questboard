@@ -1,5 +1,5 @@
 -- ============================================================================
---  QuestBoard — seed data
+--  GigNest — seed data
 --
 --  Run AFTER schema.sql:  Supabase → SQL Editor → paste → Run.
 --  Safe to re-run; existing tags are left alone.

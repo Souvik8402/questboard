@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /* ══════════════════════════════════════════════════════════════════════════
-   QuestBoard design tokens
+   GigNest design tokens
 
    Tailwind v4 turns each --color-* below into utilities (bg-void, text-mist,
    border-line, …). Change a value here and the whole app follows.

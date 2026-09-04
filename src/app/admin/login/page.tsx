@@ -36,7 +36,7 @@ export default async function AdminLoginPage({
         className="inline-flex items-center gap-1.5 self-start text-[13px] text-dim transition-colors hover:text-cyan"
       >
         <IconArrowLeft className="size-3.5" />
-        Back to QuestBoard
+        Back to GigNest
       </Link>
 
       <Panel className="mt-5 p-7" glow>

@@ -13,7 +13,7 @@ import { FilterBar } from './_components/FilterBar'
 export const metadata: Metadata = {
   title: 'Quest board',
   description:
-    'Every open quest on QuestBoard — filter by skill, type, reward and location. Paid work for IIT BHU students.',
+    'Every open quest on GigNest — filter by skill, type, reward and location. Paid work for IIT BHU students.',
 }
 
 export default async function QuestsPage({ searchParams }: { searchParams: Promise<Params> }) {
