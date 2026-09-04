@@ -1,9 +1,9 @@
-# QuestBoard
+# GigNest
 
 Paid work around Varanasi, posted by anyone, claimed only by verified
 **IIT (BHU) Varanasi** students.
 
-Anyone can post a quest — a café that needs a website, a parent who needs a physics
+Anyone can post a gig — a café that needs a website, a parent who needs a physics
 tutor, a lab that needs 1,200 forms digitised. Only someone signed in with an
 `@itbhu.ac.in` Google account can apply for one. That asymmetry is the product, so it
 is enforced in the database rather than in the browser (see
@@ -24,7 +24,7 @@ npm run dev
 ```
 
 Open <http://localhost:3000>. With no Supabase keys present the app boots in **demo
-mode**: 16 seeded quests, 12 accounts, a working board, filters, map, dashboard and
+mode**: 16 seeded gigs, 12 accounts, a working board, filters, map, dashboard and
 admin panel — all reading a built-in dataset. Every write refuses politely instead of
 crashing.
 
@@ -34,10 +34,10 @@ and if campus wifi dies mid-pitch the demo still runs.
 | What | Where |
 |---|---|
 | Landing page | `/` |
-| Quest board, search + tag filters | `/quests` |
-| Map view | `/quests/map` |
-| Quest detail, apply / accept / complete | `/quests/<id>` |
-| Post a quest | `/quests/new` |
+| Gig board, search + tag filters | `/gigs` |
+| Map view | `/gigs/map` |
+| Gig detail, apply / accept / complete | `/gigs/<id>` |
+| Post a gig | `/gigs/new` |
 | Role-aware dashboard | `/dashboard` |
 | Public profile | `/profile/<id>` |
 | Edit profile | `/profile/edit` |
@@ -45,7 +45,7 @@ and if campus wifi dies mid-pitch the demo still runs.
 | Admin panel | `/admin` — password from `ADMIN_PASSWORD` |
 
 `/onboarding?as=outsider` is the one worth showing on stage: same screen signed in
-with a Gmail address, and the "Take on quests" option locks itself.
+with a Gmail address, and the "Take on gigs" option locks itself.
 
 The admin password in demo mode is whatever you set as `ADMIN_PASSWORD` in
 `.env.local`. **Change it before you demo in public.**
@@ -117,7 +117,7 @@ switches off the moment the two `NEXT_PUBLIC_SUPABASE_*` keys are present.
 ### 4. GitHub → Vercel
 
 ```bash
-git remote add origin https://github.com/YOUR-USER/questboard.git
+git remote add origin https://github.com/YOUR-USER/gignest.git
 ```
 
 ```bash
@@ -164,17 +164,17 @@ export const INSTITUTE_DOMAINS = ['itbhu.ac.in'] as const
 Exact match or any subdomain (`@student.itbhu.ac.in` passes, `@notitbhu.ac.in` does
 not). The SQL mirrors it — change one, change both.
 
-**Students can also post quests.** Only claiming is restricted. A third-year hiring a
+**Students can also post gigs.** Only claiming is restricted. A third-year hiring a
 junior to help with a fest is exactly the kind of thing this should allow.
 
 ### Phone numbers are revealed, not hidden
 
-RLS is row-level, not column-level, so a phone number sitting in a `quests` row could
+RLS is row-level, not column-level, so a phone number sitting in a `gigs` row could
 only be hidden in the UI — useless. They live in separate tables instead:
 
 | Table | Holds | Readable by |
 |---|---|---|
-| `quest_contacts` | the hirer's number | the hirer, and students whose application was **accepted** |
+| `gig_contacts` | the hirer's number | the hirer, and students whose application was **accepted** |
 | `application_contacts` | the applicant's number | the applicant, and the hirer **once accepted** |
 
 Before acceptance, the database returns no row at all. After acceptance, both sides
@@ -182,9 +182,9 @@ appear at once. Nothing to leak, because nothing was ever sent.
 
 ### Skill tags and search
 
-`quests.search_tsv` is a generated `tsvector` over title, description and location
-with a GIN index. Tag filtering is OR — "quests matching any of my skills" — which is
-the right default for a job board. The dashboard reuses it to surface quests matching
+`gigs.search_tsv` is a generated `tsvector` over title, description and location
+with a GIN index. Tag filtering is OR — "gigs matching any of my skills" — which is
+the right default for a job board. The dashboard reuses it to surface gigs matching
 a student's own tags.
 
 ### Admin panel

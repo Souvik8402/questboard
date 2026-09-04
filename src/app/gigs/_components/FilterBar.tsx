@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/cn'
-import { QUEST_TYPES, SORT_OPTIONS } from '@/lib/constants'
+import { GIG_TYPES, SORT_OPTIONS } from '@/lib/constants'
 import { compactRupees } from '@/lib/format'
-import type { QuestFilters, Skill } from '@/lib/types'
+import type { GigFilters, Skill } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
 import { IconLayers, IconSearch, IconWifi, IconX } from '@/components/ui/Icons'
 
@@ -19,7 +19,7 @@ const REWARD_PRESETS = [
 ]
 
 /**
- * Filter panel for the quest board.
+ * Filter panel for the gig board.
  *
  * It is a real `<form method="get">`, so submitting rewrites the URL and the
  * server re-renders the board. Everything is therefore shareable and works
@@ -29,10 +29,10 @@ export function FilterBar({
   skills,
   filters,
   total,
-  basePath = '/quests',
+  basePath = '/gigs',
 }: {
   skills: Skill[]
-  filters: QuestFilters
+  filters: GigFilters
   total: number
   basePath?: string
 }) {
@@ -118,8 +118,8 @@ export function FilterBar({
   }
 
   const currentSort = searchParams.get('sort') ?? 'recent'
-  const otherView = basePath === '/quests' ? '/quests/map' : '/quests'
-  const otherViewLabel = basePath === '/quests' ? 'Map view' : 'List view'
+  const otherView = basePath === '/gigs' ? '/gigs/map' : '/gigs'
+  const otherViewLabel = basePath === '/gigs' ? 'Map view' : 'List view'
   const otherViewQuery = searchParams.toString()
 
   return (
@@ -149,8 +149,8 @@ export function FilterBar({
             name="q"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search quests — “website”, “tuition ravindrapuri”, “reels”…"
-            aria-label="Search quests"
+            placeholder="Search gigs — “website”, “tuition ravindrapuri”, “reels”…"
+            aria-label="Search gigs"
             className="w-full rounded-xl border border-line bg-ink/70 py-3 pl-11 pr-4 text-sm text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60 focus:ring-2 focus:ring-cyan/15"
           />
         </div>
@@ -159,7 +159,7 @@ export function FilterBar({
           <select
             value={currentSort}
             onChange={(e) => apply({ sort: e.target.value })}
-            aria-label="Sort quests"
+            aria-label="Sort gigs"
             className="rounded-xl border border-line bg-ink/70 px-3.5 py-3 text-[13px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
           >
             {SORT_OPTIONS.map((o) => (
@@ -209,7 +209,7 @@ export function FilterBar({
           </svg>
         </button>
 
-        {QUEST_TYPES.map((t) => (
+        {GIG_TYPES.map((t) => (
           <button
             key={t.value}
             type="button"
@@ -244,7 +244,7 @@ export function FilterBar({
         </button>
 
         <span className="ml-auto hud text-[11.5px] text-dim">
-          {total} {total === 1 ? 'quest' : 'quests'}
+          {total} {total === 1 ? 'gig' : 'gigs'}
         </span>
 
         {activeCount > 0 && (

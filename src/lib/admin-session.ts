@@ -17,7 +17,7 @@
  * profiles table (see seed.sql) and check that instead.
  */
 
-export const ADMIN_COOKIE = 'qb_admin'
+export const ADMIN_COOKIE = 'gn_admin'
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000 // 8 hours
 const DEFAULT_PASSWORD = 'change-me-before-you-demo'
 

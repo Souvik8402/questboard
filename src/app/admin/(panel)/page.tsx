@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
-  getAdminQuests,
+  getAdminGigs,
   getAdminReviews,
   getAdminStats,
   getAdminUsers,
 } from '@/lib/admin-queries'
 import { compactRupees } from '@/lib/format'
 import { Panel } from '@/components/ui/Panel'
-import { QuestTable } from './_components/QuestTable'
+import { GigTable } from './_components/GigTable'
 import { ReviewList } from './_components/ReviewList'
 import { UserTable } from './_components/UserTable'
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 const TABS = [
   { value: 'users', label: 'Accounts' },
-  { value: 'quests', label: 'Quests' },
+  { value: 'gigs', label: 'Gigs' },
   { value: 'reviews', label: 'Reviews' },
 ] as const
 
@@ -35,10 +35,10 @@ export default async function AdminPage({
 
   // All four run regardless of tab: the counters at the top need the totals, and
   // the dataset is small enough that lazy-loading per tab would just add code.
-  const [stats, users, quests, reviews] = await Promise.all([
+  const [stats, users, gigs, reviews] = await Promise.all([
     getAdminStats(),
     getAdminUsers(),
-    getAdminQuests(),
+    getAdminGigs(),
     getAdminReviews(),
   ])
 
@@ -57,8 +57,8 @@ export default async function AdminPage({
           ]}
         />
         <StatBlock
-          label="Quests"
-          value={stats.quests}
+          label="Gigs"
+          value={stats.gigs}
           accent="lime"
           rows={[
             ['Open', stats.open],
@@ -74,8 +74,8 @@ export default async function AdminPage({
             ['Accepted', stats.accepted],
             ['Reviews left', stats.reviews],
             [
-              'Per quest',
-              stats.quests ? (stats.applications / stats.quests).toFixed(1) : '—',
+              'Per gig',
+              stats.gigs ? (stats.applications / stats.gigs).toFixed(1) : '—',
             ],
           ]}
         />
@@ -98,7 +98,7 @@ export default async function AdminPage({
         <div className="flex flex-wrap gap-1.5 border-b border-line pb-3">
           {TABS.map((t) => {
             const count =
-              t.value === 'users' ? users.length : t.value === 'quests' ? quests.length : reviews.length
+              t.value === 'users' ? users.length : t.value === 'gigs' ? gigs.length : reviews.length
             const active = tab === t.value
             return (
               <Link
@@ -122,7 +122,7 @@ export default async function AdminPage({
 
         <div className="mt-5">
           {tab === 'users' && <UserTable users={users} />}
-          {tab === 'quests' && <QuestTable quests={quests} />}
+          {tab === 'gigs' && <GigTable gigs={gigs} />}
           {tab === 'reviews' && <ReviewList reviews={reviews} />}
         </div>
       </div>

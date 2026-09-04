@@ -5,7 +5,7 @@ import L from 'leaflet'
 import { useEffect, useRef } from 'react'
 import { CAMPUS_CENTER, CAMPUS_ZOOM, rewardTier } from '@/lib/constants'
 import { formatRupees } from '@/lib/format'
-import type { QuestWithRelations } from '@/lib/types'
+import type { GigWithRelations } from '@/lib/types'
 
 /*
  * Raw Leaflet rather than react-leaflet: one fewer dependency to keep aligned
@@ -21,7 +21,7 @@ const ATTRIBUTION = '© <a href="https://www.openstreetmap.org/copyright">OpenSt
 
 function pinIcon(tier: string): L.DivIcon {
   return L.divIcon({
-    className: `quest-pin tier-${tier}`,
+    className: `gig-pin tier-${tier}`,
     html: '<i></i>',
     iconSize: [22, 22],
     iconAnchor: [11, 11],
@@ -29,13 +29,13 @@ function pinIcon(tier: string): L.DivIcon {
   })
 }
 
-function popupHtml(quest: QuestWithRelations): string {
+function popupHtml(gig: GigWithRelations): string {
   const escape = (s: string) =>
     s.replace(/[&<>"']/g, (c) =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
     )
 
-  const skills = quest.skills
+  const skills = gig.skills
     .slice(0, 3)
     .map(
       (s) =>
@@ -48,26 +48,26 @@ function popupHtml(quest: QuestWithRelations): string {
   return `
     <div style="min-width:190px;max-width:230px">
       <div style="font-family:ui-monospace,monospace;font-size:14px;font-weight:600;color:#e9edf7">
-        ${escape(formatRupees(quest.reward_amount))}
+        ${escape(formatRupees(gig.reward_amount))}
       </div>
-      <a href="/quests/${quest.id}"
+      <a href="/gigs/${gig.id}"
          style="display:block;margin-top:3px;font-size:12.5px;font-weight:600;color:#22d3ee;text-decoration:none;line-height:1.35">
-        ${escape(quest.title)}
+        ${escape(gig.title)}
       </a>
       <div style="margin-top:4px;font-size:11px;color:#5d6674">
-        ${escape(quest.location_label ?? 'Location on request')}
+        ${escape(gig.location_label ?? 'Location on request')}
       </div>
       ${skills ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">${skills}</div>` : ''}
     </div>
   `
 }
 
-export default function QuestMap({
-  quests,
+export default function GigMap({
+  gigs,
   height = 'min(70dvh, 620px)',
   focusId,
 }: {
-  quests: QuestWithRelations[]
+  gigs: GigWithRelations[]
   height?: string
   focusId?: string
 }) {
@@ -102,7 +102,7 @@ export default function QuestMap({
     }
   }, [])
 
-  // Redraw pins whenever the quest list changes.
+  // Redraw pins whenever the gig list changes.
   useEffect(() => {
     const instance = map.current
     const group = layer.current
@@ -111,19 +111,19 @@ export default function QuestMap({
     group.clearLayers()
 
     const points: L.LatLngTuple[] = []
-    for (const quest of quests) {
-      if (quest.lat === null || quest.lng === null) continue
-      const point: L.LatLngTuple = [quest.lat, quest.lng]
+    for (const gig of gigs) {
+      if (gig.lat === null || gig.lng === null) continue
+      const point: L.LatLngTuple = [gig.lat, gig.lng]
       points.push(point)
 
       const marker = L.marker(point, {
-        icon: pinIcon(rewardTier(quest.reward_amount)),
-        title: quest.title,
+        icon: pinIcon(rewardTier(gig.reward_amount)),
+        title: gig.title,
         riseOnHover: true,
-      }).bindPopup(popupHtml(quest), { closeButton: true, maxWidth: 260 })
+      }).bindPopup(popupHtml(gig), { closeButton: true, maxWidth: 260 })
 
       marker.addTo(group)
-      if (focusId && quest.id === focusId) marker.openPopup()
+      if (focusId && gig.id === focusId) marker.openPopup()
     }
 
     if (points.length === 1) {
@@ -133,7 +133,7 @@ export default function QuestMap({
     } else {
       instance.setView([CAMPUS_CENTER.lat, CAMPUS_CENTER.lng], CAMPUS_ZOOM)
     }
-  }, [quests, focusId])
+  }, [gigs, focusId])
 
   return (
     <div
@@ -141,7 +141,7 @@ export default function QuestMap({
       style={{ height }}
       className="w-full overflow-hidden rounded-[var(--radius-card)] border border-line"
       role="application"
-      aria-label="Map of open quests"
+      aria-label="Map of open gigs"
     />
   )
 }

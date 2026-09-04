@@ -11,9 +11,9 @@ import {
   issueAdminToken,
 } from '@/lib/admin-session'
 import { adminDataAvailable } from '@/lib/admin-queries'
-import { QUEST_STATUSES } from '@/lib/constants'
+import { GIG_STATUSES } from '@/lib/constants'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { ActionResult, QuestStatus } from '@/lib/types'
+import type { ActionResult, GigStatus } from '@/lib/types'
 import { FieldError, checkbox, requireEnum, runAction, text } from '@/lib/validate'
 
 const DEMO_MESSAGE =
@@ -91,57 +91,57 @@ export async function setUserBanned(
   })
 }
 
-/** Force a quest into another state — for spam, abandoned posts and disputes. */
-export async function adminSetQuestStatus(
+/** Force a gig into another state — for spam, abandoned posts and disputes. */
+export async function adminSetGigStatus(
   _prev: ActionResult | null,
   form: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
     if (!adminDataAvailable) throw new FieldError(DEMO_MESSAGE)
 
-    const questId = text(form, 'quest_id')
-    if (!questId) throw new FieldError('Missing quest.')
-    const status = requireEnum(form, 'status', QUEST_STATUSES as readonly QuestStatus[], 'status')
+    const gigId = text(form, 'gig_id')
+    if (!gigId) throw new FieldError('Missing gig.')
+    const status = requireEnum(form, 'status', GIG_STATUSES as readonly GigStatus[], 'status')
 
     const supabase = createAdminClient()
     const { error } = await supabase
-      .from('quests')
+      .from('gigs')
       .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', questId)
+      .eq('id', gigId)
 
     if (error) throw new FieldError(error.message)
 
     revalidatePath('/admin')
-    revalidatePath(`/quests/${questId}`)
-    revalidatePath('/quests')
+    revalidatePath(`/gigs/${gigId}`)
+    revalidatePath('/gigs')
 
-    return { ok: true, message: `Quest moved to ${status.replace('_', ' ')}.` }
+    return { ok: true, message: `Gig moved to ${status.replace('_', ' ')}.` }
   })
 }
 
 /**
- * Delete a quest outright. Applications, tags and the contact row go with it
+ * Delete a gig outright. Applications, tags and the contact row go with it
  * via ON DELETE CASCADE — for genuine spam, cancelling is not enough.
  */
-export async function adminDeleteQuest(
+export async function adminDeleteGig(
   _prev: ActionResult | null,
   form: FormData,
 ): Promise<ActionResult> {
   return runAction(async () => {
     if (!adminDataAvailable) throw new FieldError(DEMO_MESSAGE)
 
-    const questId = text(form, 'quest_id')
-    if (!questId) throw new FieldError('Missing quest.')
+    const gigId = text(form, 'gig_id')
+    if (!gigId) throw new FieldError('Missing gig.')
 
     const supabase = createAdminClient()
-    const { error } = await supabase.from('quests').delete().eq('id', questId)
+    const { error } = await supabase.from('gigs').delete().eq('id', gigId)
     if (error) throw new FieldError(error.message)
 
     revalidatePath('/admin')
-    revalidatePath('/quests')
-    revalidatePath('/quests/map')
+    revalidatePath('/gigs')
+    revalidatePath('/gigs/map')
 
-    return { ok: true, message: 'Quest deleted, along with its applications and tags.' }
+    return { ok: true, message: 'Gig deleted, along with its applications and tags.' }
   })
 }
 

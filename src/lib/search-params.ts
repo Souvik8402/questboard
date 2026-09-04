@@ -1,8 +1,8 @@
-import { QUEST_TYPES, type RewardTier } from './constants'
-import type { QuestFilters, QuestSort, QuestType } from './types'
+import { GIG_TYPES, type RewardTier } from './constants'
+import type { GigFilters, GigSort, GigType } from './types'
 
 /**
- * The quest board is entirely URL-driven: every filter lives in the query
+ * The gig board is entirely URL-driven: every filter lives in the query
  * string, so a filtered board is shareable, bookmarkable and server-rendered,
  * and the filter form works with JavaScript switched off.
  */
@@ -22,16 +22,16 @@ export function many(params: Params, key: string): string[] {
   return raw.flatMap((v) => v.split(',')).map((v) => v.trim()).filter(Boolean)
 }
 
-const VALID_TYPES = new Set<string>(QUEST_TYPES.map((t) => t.value))
+const VALID_TYPES = new Set<string>(GIG_TYPES.map((t) => t.value))
 const VALID_SORTS = new Set<string>(['recent', 'reward_high', 'reward_low', 'deadline'])
 
-export function parseFilters(params: Params): QuestFilters {
+export function parseFilters(params: Params): GigFilters {
   const skills = many(params, 'skills')
     .map(Number)
     .filter((n) => Number.isInteger(n) && n > 0)
     .slice(0, 20)
 
-  const types = many(params, 'types').filter((t): t is QuestType => VALID_TYPES.has(t))
+  const types = many(params, 'types').filter((t): t is GigType => VALID_TYPES.has(t))
 
   const min = Number(one(params, 'min'))
   const max = Number(one(params, 'max'))
@@ -45,14 +45,14 @@ export function parseFilters(params: Params): QuestFilters {
     minReward: Number.isFinite(min) && min > 0 ? Math.floor(min) : undefined,
     maxReward: Number.isFinite(max) && max > 0 ? Math.floor(max) : undefined,
     remoteOnly: one(params, 'remote') === '1' || one(params, 'remote') === 'on',
-    sort: sortRaw && VALID_SORTS.has(sortRaw) ? (sortRaw as QuestSort) : 'recent',
+    sort: sortRaw && VALID_SORTS.has(sortRaw) ? (sortRaw as GigSort) : 'recent',
     page: Number.isFinite(page) && page > 0 ? Math.floor(page) : 1,
   }
 }
 
 /** Rebuild a query string from filters, with selective overrides. */
 export function filtersToQuery(
-  filters: QuestFilters,
+  filters: GigFilters,
   overrides: Partial<Record<string, string | number | undefined | null>> = {},
 ): string {
   const sp = new URLSearchParams()
@@ -76,7 +76,7 @@ export function filtersToQuery(
 }
 
 /** How many filters are active — drives the "3 filters" badge and Clear button. */
-export function activeFilterCount(filters: QuestFilters): number {
+export function activeFilterCount(filters: GigFilters): number {
   let n = 0
   if (filters.q) n++
   if (filters.skills?.length) n += filters.skills.length

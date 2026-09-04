@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 import { relativeTime } from '@/lib/format'
-import type { ActionResult, ApplicationWithRelations, QuestStatus } from '@/lib/types'
+import type { ActionResult, ApplicationWithRelations, GigStatus } from '@/lib/types'
 import { ApplicationPill } from '@/components/ui/Badge'
 import { Notice, Panel } from '@/components/ui/Panel'
 import { SubmitButton } from '@/components/ui/SubmitButton'
@@ -11,16 +11,16 @@ import { IconCheck, IconPhone, IconX } from '@/components/ui/Icons'
 import { acceptApplicant, rejectApplicant } from '../actions'
 
 /**
- * Hirer's view of who applied. Only the quest owner ever gets rows here —
+ * Hirer's view of who applied. Only the gig owner ever gets rows here —
  * the RLS SELECT policy on `applications` returns nothing to anyone else.
  */
 export function ApplicantList({
-  questId,
+  gigId,
   status,
   applications,
 }: {
-  questId: string
-  status: QuestStatus
+  gigId: string
+  status: GigStatus
   applications: ApplicationWithRelations[]
 }) {
   const [result, act] = useActionState<ActionResult | null, FormData>(async (prev, form) => {
@@ -42,13 +42,13 @@ export function ApplicantList({
           </span>
         </h2>
         {!canDecide && applications.length > 0 && (
-          <span className="text-[11.5px] text-dim">Quest closed to new decisions</span>
+          <span className="text-[11.5px] text-dim">Gig closed to new decisions</span>
         )}
       </div>
 
       {applications.length === 0 ? (
         <p className="mt-3 text-[13px] leading-relaxed text-mist">
-          No applications yet. Quests with a clear scope and an honest reward usually get their
+          No applications yet. Gigs with a clear scope and an honest reward usually get their
           first one within a day.
         </p>
       ) : (
@@ -100,7 +100,7 @@ export function ApplicantList({
 
                 {canDecide && application.status === 'pending' && (
                   <form action={act} className="mt-4 flex flex-wrap items-center gap-2">
-                    <input type="hidden" name="questId" value={questId} />
+                    <input type="hidden" name="gigId" value={gigId} />
                     <input type="hidden" name="applicationId" value={application.id} />
                     <SubmitButton name="intent" value="accept" size="sm">
                       <IconCheck className="size-3.5" />

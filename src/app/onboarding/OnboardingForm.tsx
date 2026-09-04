@@ -58,7 +58,7 @@ export function OnboardingForm({
             disabled={!eligible}
             onClick={() => eligible && setRole('student')}
             icon={<IconUsers className="size-5" />}
-            title="Take on quests"
+            title="Take on gigs"
             blurb={
               eligible
                 ? 'Find paid work that matches your skills. Verified student account.'
@@ -71,7 +71,7 @@ export function OnboardingForm({
             active={role === 'hirer'}
             onClick={() => setRole('hirer')}
             icon={<IconBriefcase className="size-5" />}
-            title="Post quests and hire"
+            title="Post gigs and hire"
             blurb="Advertise work and pick from applicants. Open to everyone."
             badge="Always available"
             tone="cyan"
@@ -83,8 +83,8 @@ export function OnboardingForm({
         {!eligible && (
           <Notice tone="info">
             You are signed in as <span className="hud">{email ?? 'an unknown address'}</span>. Only{' '}
-            <span className="hud">@itbhu.ac.in</span> accounts can claim quests — that restriction is
-            enforced in the database, not just here. You can still post as many quests as you like.
+            <span className="hud">@itbhu.ac.in</span> accounts can claim gigs — that restriction is
+            enforced in the database, not just here. You can still post as many gigs as you like.
           </Notice>
         )}
       </fieldset>
@@ -153,7 +153,7 @@ export function OnboardingForm({
               skills={skills}
               max={8}
               label="Your skills"
-              hint="Pick up to 8. These decide which quests surface for you — and which students a hirer finds when they filter."
+              hint="Pick up to 8. These decide which gigs surface for you — and which students a hirer finds when they filter."
             />
             {errorFor('skills') && <p className="mt-2 text-xs text-rose">{errorFor('skills')}</p>}
           </div>
@@ -186,7 +186,7 @@ export function OnboardingForm({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Button type="submit" size="lg" disabled={pending} className="sm:w-auto">
-          {pending ? 'Saving…' : role === 'student' ? 'Start claiming quests' : 'Start posting quests'}
+          {pending ? 'Saving…' : role === 'student' ? 'Start claiming gigs' : 'Start posting gigs'}
         </Button>
         <p className="text-[12px] text-dim">You can change all of this later from your profile.</p>
       </div>

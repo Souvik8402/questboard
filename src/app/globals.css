@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /* ══════════════════════════════════════════════════════════════════════════
-   QuestBoard design tokens
+   GigNest design tokens
 
    Tailwind v4 turns each --color-* below into utilities (bg-void, text-mist,
    border-line, …). Change a value here and the whole app follows.
@@ -325,7 +325,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Reward tiers — the ring colour on a quest card, at a glance
+   Reward tiers — the ring colour on a gig card, at a glance
    ══════════════════════════════════════════════════════════════════════════ */
 
 .tier-bronze {
@@ -398,14 +398,14 @@ body {
   color: var(--color-mist) !important;
 }
 
-/* Custom quest pin: a coloured dot with a soft halo. */
-.quest-pin {
+/* Custom gig pin: a coloured dot with a soft halo. */
+.gig-pin {
   display: grid;
   place-items: center;
   width: 100%;
   height: 100%;
 }
-.quest-pin i {
+.gig-pin i {
   width: 14px;
   height: 14px;
   border-radius: 50%;

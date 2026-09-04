@@ -1,7 +1,7 @@
 import { hasServiceRole, isSupabaseConfigured } from './config'
-import { DEMO_PROFILES, DEMO_QUESTS, DEMO_REVIEWS } from './demo-data'
+import { DEMO_PROFILES, DEMO_GIGS, DEMO_REVIEWS } from './demo-data'
 import { createAdminClient } from './supabase/admin'
-import type { PublicProfile, QuestStatus, Review, UserRole } from './types'
+import type { PublicProfile, GigStatus, Review, UserRole } from './types'
 
 /**
  * Admin-only reads.
@@ -28,15 +28,15 @@ export interface AdminUser {
   onboarded_at: string | null
   created_at: string
   last_sign_in_at: string | null
-  quests_posted: number
+  gigs_posted: number
   applications_sent: number
 }
 
-export interface AdminQuest {
+export interface AdminGig {
   id: string
   title: string
-  status: QuestStatus
-  quest_type: string
+  status: GigStatus
+  gig_type: string
   reward_amount: number
   is_remote: boolean
   location_label: string | null
@@ -61,7 +61,7 @@ export interface AdminStats {
   students: number
   hirers: number
   banned: number
-  quests: number
+  gigs: number
   open: number
   completed: number
   cancelled: number
@@ -96,18 +96,18 @@ function demoUsers(): AdminUser[] {
       onboarded_at: new Date(Date.now() - (i + 3) * 86_400_000).toISOString(),
       created_at: new Date(Date.now() - (i + 3) * 86_400_000).toISOString(),
       last_sign_in_at: new Date(Date.now() - i * 3_600_000).toISOString(),
-      quests_posted: DEMO_QUESTS.filter((q) => q.hirer_id === p.id).length,
+      gigs_posted: DEMO_GIGS.filter((q) => q.hirer_id === p.id).length,
       applications_sent: p.role === 'student' ? p.rating_count : 0,
     }
   })
 }
 
-function demoQuests(): AdminQuest[] {
-  return DEMO_QUESTS.map((q) => ({
+function demoGigs(): AdminGig[] {
+  return DEMO_GIGS.map((q) => ({
     id: q.id,
     title: q.title,
     status: q.status,
-    quest_type: q.quest_type,
+    gig_type: q.gig_type,
     reward_amount: q.reward_amount,
     is_remote: q.is_remote,
     location_label: q.location_label,
@@ -120,23 +120,23 @@ function demoQuests(): AdminQuest[] {
 }
 
 function demoStats(): AdminStats {
-  const quests = DEMO_QUESTS
+  const gigs = DEMO_GIGS
   return {
     users: DEMO_PROFILES.length,
     students: DEMO_PROFILES.filter((p) => p.role === 'student').length,
     hirers: DEMO_PROFILES.filter((p) => p.role === 'hirer').length,
     banned: 0,
-    quests: quests.length,
-    open: quests.filter((q) => q.status === 'open').length,
-    completed: quests.filter((q) => q.status === 'completed').length,
-    cancelled: quests.filter((q) => q.status === 'cancelled').length,
-    applications: quests.reduce((n, q) => n + (q.application_count ?? 0), 0),
-    accepted: quests.filter((q) => q.status !== 'open' && q.status !== 'cancelled').length,
+    gigs: gigs.length,
+    open: gigs.filter((q) => q.status === 'open').length,
+    completed: gigs.filter((q) => q.status === 'completed').length,
+    cancelled: gigs.filter((q) => q.status === 'cancelled').length,
+    applications: gigs.reduce((n, q) => n + (q.application_count ?? 0), 0),
+    accepted: gigs.filter((q) => q.status !== 'open' && q.status !== 'cancelled').length,
     reviews: DEMO_REVIEWS.length,
-    reward_pool: quests
+    reward_pool: gigs
       .filter((q) => q.status === 'open')
       .reduce((n, q) => n + q.reward_amount, 0),
-    completed_value: quests
+    completed_value: gigs
       .filter((q) => q.status === 'completed')
       .reduce((n, q) => n + q.reward_amount, 0),
   }
@@ -149,15 +149,15 @@ export async function getAdminStats(): Promise<AdminStats> {
 
   const supabase = createAdminClient()
 
-  const [profiles, quests, applications, reviews] = await Promise.all([
+  const [profiles, gigs, applications, reviews] = await Promise.all([
     supabase.from('profiles').select('role, is_banned'),
-    supabase.from('quests').select('status, reward_amount'),
+    supabase.from('gigs').select('status, reward_amount'),
     supabase.from('applications').select('status'),
     supabase.from('reviews').select('id', { count: 'exact', head: true }),
   ])
 
   const p = (profiles.data ?? []) as { role: UserRole; is_banned: boolean }[]
-  const q = (quests.data ?? []) as { status: QuestStatus; reward_amount: number }[]
+  const q = (gigs.data ?? []) as { status: GigStatus; reward_amount: number }[]
   const a = (applications.data ?? []) as { status: string }[]
 
   return {
@@ -165,7 +165,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     students: p.filter((x) => x.role === 'student').length,
     hirers: p.filter((x) => x.role === 'hirer').length,
     banned: p.filter((x) => x.is_banned).length,
-    quests: q.length,
+    gigs: q.length,
     open: q.filter((x) => x.status === 'open').length,
     completed: q.filter((x) => x.status === 'completed').length,
     cancelled: q.filter((x) => x.status === 'cancelled').length,
@@ -191,7 +191,7 @@ export async function getAdminUsers(limit = 60): Promise<AdminUser[]> {
 
   const supabase = createAdminClient()
 
-  const [{ data: profiles }, { data: authList }, { data: questRows }, { data: appRows }] =
+  const [{ data: profiles }, { data: authList }, { data: gigRows }, { data: appRows }] =
     await Promise.all([
       supabase
         .from('profiles')
@@ -203,16 +203,16 @@ export async function getAdminUsers(limit = 60): Promise<AdminUser[]> {
       // The only place emails are read. listUsers is paginated; one page of 200
       // is plenty for a prototype, and the join below tolerates misses.
       supabase.auth.admin.listUsers({ page: 1, perPage: 200 }),
-      supabase.from('quests').select('hirer_id'),
+      supabase.from('gigs').select('hirer_id'),
       supabase.from('applications').select('student_id'),
     ])
 
   const emails = new Map<string, AuthUserRow>()
   for (const u of (authList?.users ?? []) as unknown as AuthUserRow[]) emails.set(u.id, u)
 
-  const questCount = new Map<string, number>()
-  for (const row of (questRows ?? []) as { hirer_id: string }[]) {
-    questCount.set(row.hirer_id, (questCount.get(row.hirer_id) ?? 0) + 1)
+  const gigCount = new Map<string, number>()
+  for (const row of (gigRows ?? []) as { hirer_id: string }[]) {
+    gigCount.set(row.hirer_id, (gigCount.get(row.hirer_id) ?? 0) + 1)
   }
 
   const appCount = new Map<string, number>()
@@ -222,34 +222,34 @@ export async function getAdminUsers(limit = 60): Promise<AdminUser[]> {
 
   type ProfileRow = Omit<
     AdminUser,
-    'email' | 'last_sign_in_at' | 'quests_posted' | 'applications_sent'
+    'email' | 'last_sign_in_at' | 'gigs_posted' | 'applications_sent'
   >
 
   return ((profiles ?? []) as unknown as ProfileRow[]).map((row) => ({
     ...row,
     email: emails.get(row.id)?.email ?? null,
     last_sign_in_at: emails.get(row.id)?.last_sign_in_at ?? null,
-    quests_posted: questCount.get(row.id) ?? 0,
+    gigs_posted: gigCount.get(row.id) ?? 0,
     applications_sent: appCount.get(row.id) ?? 0,
   }))
 }
 
-export async function getAdminQuests(limit = 60): Promise<AdminQuest[]> {
-  if (!adminDataAvailable) return demoQuests()
+export async function getAdminGigs(limit = 60): Promise<AdminGig[]> {
+  if (!adminDataAvailable) return demoGigs()
 
   const supabase = createAdminClient()
   const { data } = await supabase
-    .from('quests')
+    .from('gigs')
     .select(
-      `id, title, status, quest_type, reward_amount, is_remote, location_label, views,
+      `id, title, status, gig_type, reward_amount, is_remote, location_label, views,
        created_at, hirer_id,
-       hirer:profiles!quests_hirer_id_fkey ( full_name ),
+       hirer:profiles!gigs_hirer_id_fkey ( full_name ),
        applications ( id )`,
     )
     .order('created_at', { ascending: false })
     .limit(limit)
 
-  type Row = Omit<AdminQuest, 'hirer_name' | 'application_count'> & {
+  type Row = Omit<AdminGig, 'hirer_name' | 'application_count'> & {
     hirer: { full_name: string | null } | { full_name: string | null }[] | null
     applications: { id: string }[] | null
   }
@@ -276,7 +276,7 @@ export async function getAdminReviews(limit = 20): Promise<AdminReview[]> {
   const { data } = await supabase
     .from('reviews')
     .select(
-      `id, quest_id, reviewer_id, reviewee_id, rating, comment, created_at,
+      `id, gig_id, reviewer_id, reviewee_id, rating, comment, created_at,
        reviewer:profiles!reviews_reviewer_id_fkey (
          id, full_name, avatar_url, role, rating, rating_count, department, year
        ),

@@ -114,8 +114,8 @@ export function UserTable({ users }: { users: AdminUser[] }) {
             </div>
 
             <div className="hud flex shrink-0 gap-4 text-[11.5px] text-dim">
-              <span title="Quests posted">
-                <span className="text-chalk">{user.quests_posted}</span> posted
+              <span title="Gigs posted">
+                <span className="text-chalk">{user.gigs_posted}</span> posted
               </span>
               <span title="Applications sent">
                 <span className="text-chalk">{user.applications_sent}</span> applied

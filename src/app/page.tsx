@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { getPlatformStats, getQuests, getSkillsByCategory } from '@/lib/queries'
-import { INSTITUTE_NAME, INSTITUTE_SHORT, QUEST_TYPES } from '@/lib/constants'
+import { getPlatformStats, getGigs, getSkillsByCategory } from '@/lib/queries'
+import { INSTITUTE_NAME, INSTITUTE_SHORT, GIG_TYPES } from '@/lib/constants'
 import { compactRupees } from '@/lib/format'
-import { QuestCard } from '@/components/QuestCard'
+import { GigCard } from '@/components/GigCard'
 import { SkillChip } from '@/components/ui/Badge'
 import { ButtonLink } from '@/components/ui/Button'
 import { Panel, SectionHeading, StatTile } from '@/components/ui/Panel'
@@ -21,13 +21,13 @@ import {
 export const revalidate = 60
 
 export default async function HomePage() {
-  const [stats, { quests }, categories] = await Promise.all([
+  const [stats, { gigs }, categories] = await Promise.all([
     getPlatformStats(),
-    getQuests({ sort: 'reward_high' }),
+    getGigs({ sort: 'reward_high' }),
     getSkillsByCategory(),
   ])
 
-  const featured = quests.slice(0, 6)
+  const featured = gigs.slice(0, 6)
   // A flat sample of tags for the "search by skill" band.
   const tagSample = categories.flatMap(([, skills]) => skills.slice(0, 4)).slice(0, 22)
 
@@ -35,7 +35,7 @@ export default async function HomePage() {
     <>
       <Hero stats={stats} />
       <HowItWorks />
-      <FeaturedQuests quests={featured} />
+      <FeaturedGigs gigs={featured} />
       <SkillBand tags={tagSample} />
       <TwoSides />
       <TrustBand />
@@ -57,7 +57,7 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
           >
             <span className="live-dot size-1.5 rounded-full bg-lime" />
             <span className="text-[11.5px] font-medium text-mist">
-              {stats.open_quests} quests open right now
+              {stats.open_gigs} gigs open right now
             </span>
             <span className="text-dimmer">·</span>
             <span className="hud text-[11.5px] text-cyan">
@@ -79,7 +79,7 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
             className="reveal mx-auto mt-6 max-w-xl text-balance text-[15px] leading-relaxed text-mist sm:text-base"
             style={{ '--i': 2 } as React.CSSProperties}
           >
-            Anyone can post a paid quest — a café that needs a website, a shop that needs reels, a
+            Anyone can post a paid gig — a café that needs a website, a shop that needs reels, a
             parent who needs a tutor. Only verified{' '}
             <span className="hud text-chalk">@itbhu.ac.in</span> students can claim one.
           </p>
@@ -88,12 +88,12 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
             className="reveal mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
             style={{ '--i': 3 } as React.CSSProperties}
           >
-            <ButtonLink href="/quests" size="lg" className="w-full sm:w-auto">
-              Browse the quest board
+            <ButtonLink href="/gigs" size="lg" className="w-full sm:w-auto">
+              Browse the gig board
               <IconArrowRight className="size-4" />
             </ButtonLink>
-            <ButtonLink href="/quests/new" variant="outline" size="lg" className="w-full sm:w-auto">
-              Post a quest — free
+            <ButtonLink href="/gigs/new" variant="outline" size="lg" className="w-full sm:w-auto">
+              Post a gig — free
             </ButtonLink>
           </div>
 
@@ -107,8 +107,8 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
 
         <div className="mt-16 grid grid-cols-2 gap-3 sm:mt-20 lg:grid-cols-4">
           <StatTile
-            value={stats.open_quests}
-            label="Open quests"
+            value={stats.open_gigs}
+            label="Open gigs"
             hint="Waiting for a claim"
             accent="lime"
             index={5}
@@ -116,7 +116,7 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
           <StatTile
             value={compactRupees(stats.reward_pool)}
             label="Rewards on offer"
-            hint="Across all open quests"
+            hint="Across all open gigs"
             accent="cyan"
             index={6}
           />
@@ -129,7 +129,7 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
           />
           <StatTile
             value={stats.completed}
-            label="Quests completed"
+            label="Gigs completed"
             hint="Paid and reviewed"
             accent="amber"
             index={8}
@@ -153,7 +153,7 @@ const STEPS = [
     icon: <IconSearch className="size-5" />,
     eyebrow: 'Step 02',
     title: 'Students find it',
-    body: 'Your quest surfaces to students filtering by the exact skills you tagged. They apply with a short pitch.',
+    body: 'Your gig surfaces to students filtering by the exact skills you tagged. They apply with a short pitch.',
   },
   {
     icon: <IconCheck className="size-5" />,
@@ -201,10 +201,10 @@ function HowItWorks() {
   )
 }
 
-/* ── Featured quests ──────────────────────────────────────────────────────── */
+/* ── Featured gigs ──────────────────────────────────────────────────────── */
 
-function FeaturedQuests({ quests }: { quests: Awaited<ReturnType<typeof getQuests>>['quests'] }) {
-  if (quests.length === 0) return null
+function FeaturedGigs({ gigs }: { gigs: Awaited<ReturnType<typeof getGigs>>['gigs'] }) {
+  if (gigs.length === 0) return null
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -212,17 +212,17 @@ function FeaturedQuests({ quests }: { quests: Awaited<ReturnType<typeof getQuest
         <SectionHeading
           eyebrow="Live board"
           title="The biggest rewards on offer"
-          blurb="Highest-paying open quests right now. The full board has filters for skill, type, budget and distance."
+          blurb="Highest-paying open gigs right now. The full board has filters for skill, type, budget and distance."
         />
-        <ButtonLink href="/quests" variant="outline" size="sm" className="shrink-0">
-          See all quests
+        <ButtonLink href="/gigs" variant="outline" size="sm" className="shrink-0">
+          See all gigs
           <IconArrowRight className="size-3.5" />
         </ButtonLink>
       </div>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {quests.map((q, i) => (
-          <QuestCard key={q.id} quest={q} index={i} />
+        {gigs.map((q, i) => (
+          <GigCard key={q.id} gig={q} index={i} />
         ))}
       </div>
     </section>
@@ -239,10 +239,10 @@ function SkillBand({ tags }: { tags: Awaited<ReturnType<typeof getSkillsByCatego
           <SectionHeading
             eyebrow="Skill tags"
             title="Search the way students actually think"
-            blurb="Every quest carries skill tags. Filter the board down to React, tabla, Banarasi-weave photography or German translation — whatever you happen to be good at."
+            blurb="Every gig carries skill tags. Filter the board down to React, tabla, Banarasi-weave photography or German translation — whatever you happen to be good at."
           >
             <div className="mt-2">
-              <ButtonLink href="/quests" variant="secondary" size="sm">
+              <ButtonLink href="/gigs" variant="secondary" size="sm">
                 Filter by your skills
               </ButtonLink>
             </div>
@@ -250,10 +250,10 @@ function SkillBand({ tags }: { tags: Awaited<ReturnType<typeof getSkillsByCatego
 
           <div className="flex flex-wrap gap-2">
             {tags.map((t) => (
-              <SkillChip key={t.id} name={t.name} href={`/quests?skills=${t.id}`} />
+              <SkillChip key={t.id} name={t.name} href={`/gigs?skills=${t.id}`} />
             ))}
             <Link
-              href="/quests"
+              href="/gigs"
               className="inline-flex items-center gap-1 rounded-lg border border-cyan/30 bg-cyan/[0.08] px-2 py-1 text-[11.5px] font-medium text-cyan transition-colors hover:bg-cyan/15"
             >
               and more
@@ -291,7 +291,7 @@ function TwoSides() {
           <ul className="space-y-2.5">
             {[
               'Sign in with your @itbhu.ac.in Google account — verification is instant',
-              'Filter quests by skill, reward, type and how far they are from campus',
+              'Filter gigs by skill, reward, type and how far they are from campus',
               'Apply with a short pitch; the hirer sees your rating and past reviews',
               'Take one-off errands between classes or a month-long internship',
             ].map((line) => (
@@ -305,7 +305,7 @@ function TwoSides() {
             <ButtonLink href="/login" size="sm">
               Verify with institute email
             </ButtonLink>
-            <ButtonLink href="/quests" variant="ghost" size="sm">
+            <ButtonLink href="/gigs" variant="ghost" size="sm">
               Browse first
             </ButtonLink>
           </div>
@@ -324,7 +324,7 @@ function TwoSides() {
           <ul className="space-y-2.5">
             {[
               'Anyone can post — shopkeepers, startups, professors, parents, alumni',
-              'No institute email needed to hire; you just cannot claim quests',
+              'No institute email needed to hire; you just cannot claim gigs',
               'Set your own reward. No commission, no listing fee, no middleman',
               'Applicants are verified students, so you know who you are talking to',
             ].map((line) => (
@@ -335,15 +335,15 @@ function TwoSides() {
             ))}
           </ul>
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
-            <ButtonLink href="/quests/new" size="sm">
-              Post your first quest
+            <ButtonLink href="/gigs/new" size="sm">
+              Post your first gig
             </ButtonLink>
           </div>
         </Panel>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {QUEST_TYPES.map((t, i) => (
+        {GIG_TYPES.map((t, i) => (
           <div
             key={t.value}
             className="reveal rounded-xl border border-line bg-white/[0.02] p-4"
@@ -364,7 +364,7 @@ const TRUST = [
   {
     icon: <IconShield className="size-5" />,
     title: 'Verification in the database, not the UI',
-    body: `Only an @itbhu.ac.in Google sign-in can hold the student role. The rule is enforced by a Postgres trigger and row-level security, so a tampered browser still cannot claim a quest.`,
+    body: `Only an @itbhu.ac.in Google sign-in can hold the student role. The rule is enforced by a Postgres trigger and row-level security, so a tampered browser still cannot claim a gig.`,
   },
   {
     icon: <IconMapPin className="size-5" />,
@@ -374,7 +374,7 @@ const TRUST = [
   {
     icon: <IconSparkles className="size-5" />,
     title: 'Reputation that compounds',
-    body: 'Both sides review each other after a quest completes. Ratings are computed by the database from real reviews — they cannot be written by hand.',
+    body: 'Both sides review each other after a gig completes. Ratings are computed by the database from real reviews — they cannot be written by hand.',
   },
 ]
 
@@ -424,7 +424,7 @@ function FinalCta() {
             Sign in as a student
             <IconArrowRight className="size-4" />
           </ButtonLink>
-          <ButtonLink href="/quests/new" variant="outline" size="lg" className="w-full sm:w-auto">
+          <ButtonLink href="/gigs/new" variant="outline" size="lg" className="w-full sm:w-auto">
             I want to hire
           </ButtonLink>
         </div>

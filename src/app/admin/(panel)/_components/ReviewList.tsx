@@ -20,7 +20,7 @@ export function ReviewList({ reviews }: { reviews: AdminReview[] }) {
       <EmptyState
         icon={<IconStar className="size-5" />}
         title="No reviews yet"
-        blurb="Reviews appear once a quest is marked complete and one side rates the other."
+        blurb="Reviews appear once a gig is marked complete and one side rates the other."
       />
     )
   }
@@ -60,10 +60,10 @@ export function ReviewList({ reviews }: { reviews: AdminReview[] }) {
               )}
 
               <Link
-                href={`/quests/${review.quest_id}`}
+                href={`/gigs/${review.gig_id}`}
                 className="mt-1.5 inline-block text-[11.5px] text-dim hover:text-cyan"
               >
-                View the quest →
+                View the gig →
               </Link>
             </div>
 

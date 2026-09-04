@@ -20,12 +20,12 @@ const jetbrains = JetBrains_Mono({
   weight: ['400', '500', '600'],
 })
 
-const title = `QuestBoard — part-time work for ${INSTITUTE_SHORT} students`
+const title = `GigNest — part-time work for ${INSTITUTE_SHORT} students`
 const description = `Post paid work around Varanasi and get it claimed by verified ${INSTITUTE_NAME} students. One-off errands to month-long internships, searchable by skill.`
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: title, template: '%s · QuestBoard' },
+  title: { default: title, template: '%s · GigNest' },
   description,
   keywords: [
     'IIT BHU',
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
     'student freelance',
     'Varanasi',
     'campus gigs',
-    'QuestBoard',
+    'GigNest',
   ],
   openGraph: {
     title,
     description,
     type: 'website',
-    siteName: 'QuestBoard',
+    siteName: 'GigNest',
     locale: 'en_IN',
   },
   twitter: { card: 'summary_large_image', title, description },

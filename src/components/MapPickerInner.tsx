@@ -72,7 +72,7 @@ export default function MapPickerInner({
     } else {
       marker.current = L.marker(point, {
         icon: L.divIcon({
-          className: 'quest-pin tier-gold',
+          className: 'gig-pin tier-gold',
           html: '<i></i>',
           iconSize: [22, 22],
           iconAnchor: [11, 11],
@@ -94,7 +94,7 @@ export default function MapPickerInner({
       ref={container}
       className="h-64 w-full overflow-hidden rounded-xl border border-line"
       role="application"
-      aria-label="Click the map to set the quest location"
+      aria-label="Click the map to set the gig location"
     />
   )
 }

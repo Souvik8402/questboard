@@ -1,4 +1,4 @@
-import type { QuestSort, QuestStatus, QuestType, UserRole } from './types'
+import type { GigSort, GigStatus, GigType, UserRole } from './types'
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -29,8 +29,8 @@ export function isInstituteEmail(email?: string | null): boolean {
 export const CAMPUS_CENTER = { lat: 25.2677, lng: 82.9913 } as const
 export const CAMPUS_ZOOM = 14
 
-export const QUEST_TYPES: {
-  value: QuestType
+export const GIG_TYPES: {
+  value: GigType
   label: string
   blurb: string
 }[] = [
@@ -41,11 +41,11 @@ export const QUEST_TYPES: {
   { value: 'internship', label: 'Internship', blurb: 'Structured, longer term, resume-worthy' },
 ]
 
-export const QUEST_TYPE_LABEL: Record<QuestType, string> = Object.fromEntries(
-  QUEST_TYPES.map((t) => [t.value, t.label]),
-) as Record<QuestType, string>
+export const GIG_TYPE_LABEL: Record<GigType, string> = Object.fromEntries(
+  GIG_TYPES.map((t) => [t.value, t.label]),
+) as Record<GigType, string>
 
-export const QUEST_STATUS_LABEL: Record<QuestStatus, string> = {
+export const GIG_STATUS_LABEL: Record<GigStatus, string> = {
   open: 'Open',
   assigned: 'Assigned',
   in_progress: 'In progress',
@@ -53,8 +53,8 @@ export const QUEST_STATUS_LABEL: Record<QuestStatus, string> = {
   cancelled: 'Cancelled',
 }
 
-/** Same order as the `quest_status` enum in schema.sql. */
-export const QUEST_STATUSES = Object.keys(QUEST_STATUS_LABEL) as QuestStatus[]
+/** Same order as the `gig_status` enum in schema.sql. */
+export const GIG_STATUSES = Object.keys(GIG_STATUS_LABEL) as GigStatus[]
 
 export const ROLE_LABEL: Record<UserRole, string> = {
   student: 'Student',
@@ -62,17 +62,17 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   admin: 'Admin',
 }
 
-export const SORT_OPTIONS: { value: QuestSort; label: string }[] = [
+export const SORT_OPTIONS: { value: GigSort; label: string }[] = [
   { value: 'recent', label: 'Newest first' },
   { value: 'reward_high', label: 'Highest reward' },
   { value: 'reward_low', label: 'Lowest reward' },
   { value: 'deadline', label: 'Closing soonest' },
 ]
 
-export const QUESTS_PER_PAGE = 12
+export const GIGS_PER_PAGE = 12
 
 /**
- * Reward tiers drive the colour of the ring on a quest card — a quick visual
+ * Reward tiers drive the colour of the ring on a gig card — a quick visual
  * read of "how big is this job".
  */
 export const REWARD_TIERS = [

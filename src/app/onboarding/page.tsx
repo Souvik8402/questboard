@@ -19,7 +19,7 @@ const REASONS: Record<string, { tone: 'warn' | 'info'; title: string; body: stri
   'student-only': {
     tone: 'warn',
     title: 'That page is for students',
-    body: 'Claiming quests needs a verified student account. If you signed in with an institute address, pick "Take on quests" below.',
+    body: 'Claiming gigs needs a verified student account. If you signed in with an institute address, pick "Take on gigs" below.',
   },
 }
 
@@ -86,8 +86,8 @@ export default async function OnboardingPage({
           <span className="gradient-text">which side you are on</span>
         </h1>
         <p className="max-w-xl text-[15px] leading-relaxed text-mist">
-          This decides what the board does for you. Students see quests matched to their skills;
-          hirers get the posting tools. {INSTITUTE_SHORT} email holders can do both — post a quest
+          This decides what the board does for you. Students see gigs matched to their skills;
+          hirers get the posting tools. {INSTITUTE_SHORT} email holders can do both — post a gig
           and claim one.
         </p>
       </div>

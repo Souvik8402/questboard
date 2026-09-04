@@ -15,11 +15,11 @@ const MapPickerInner = dynamic(() => import('./MapPickerInner'), {
 })
 
 /**
- * Optional location picker for the post-a-quest form.
+ * Optional location picker for the post-a-gig form.
  *
  * Coordinates are mirrored into hidden inputs so the surrounding
  * `<form action={serverAction}>` picks them up with no extra wiring. Leaving
- * the pin unset is valid — plenty of quests are remote or address-only.
+ * the pin unset is valid — plenty of gigs are remote or address-only.
  */
 export function MapPicker({
   defaultLat = null,
@@ -110,7 +110,7 @@ export function MapPicker({
           </>
         ) : (
           <span className="text-[11.5px] text-dim">
-            Click the map to drop a pin — optional, but quests with one show up in the map view.
+            Click the map to drop a pin — optional, but gigs with one show up in the map view.
           </span>
         )}
 

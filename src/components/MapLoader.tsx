@@ -1,14 +1,14 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import type { QuestWithRelations } from '@/lib/types'
+import type { GigWithRelations } from '@/lib/types'
 
 /*
  * `dynamic(..., { ssr: false })` is only legal inside a Client Component, so
  * this thin wrapper exists purely to hold the import. Leaflet reads `window`
  * the moment it is evaluated, which would throw during prerender.
  */
-const QuestMap = dynamic(() => import('@/components/QuestMap'), {
+const GigMap = dynamic(() => import('@/components/GigMap'), {
   ssr: false,
   loading: () => (
     <div
@@ -24,13 +24,13 @@ const QuestMap = dynamic(() => import('@/components/QuestMap'), {
 })
 
 export function MapLoader({
-  quests,
+  gigs,
   height,
   focusId,
 }: {
-  quests: QuestWithRelations[]
+  gigs: GigWithRelations[]
   height?: string
   focusId?: string
 }) {
-  return <QuestMap quests={quests} height={height} focusId={focusId} />
+  return <GigMap gigs={gigs} height={height} focusId={focusId} />
 }

@@ -84,7 +84,7 @@ export function isStudent(profile: Profile | null | undefined): boolean {
  *
  * `getSession()` deliberately still returns null without Supabase — signed-out
  * is the honest default for public pages, and it keeps the "@itbhu.ac.in only"
- * pitch visible on the quest board. But `/dashboard` and `/profile/edit` have
+ * pitch visible on the gig board. But `/dashboard` and `/profile/edit` have
  * nothing to show a signed-out visitor except a redirect, and those are exactly
  * the pages you want to demo. So they opt into this persona instead.
  *

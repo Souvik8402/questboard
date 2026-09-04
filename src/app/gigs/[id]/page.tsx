@@ -3,13 +3,13 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { isSupabaseConfigured } from '@/lib/config'
-import { QUEST_TYPE_LABEL, rewardTier } from '@/lib/constants'
+import { GIG_TYPE_LABEL, rewardTier } from '@/lib/constants'
 import { deadlineInfo, formatDate, formatRupees, relativeTime } from '@/lib/format'
 import {
   getMyApplicationFor,
-  getQuest,
-  getQuestApplications,
-  getQuestContact,
+  getGig,
+  getGigApplications,
+  getGigContact,
   hasReviewed,
 } from '@/lib/queries'
 import { createClient } from '@/lib/supabase/server'
@@ -41,59 +41,59 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const quest = await getQuest(id)
-  if (!quest) return { title: 'Quest not found' }
+  const gig = await getGig(id)
+  if (!gig) return { title: 'Gig not found' }
 
   return {
-    title: quest.title,
-    description: `${formatRupees(quest.reward_amount)} · ${
-      QUEST_TYPE_LABEL[quest.quest_type]
-    } · ${quest.description.slice(0, 130)}`,
+    title: gig.title,
+    description: `${formatRupees(gig.reward_amount)} · ${
+      GIG_TYPE_LABEL[gig.gig_type]
+    } · ${gig.description.slice(0, 130)}`,
   }
 }
 
-export default async function QuestDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function GigDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 
-  const [quest, session] = await Promise.all([getQuest(id), getSession()])
-  if (!quest) notFound()
+  const [gig, session] = await Promise.all([getGig(id), getSession()])
+  if (!gig) notFound()
 
-  const isOwner = session?.userId === quest.hirer_id
-  const isAssignee = Boolean(session && quest.assigned_to === session.userId)
+  const isOwner = session?.userId === gig.hirer_id
+  const isAssignee = Boolean(session && gig.assigned_to === session.userId)
   const role = session?.profile?.role
 
   // Fetches that only make sense for one side. RLS would return nothing to
   // anyone else anyway; skipping the round trip just saves time.
   const [applications, myApplication, contact, alreadyReviewed] = await Promise.all([
-    isOwner ? getQuestApplications(quest.id) : Promise.resolve([]),
+    isOwner ? getGigApplications(gig.id) : Promise.resolve([]),
     session && role === 'student' && !isOwner
-      ? getMyApplicationFor(quest.id, session.userId)
+      ? getMyApplicationFor(gig.id, session.userId)
       : Promise.resolve(null),
-    isOwner || isAssignee ? getQuestContact(quest.id) : Promise.resolve(null),
-    session && quest.status === 'completed' && (isOwner || isAssignee)
-      ? hasReviewed(quest.id, session.userId)
+    isOwner || isAssignee ? getGigContact(gig.id) : Promise.resolve(null),
+    session && gig.status === 'completed' && (isOwner || isAssignee)
+      ? hasReviewed(gig.id, session.userId)
       : Promise.resolve(true),
   ])
 
   // Fire-and-forget view counter. Owners viewing their own posting don't count.
   if (isSupabaseConfigured && !isOwner) {
     const supabase = await createClient()
-    await supabase.rpc('increment_quest_views', { p_quest: quest.id })
+    await supabase.rpc('increment_gig_views', { p_gig: gig.id })
   }
 
-  const deadline = deadlineInfo(quest.deadline)
-  const tier = rewardTier(quest.reward_amount)
-  const hasPin = quest.lat !== null && quest.lng !== null
+  const deadline = deadlineInfo(gig.deadline)
+  const tier = rewardTier(gig.reward_amount)
+  const hasPin = gig.lat !== null && gig.lng !== null
   const acceptedApplication = applications.find((a) => a.status === 'accepted') ?? null
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <Link
-        href="/quests"
+        href="/gigs"
         className="inline-flex items-center gap-1.5 text-[13px] text-dim transition-colors hover:text-cyan"
       >
         <IconArrowLeft className="size-3.5" />
-        All quests
+        All gigs
       </Link>
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
@@ -101,9 +101,9 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
         <div className="space-y-6">
           <Panel className={`p-6 tier-${tier}`} glow>
             <div className="flex flex-wrap items-center gap-2">
-              <StatusPill status={quest.status} />
-              <Badge className="tier-ring">{QUEST_TYPE_LABEL[quest.quest_type]}</Badge>
-              {quest.is_remote && (
+              <StatusPill status={gig.status} />
+              <Badge className="tier-ring">{GIG_TYPE_LABEL[gig.gig_type]}</Badge>
+              {gig.is_remote && (
                 <Badge tone="teal">
                   <IconWifi className="size-3" />
                   Remote
@@ -118,27 +118,27 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
             </div>
 
             <h1 className="mt-4 text-2xl font-semibold leading-tight tracking-tight text-chalk sm:text-3xl">
-              {quest.title}
+              {gig.title}
             </h1>
 
             <div className="mt-4 flex flex-wrap items-end gap-x-6 gap-y-3">
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-dimmer">Reward</p>
                 <p className="hud text-3xl font-semibold" style={{ color: 'var(--tier)' }}>
-                  {formatRupees(quest.reward_amount)}
+                  {formatRupees(gig.reward_amount)}
                 </p>
               </div>
-              {quest.estimated_hours && (
+              {gig.estimated_hours && (
                 <div>
                   <p className="text-[11px] uppercase tracking-wider text-dimmer">Effort</p>
-                  <p className="hud text-lg text-chalk">~{quest.estimated_hours} h</p>
+                  <p className="hud text-lg text-chalk">~{gig.estimated_hours} h</p>
                 </div>
               )}
-              {quest.estimated_hours ? (
+              {gig.estimated_hours ? (
                 <div>
                   <p className="text-[11px] uppercase tracking-wider text-dimmer">Implied rate</p>
                   <p className="hud text-lg text-mist">
-                    ₹{Math.round(quest.reward_amount / Number(quest.estimated_hours))}/h
+                    ₹{Math.round(gig.reward_amount / Number(gig.estimated_hours))}/h
                   </p>
                 </div>
               ) : null}
@@ -147,42 +147,42 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-4 text-[12.5px] text-dim">
               <span className="inline-flex items-center gap-1.5">
                 <IconMapPin className="size-3.5" />
-                {quest.is_remote
+                {gig.is_remote
                   ? 'Remote'
-                  : (quest.location_label ?? 'Location shared after hiring')}
+                  : (gig.location_label ?? 'Location shared after hiring')}
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <IconUsers className="size-3.5" />
-                {quest.application_count ?? 0} applied
+                {gig.application_count ?? 0} applied
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <IconEye className="size-3.5" />
-                {quest.views} views
+                {gig.views} views
               </span>
-              <span className="ml-auto">Posted {relativeTime(quest.created_at)}</span>
+              <span className="ml-auto">Posted {relativeTime(gig.created_at)}</span>
             </div>
           </Panel>
 
           <Panel className="p-6">
             <h2 className="text-base font-semibold text-chalk">The brief</h2>
             <div className="mt-3 whitespace-pre-line text-[14.5px] leading-relaxed text-mist">
-              {quest.description}
+              {gig.description}
             </div>
 
-            {quest.skills.length > 0 && (
+            {gig.skills.length > 0 && (
               <div className="mt-6 border-t border-line pt-5">
                 <p className="eyebrow">Skills wanted</p>
                 <div className="mt-2.5 flex flex-wrap gap-1.5">
-                  {quest.skills.map((skill) => (
-                    <SkillChip key={skill.id} name={skill.name} href={`/quests?skills=${skill.id}`} />
+                  {gig.skills.map((skill) => (
+                    <SkillChip key={skill.id} name={skill.name} href={`/gigs?skills=${skill.id}`} />
                   ))}
                 </div>
               </div>
             )}
 
-            {quest.deadline && (
+            {gig.deadline && (
               <p className="mt-5 text-[12.5px] text-dim">
-                Wanted by <span className="text-chalk">{formatDate(quest.deadline)}</span>.
+                Wanted by <span className="text-chalk">{formatDate(gig.deadline)}</span>.
               </p>
             )}
           </Panel>
@@ -200,10 +200,10 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
           )}
 
           {/* Claim / status / applicants, by role */}
-          {quest.status === 'open' && !isOwner && (
+          {gig.status === 'open' && !isOwner && (
             <ClaimSection
-              questId={quest.id}
-              reward={formatRupees(quest.reward_amount)}
+              gigId={gig.id}
+              reward={formatRupees(gig.reward_amount)}
               signedIn={Boolean(session)}
               role={role}
               isStudentEligible={Boolean(session?.isStudentEligible)}
@@ -214,8 +214,8 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
 
           {(isOwner || isAssignee) && (
             <StatusControls
-              questId={quest.id}
-              status={quest.status}
+              gigId={gig.id}
+              status={gig.status}
               isOwner={isOwner}
               applicationId={myApplication?.id ?? null}
             />
@@ -223,19 +223,19 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
 
           {isOwner && (
             <ApplicantList
-              questId={quest.id}
-              status={quest.status}
+              gigId={gig.id}
+              status={gig.status}
               applications={applications}
             />
           )}
 
           {/* Reviews open once complete */}
-          {quest.status === 'completed' && !alreadyReviewed && session && (
+          {gig.status === 'completed' && !alreadyReviewed && session && (
             <ReviewTarget
-              questId={quest.id}
+              gigId={gig.id}
               isOwner={isOwner}
               assigneeProfile={acceptedApplication?.student ?? null}
-              hirerProfile={quest.hirer}
+              hirerProfile={gig.hirer}
             />
           )}
         </div>
@@ -246,30 +246,30 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
             <p className="eyebrow">Posted by</p>
             <div className="mt-3 flex items-start gap-3">
               <Avatar
-                name={quest.hirer?.full_name}
-                src={quest.hirer?.avatar_url}
+                name={gig.hirer?.full_name}
+                src={gig.hirer?.avatar_url}
                 size="lg"
               />
               <div className="min-w-0 space-y-1">
                 <Link
-                  href={quest.hirer ? `/profile/${quest.hirer.id}` : '#'}
+                  href={gig.hirer ? `/profile/${gig.hirer.id}` : '#'}
                   className="block truncate text-[14.5px] font-semibold text-chalk hover:text-cyan"
                 >
-                  {quest.hirer?.full_name ?? 'Someone'}
+                  {gig.hirer?.full_name ?? 'Someone'}
                 </Link>
                 <StarRating
-                  value={quest.hirer?.rating ?? 0}
-                  count={quest.hirer?.rating_count ?? 0}
+                  value={gig.hirer?.rating ?? 0}
+                  count={gig.hirer?.rating_count ?? 0}
                   size="sm"
                 />
-                {quest.hirer?.department && (
-                  <p className="truncate text-[11.5px] text-dim">{quest.hirer.department}</p>
+                {gig.hirer?.department && (
+                  <p className="truncate text-[11.5px] text-dim">{gig.hirer.department}</p>
                 )}
               </div>
             </div>
-            {quest.hirer && (
+            {gig.hirer && (
               <ButtonLink
-                href={`/profile/${quest.hirer.id}`}
+                href={`/profile/${gig.hirer.id}`}
                 variant="secondary"
                 size="sm"
                 className="mt-4 w-full"
@@ -284,12 +284,12 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
               <div className="px-4 pt-4">
                 <p className="eyebrow">Where</p>
                 <p className="mt-1 text-[13px] text-chalk">
-                  {quest.location_label ?? 'Pinned location'}
+                  {gig.location_label ?? 'Pinned location'}
                 </p>
               </div>
               <div className="mt-3 p-2">
                 {/* No focusId: a popup would fill a 200px-tall map. */}
-                <MapLoader quests={[quest]} height="200px" />
+                <MapLoader gigs={[gig]} height="200px" />
               </div>
             </Panel>
           )}
@@ -315,7 +315,7 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
               </li>
             </ul>
             <p className="mt-4 border-t border-line pt-3 text-[11.5px] leading-relaxed text-dim">
-              Money changes hands directly — QuestBoard does not hold payments. Agree the terms in
+              Money changes hands directly — GigNest does not hold payments. Agree the terms in
               writing before you start.
             </p>
           </Panel>
@@ -327,12 +327,12 @@ export default async function QuestDetailPage({ params }: { params: Promise<{ id
 
 /** Whichever counterparty the viewer is entitled to review. */
 function ReviewTarget({
-  questId,
+  gigId,
   isOwner,
   assigneeProfile,
   hirerProfile,
 }: {
-  questId: string
+  gigId: string
   isOwner: boolean
   assigneeProfile: Parameters<typeof ReviewForm>[0]['reviewee'] | null
   hirerProfile: Parameters<typeof ReviewForm>[0]['reviewee'] | null
@@ -341,7 +341,7 @@ function ReviewTarget({
   if (!reviewee) return null
 
   return (
-    <ReviewForm questId={questId} reviewee={reviewee} role={isOwner ? 'student' : 'hirer'} />
+    <ReviewForm gigId={gigId} reviewee={reviewee} role={isOwner ? 'student' : 'hirer'} />
   )
 }
 
@@ -377,7 +377,7 @@ function ContactPanel({
       <p className="mt-1 text-[12.5px] text-mist">
         {isOwner
           ? 'You hired someone, so you can both reach each other now.'
-          : 'You were accepted for this quest.'}
+          : 'You were accepted for this gig.'}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {shown && (
@@ -400,12 +400,12 @@ function ContactPanel({
 }
 
 /**
- * Everything that is *not* "signed-in eligible student on an open quest" gets a
+ * Everything that is *not* "signed-in eligible student on an open gig" gets a
  * plain explanation instead of a form. Being explicit about why you cannot
  * apply is the whole pitch of the exclusivity model.
  */
 function ClaimSection({
-  questId,
+  gigId,
   reward,
   signedIn,
   role,
@@ -413,7 +413,7 @@ function ClaimSection({
   hasApplied,
   applicationStatus,
 }: {
-  questId: string
+  gigId: string
   reward: string
   signedIn: boolean
   role?: string
@@ -424,14 +424,14 @@ function ClaimSection({
   if (!signedIn) {
     return (
       <Panel className="p-5">
-        <h2 className="text-base font-semibold text-chalk">Want this quest?</h2>
+        <h2 className="text-base font-semibold text-chalk">Want this gig?</h2>
         <p className="mt-1.5 text-[13.5px] leading-relaxed text-mist">
           Sign in with your <span className="hud text-cyan">@itbhu.ac.in</span> Google account to
           apply. That address is what proves you are an IIT BHU student — it is the only way in.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <ButtonLink href={`/login?next=/quests/${questId}`}>Sign in to apply</ButtonLink>
-          <ButtonLink href="/quests" variant="ghost">
+          <ButtonLink href={`/login?next=/gigs/${gigId}`}>Sign in to apply</ButtonLink>
+          <ButtonLink href="/gigs" variant="ghost">
             Keep browsing
           </ButtonLink>
         </div>
@@ -460,8 +460,8 @@ function ClaimSection({
         </h2>
         <p className="mt-1.5 text-[13.5px] leading-relaxed text-mist">
           {isStudentEligible
-            ? 'Your email qualifies, but your account is set up to post work. Switch your role in onboarding to start claiming quests.'
-            : 'Claiming quests is exclusive to verified IIT (BHU) Varanasi students — an @itbhu.ac.in Google account. You can post as much work as you like with this account.'}
+            ? 'Your email qualifies, but your account is set up to post work. Switch your role in onboarding to start claiming gigs.'
+            : 'Claiming gigs is exclusive to verified IIT (BHU) Varanasi students — an @itbhu.ac.in Google account. You can post as much work as you like with this account.'}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {isStudentEligible ? (
@@ -469,8 +469,8 @@ function ClaimSection({
               Switch to a student account
             </ButtonLink>
           ) : (
-            <ButtonLink href="/quests/new" variant="secondary" size="sm">
-              Post a quest instead
+            <ButtonLink href="/gigs/new" variant="secondary" size="sm">
+              Post a gig instead
             </ButtonLink>
           )}
         </div>
@@ -478,5 +478,5 @@ function ClaimSection({
     )
   }
 
-  return <ApplyForm questId={questId} reward={reward} />
+  return <ApplyForm gigId={gigId} reward={reward} />
 }

@@ -2,26 +2,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { cn } from '@/lib/cn'
-import { getQuests, getSkills } from '@/lib/queries'
+import { getGigs, getSkills } from '@/lib/queries'
 import { filtersToQuery, parseFilters, type Params } from '@/lib/search-params'
-import { QuestCard } from '@/components/QuestCard'
+import { GigCard } from '@/components/GigCard'
 import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/Panel'
 import { IconSearch } from '@/components/ui/Icons'
 import { FilterBar } from './_components/FilterBar'
 
 export const metadata: Metadata = {
-  title: 'Quest board',
+  title: 'Gig board',
   description:
-    'Every open quest on QuestBoard — filter by skill, type, reward and location. Paid work for IIT BHU students.',
+    'Every open gig on GigNest — filter by skill, type, reward and location. Paid work for IIT BHU students.',
 }
 
-export default async function QuestsPage({ searchParams }: { searchParams: Promise<Params> }) {
+export default async function GigsPage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams
   const filters = parseFilters(params)
 
-  const [{ quests, total, page, pageCount }, skills] = await Promise.all([
-    getQuests(filters),
+  const [{ gigs, total, page, pageCount }, skills] = await Promise.all([
+    getGigs(filters),
     getSkills(),
   ])
 
@@ -32,14 +32,14 @@ export default async function QuestsPage({ searchParams }: { searchParams: Promi
           <p className="eyebrow">Live board</p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             <span className="text-chalk">Find your </span>
-            <span className="gradient-text">next quest</span>
+            <span className="gradient-text">next gig</span>
           </h1>
           <p className="max-w-xl text-[14.5px] leading-relaxed text-mist">
             Every open posting, newest first. Narrow it with the skill tags you actually have.
           </p>
         </div>
-        <ButtonLink href="/quests/new" variant="outline" size="sm">
-          Post a quest
+        <ButtonLink href="/gigs/new" variant="outline" size="sm">
+          Post a gig
         </ButtonLink>
       </div>
 
@@ -49,14 +49,14 @@ export default async function QuestsPage({ searchParams }: { searchParams: Promi
         </Suspense>
       </div>
 
-      {quests.length === 0 ? (
+      {gigs.length === 0 ? (
         <div className="mt-8">
           <EmptyState
             icon={<IconSearch className="size-5" />}
-            title="No quests match those filters"
+            title="No gigs match those filters"
             blurb="Try clearing a tag or two, widening the reward band, or searching a broader word."
             action={
-              <ButtonLink href="/quests" variant="secondary" size="sm">
+              <ButtonLink href="/gigs" variant="secondary" size="sm">
                 Clear all filters
               </ButtonLink>
             }
@@ -64,8 +64,8 @@ export default async function QuestsPage({ searchParams }: { searchParams: Promi
         </div>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {quests.map((q, i) => (
-            <QuestCard key={q.id} quest={q} index={i} />
+          {gigs.map((q, i) => (
+            <GigCard key={q.id} gig={q} index={i} />
           ))}
         </div>
       )}
@@ -89,7 +89,7 @@ function Pagination({
   const end = Math.min(pageCount, start + 4)
   const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i)
 
-  const href = (n: number) => `/quests${filtersToQuery(filters, { page: n > 1 ? n : undefined })}`
+  const href = (n: number) => `/gigs${filtersToQuery(filters, { page: n > 1 ? n : undefined })}`
 
   return (
     <nav className="mt-10 flex items-center justify-center gap-1.5" aria-label="Pagination">

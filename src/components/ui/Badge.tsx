@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
-import { QUEST_STATUS_LABEL } from '@/lib/constants'
-import type { QuestStatus, ApplicationStatus } from '@/lib/types'
+import { GIG_STATUS_LABEL } from '@/lib/constants'
+import type { GigStatus, ApplicationStatus } from '@/lib/types'
 
 export type BadgeTone =
   | 'neutral'
@@ -45,7 +45,7 @@ export function Badge({
   )
 }
 
-const QUEST_STATUS_TONE: Record<QuestStatus, BadgeTone> = {
+const GIG_STATUS_TONE: Record<GigStatus, BadgeTone> = {
   open: 'lime',
   assigned: 'cyan',
   in_progress: 'violet',
@@ -53,13 +53,13 @@ const QUEST_STATUS_TONE: Record<QuestStatus, BadgeTone> = {
   cancelled: 'rose',
 }
 
-export function StatusPill({ status }: { status: QuestStatus }) {
+export function StatusPill({ status }: { status: GigStatus }) {
   return (
-    <Badge tone={QUEST_STATUS_TONE[status]}>
+    <Badge tone={GIG_STATUS_TONE[status]}>
       {status === 'open' && (
         <span className="live-dot size-1.5 shrink-0 rounded-full bg-lime" aria-hidden />
       )}
-      {QUEST_STATUS_LABEL[status]}
+      {GIG_STATUS_LABEL[status]}
     </Badge>
   )
 }

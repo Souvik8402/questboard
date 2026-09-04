@@ -84,7 +84,7 @@ export function EditProfileForm({
               <h2 className="text-base font-semibold text-chalk">At the institute</h2>
               <p className="mt-1 text-[13px] text-mist">
                 Hirers use this to judge fit — a fourth-year Civil student reads differently on a
-                site-survey quest.
+                site-survey gig.
               </p>
             </div>
 
@@ -121,8 +121,8 @@ export function EditProfileForm({
             <div>
               <h2 className="text-base font-semibold text-chalk">Your skills</h2>
               <p className="mt-1 text-[13px] text-mist">
-                Your dashboard surfaces quests matching these tags, so keep them honest — wrong tags
-                mean wrong quests.
+                Your dashboard surfaces gigs matching these tags, so keep them honest — wrong tags
+                mean wrong gigs.
               </p>
             </div>
 

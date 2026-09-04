@@ -6,15 +6,15 @@ import { getSkills } from '@/lib/queries'
 import { ButtonLink } from '@/components/ui/Button'
 import { Notice, Panel } from '@/components/ui/Panel'
 import { IconArrowLeft, IconCoins, IconShield, IconUsers } from '@/components/ui/Icons'
-import { NewQuestForm } from './NewQuestForm'
+import { NewGigForm } from './NewGigForm'
 
 export const metadata: Metadata = {
-  title: 'Post a quest',
+  title: 'Post a gig',
   description:
     'Post paid work for IIT (BHU) Varanasi students — one-off tasks, weekly help, part-time roles or internships.',
 }
 
-export default async function NewQuestPage() {
+export default async function NewGigPage() {
   const [session, skills] = await Promise.all([getSession(), getSkills()])
 
   const needsAuth = isSupabaseConfigured && !session
@@ -23,18 +23,18 @@ export default async function NewQuestPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
-        href="/quests"
+        href="/gigs"
         className="inline-flex items-center gap-1.5 text-[13px] text-dim transition-colors hover:text-cyan"
       >
         <IconArrowLeft className="size-3.5" />
-        All quests
+        All gigs
       </Link>
 
       <div className="mt-5 space-y-2">
         <p className="eyebrow">Hire from campus</p>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           <span className="text-chalk">Post a </span>
-          <span className="gradient-text">quest</span>
+          <span className="gradient-text">gig</span>
         </h1>
         <p className="max-w-xl text-[14.5px] leading-relaxed text-mist">
           Anyone can post — you do not need an institute email. Only verified IIT BHU students can
@@ -69,9 +69,9 @@ export default async function NewQuestPage() {
             students know who they are talking to, and so you can manage applicants.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <ButtonLink href="/login?next=/quests/new">Sign in or sign up</ButtonLink>
-            <ButtonLink href="/quests" variant="ghost">
-              Browse quests first
+            <ButtonLink href="/login?next=/gigs/new">Sign in or sign up</ButtonLink>
+            <ButtonLink href="/gigs" variant="ghost">
+              Browse gigs first
             </ButtonLink>
           </div>
         </Panel>
@@ -79,7 +79,7 @@ export default async function NewQuestPage() {
         <div className="mt-8">
           <Notice tone="info" title="One step first">
             Finish your profile — name and role — and you can post straight away.{' '}
-            <Link href="/onboarding?next=/quests/new" className="underline hover:text-chalk">
+            <Link href="/onboarding?next=/gigs/new" className="underline hover:text-chalk">
               Go to setup
             </Link>
           </Notice>
@@ -94,7 +94,7 @@ export default async function NewQuestPage() {
               </Notice>
             </div>
           )}
-          <NewQuestForm skills={skills} />
+          <NewGigForm skills={skills} />
         </div>
       )}
     </div>

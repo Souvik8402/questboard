@@ -3,7 +3,7 @@ import type {
   ApplicationWithRelations,
   PlatformStats,
   PublicProfile,
-  QuestWithRelations,
+  GigWithRelations,
   Review,
   Skill,
 } from './types'
@@ -156,14 +156,14 @@ export const DEMO_PROFILES: PublicProfile[] = [
 
 const P = new Map(DEMO_PROFILES.map((p) => [p.id.slice(-2), p]))
 
-// ── Quests ──────────────────────────────────────────────────────────────────
-interface QuestSeed {
+// ── Gigs ──────────────────────────────────────────────────────────────────
+interface GigSeed {
   id: string
   hirer: string
   title: string
   description: string
-  quest_type: QuestWithRelations['quest_type']
-  status?: QuestWithRelations['status']
+  gig_type: GigWithRelations['gig_type']
+  status?: GigWithRelations['status']
   reward: number
   hours?: number
   deadlineDays?: number
@@ -175,14 +175,14 @@ interface QuestSeed {
   applications: number
 }
 
-const SEEDS: QuestSeed[] = [
+const SEEDS: GigSeed[] = [
   {
     id: 'a1000000-0000-4000-8000-000000000001',
     hirer: '01',
     title: "Rebuild our café website before the Diwali rush",
     description:
       "We are a 30-seat café just outside the campus gate. Our current site is a single JPEG of the menu from 2019. We want a proper responsive page: menu with prices, photo gallery, a map, opening hours and a WhatsApp order button.\n\nThe design is already done in Figma — we just need someone to build it well and deploy it. No backend needed. You will get the Figma file, all photos and copy on day one.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 6500,
     hours: 14,
     deadlineDays: 12,
@@ -198,7 +198,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Shoot and edit a 60-second reel for our ghat-side homestay',
     description:
       "Small 6-room homestay two lanes behind Assi Ghat. We want one vertical reel that makes someone scrolling at 1am book a room: sunrise on the ghat, the rooftop breakfast, the rooms, a bit of aarti at dusk.\n\nBring your own camera or a decent phone with a gimbal. We will handle permissions with the ghat committee. Two half-days of shooting, then edit with licensed music.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 4000,
     hours: 16,
     deadlineDays: 9,
@@ -214,7 +214,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Teach Class 11 physics to my daughter, 3 evenings a week',
     description:
       "She is preparing for JEE and is strong at maths but losing confidence in mechanics and rotational motion. Looking for someone patient who can start from concepts rather than formula drilling.\n\n6:30–8:00pm, Monday / Wednesday / Friday, at our home in Ravindrapuri. Paid monthly. If it goes well this continues through Class 12.",
-    quest_type: 'weekly',
+    gig_type: 'weekly',
     reward: 8000,
     hours: 18,
     deadlineDays: 6,
@@ -230,7 +230,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Digitise 1,200 handwritten society survey forms',
     description:
       "We ran a residents' survey on paper and now need it in a spreadsheet. 1,200 forms, 14 fields each, mostly tick-boxes plus a few short text answers in Hindi or English.\n\nScans will be shared as a Drive folder. Accuracy matters more than speed — we will spot-check 50 random rows and ask for corrections. Fully remote, work whenever you like.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 3500,
     hours: 20,
     deadlineDays: 15,
@@ -246,7 +246,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Run Instagram for a new Banarasi saree label',
     description:
       "We weave and sell Banarasi silk and have just started selling online. We need someone to run the Instagram account properly for a month: 3 posts and 5 stories a week, basic reels from footage we provide, replying to DMs.\n\nYou do not need to be a photographer — we shoot the products. We need someone with taste and consistency. If the month works, we continue.",
-    quest_type: 'monthly',
+    gig_type: 'monthly',
     reward: 7000,
     hours: 25,
     deadlineDays: 5,
@@ -262,7 +262,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Build an attendance + fee-reminder app for our coaching centre',
     description:
       "We run 9 batches and track everything on paper. We want a simple app: teacher marks attendance on a phone, parents get an SMS if a student is absent, and the office sees who owes fees.\n\nAndroid only for now. We are flexible on stack — Flutter or React Native both fine. Part-time over 6 weeks, paid monthly. There is scope to keep maintaining it after launch.",
-    quest_type: 'part_time',
+    gig_type: 'part_time',
     reward: 18000,
     hours: 60,
     deadlineDays: 20,
@@ -278,7 +278,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Proofread and fix the LaTeX on a 90-page MTech thesis',
     description:
       "Thesis is written and submitted for internal review. I need a careful pass for grammar, consistent notation, figure and table numbering, and a bibliography that actually compiles cleanly.\n\nYou must be comfortable in LaTeX — about 15 of the fixes are formatting, not language. Overleaf access will be shared. Tight deadline, hence the premium.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 2500,
     hours: 8,
     deadlineDays: 2,
@@ -293,8 +293,8 @@ const SEEDS: QuestSeed[] = [
     hirer: '07',
     title: 'Registration desk crew for Technex — 2 days',
     description:
-      "We need 8 people on the registration desks across the two main days of the fest. Checking IDs, handing out badges and kits, pointing people to the right hall, keeping the queue moving.\n\n9am–6pm both days with rotating breaks. Lunch and a fest tee included. Good first quest if you have not done one before — no experience needed, just show up on time.",
-    quest_type: 'one_time',
+      "We need 8 people on the registration desks across the two main days of the fest. Checking IDs, handing out badges and kits, pointing people to the right hall, keeping the queue moving.\n\n9am–6pm both days with rotating breaks. Lunch and a fest tee included. Good first gig if you have not done one before — no experience needed, just show up on time.",
+    gig_type: 'one_time',
     reward: 1200,
     hours: 18,
     deadlineDays: 4,
@@ -310,7 +310,7 @@ const SEEDS: QuestSeed[] = [
     title: 'ML intern for a crop-yield prediction pilot',
     description:
       "We are a 5-person agri-analytics team piloting yield prediction for wheat plots across eastern UP. You would work on the modelling side: cleaning satellite and weather features, trying gradient boosting and a small CNN baseline, and reporting honest error bars.\n\n3 months, roughly 20 hours a week, remote with two on-site visits. Stipend is monthly. Strong Python and a real project you can walk us through matter more than coursework.",
-    quest_type: 'internship',
+    gig_type: 'internship',
     reward: 25000,
     hours: 240,
     deadlineDays: 18,
@@ -326,7 +326,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Design 8 posters for our sponsorship deck',
     description:
       "Sponsorship season. We need 8 clean poster-style slides — one per event — that we can drop into a pitch deck and also post on Instagram. Brand colours and last year's deck will be shared as reference.\n\nFigma preferred so we can tweak text ourselves later. Two rounds of revisions included.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 3000,
     hours: 12,
     deadlineDays: 7,
@@ -342,7 +342,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Daily 6pm printout pickup and delivery run',
     description:
       "Every weekday at 6pm, collect our printed menus and bill books from the shop near the main gate and drop them at the café. Ten minutes of work, five days a week, paid monthly.\n\nIdeal if you already pass that way. A cycle is enough.",
-    quest_type: 'weekly',
+    gig_type: 'weekly',
     reward: 2000,
     hours: 5,
     deadlineDays: 10,
@@ -358,7 +358,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Translate our tour brochure into German',
     description:
       "12-page brochure covering Sarnath, the ghats and a day trip to Chunar. Currently in English. We get a steady stream of German visitors and machine translation has embarrassed us twice.\n\nWe need someone genuinely comfortable in German, not just passable. Proper nouns and ritual terms should stay in transliteration with a short gloss.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 5500,
     hours: 15,
     deadlineDays: 14,
@@ -374,7 +374,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Anchor our annual alumni dinner',
     description:
       "Roughly 180 guests, mixed ages, mostly alumni and their families. We need a confident bilingual anchor for about three hours: welcome, introducing four short speeches, running a quiz segment and keeping the evening moving.\n\nScript will be ready two days before. One rehearsal call. Dinner included, obviously.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 4500,
     hours: 5,
     deadlineDays: 11,
@@ -390,7 +390,7 @@ const SEEDS: QuestSeed[] = [
     title: 'AutoCAD drawings for a two-floor house extension',
     description:
       "We have a hand-drawn plan from the mason and need proper drawings to submit for approval: floor plans for both levels, two elevations and one section, with dimensions and a title block.\n\nMeasurements are already taken and will be shared as photos of the sketch plus a measurement sheet. One site visit possible if you want to check anything.",
-    quest_type: 'one_time',
+    gig_type: 'one_time',
     reward: 9000,
     hours: 22,
     deadlineDays: 16,
@@ -406,7 +406,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Weekend tabla accompanist for our rooftop classical evenings',
     description:
       "Every Saturday we host a small classical music evening for guests on the rooftop — usually a sitar or vocal performer who needs accompaniment. Audience of 20 to 30, informal.\n\nTeen taal and jhaptaal comfortably, ability to follow an unfamiliar performer. Paid per evening, ongoing. Instrument available on site if you prefer not to carry yours.",
-    quest_type: 'weekly',
+    gig_type: 'weekly',
     status: 'assigned',
     reward: 3000,
     hours: 4,
@@ -423,7 +423,7 @@ const SEEDS: QuestSeed[] = [
     title: 'Record 40 short chemistry explainer videos',
     description:
       "Class 12 organic chemistry, one concept per video, 4 to 6 minutes each. You explain on a tablet or whiteboard; we handle the editing and thumbnails.\n\nScript outline provided. Recorded in our Sigra studio, flexible slots. Paid on delivery in batches of ten.",
-    quest_type: 'part_time',
+    gig_type: 'part_time',
     status: 'completed',
     reward: 12000,
     hours: 45,
@@ -436,14 +436,14 @@ const SEEDS: QuestSeed[] = [
   },
 ]
 
-export const DEMO_QUESTS: QuestWithRelations[] = SEEDS.map((s) => {
+export const DEMO_GIGS: GigWithRelations[] = SEEDS.map((s) => {
   const hirer = P.get(s.hirer) ?? DEMO_PROFILES[0]
   return {
     id: s.id,
     hirer_id: hirer.id,
     title: s.title,
     description: s.description,
-    quest_type: s.quest_type,
+    gig_type: s.gig_type,
     status: s.status ?? 'open',
     reward_amount: s.reward,
     estimated_hours: s.hours ?? null,
@@ -466,7 +466,7 @@ export const DEMO_QUESTS: QuestWithRelations[] = SEEDS.map((s) => {
 export const DEMO_REVIEWS: Review[] = [
   {
     id: 'r1000000-0000-4000-8000-000000000001',
-    quest_id: 'a1000000-0000-4000-8000-000000000010',
+    gig_id: 'a1000000-0000-4000-8000-000000000010',
     reviewer_id: DEMO_PROFILES[3].id,
     reviewee_id: DEMO_PROFILES[10].id,
     rating: 5,
@@ -477,7 +477,7 @@ export const DEMO_REVIEWS: Review[] = [
   },
   {
     id: 'r1000000-0000-4000-8000-000000000002',
-    quest_id: 'a1000000-0000-4000-8000-00000000000f',
+    gig_id: 'a1000000-0000-4000-8000-00000000000f',
     reviewer_id: DEMO_PROFILES[1].id,
     reviewee_id: DEMO_PROFILES[11].id,
     rating: 5,
@@ -487,7 +487,7 @@ export const DEMO_REVIEWS: Review[] = [
   },
   {
     id: 'r1000000-0000-4000-8000-000000000003',
-    quest_id: 'a1000000-0000-4000-8000-000000000001',
+    gig_id: 'a1000000-0000-4000-8000-000000000001',
     reviewer_id: DEMO_PROFILES[0].id,
     reviewee_id: DEMO_PROFILES[10].id,
     rating: 4,
@@ -498,19 +498,19 @@ export const DEMO_REVIEWS: Review[] = [
 ]
 
 export const DEMO_STATS: PlatformStats = {
-  open_quests: DEMO_QUESTS.filter((q) => q.status === 'open').length,
-  total_quests: DEMO_QUESTS.length,
+  open_gigs: DEMO_GIGS.filter((q) => q.status === 'open').length,
+  total_gigs: DEMO_GIGS.length,
   students: 312,
   hirers: 87,
-  reward_pool: DEMO_QUESTS.filter((q) => q.status === 'open').reduce(
+  reward_pool: DEMO_GIGS.filter((q) => q.status === 'open').reduce(
     (sum, q) => sum + q.reward_amount,
     0,
   ),
   completed: 64,
 }
 
-export function demoQuestById(id: string): QuestWithRelations | null {
-  return DEMO_QUESTS.find((q) => q.id === id) ?? null
+export function demoGigById(id: string): GigWithRelations | null {
+  return DEMO_GIGS.find((q) => q.id === id) ?? null
 }
 
 export function demoProfileById(id: string): PublicProfile | null {
@@ -526,21 +526,21 @@ export function demoProfileById(id: string): PublicProfile | null {
  * explicitly ask for `demoSession()` see her, and every write still refuses.
  */
 
-/** Aditi Raghavan — CSE, year 3. Already the assignee on the seeded quests. */
+/** Aditi Raghavan — CSE, year 3. Already the assignee on the seeded gigs. */
 export const DEMO_ME: PublicProfile = DEMO_PROFILES[10]
 
 export const DEMO_ME_EMAIL = 'aditi.raghavan@itbhu.ac.in'
 
-export function demoQuestsPostedBy(userId: string): QuestWithRelations[] {
-  return DEMO_QUESTS.filter((q) => q.hirer_id === userId)
+export function demoGigsPostedBy(userId: string): GigWithRelations[] {
+  return DEMO_GIGS.filter((q) => q.hirer_id === userId)
 }
 
-export function demoQuestsAssignedTo(userId: string): QuestWithRelations[] {
-  return DEMO_QUESTS.filter((q) => q.assigned_to === userId)
+export function demoGigsAssignedTo(userId: string): GigWithRelations[] {
+  return DEMO_GIGS.filter((q) => q.assigned_to === userId)
 }
 
 /** A believable spread of outcomes: two waiting, one won, one turned down. */
-const APPLICATION_SEEDS: [questIndex: number, status: Application['status'], hoursAgo: number, note: string][] =
+const APPLICATION_SEEDS: [gigIndex: number, status: Application['status'], hoursAgo: number, note: string][] =
   [
     [
       0,
@@ -570,17 +570,17 @@ const APPLICATION_SEEDS: [questIndex: number, status: Application['status'], hou
 
 export function demoApplicationsFor(userId: string): ApplicationWithRelations[] {
   return APPLICATION_SEEDS.map(([index, status, ago, note], i) => {
-    const quest = DEMO_QUESTS[index] ?? DEMO_QUESTS[0]
+    const gig = DEMO_GIGS[index] ?? DEMO_GIGS[0]
     return {
       id: `c1000000-0000-4000-8000-00000000000${i + 1}`,
-      quest_id: quest.id,
+      gig_id: gig.id,
       student_id: userId,
       cover_note: note,
       status,
       created_at: hoursAgo(ago),
       student: DEMO_ME,
       phone: null,
-      quest,
+      gig,
     }
   })
 }

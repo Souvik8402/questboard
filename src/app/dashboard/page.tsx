@@ -2,27 +2,27 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { demoSession, requireProfile } from '@/lib/auth'
 import { isSupabaseConfigured } from '@/lib/config'
-import { QUEST_STATUS_LABEL, ROLE_LABEL } from '@/lib/constants'
+import { GIG_STATUS_LABEL, ROLE_LABEL } from '@/lib/constants'
 import { formatRupees, relativeTime } from '@/lib/format'
 import {
   getMyApplications,
   getProfileSkills,
-  getQuests,
-  getQuestsAssignedTo,
-  getQuestsPostedBy,
+  getGigs,
+  getGigsAssignedTo,
+  getGigsPostedBy,
 } from '@/lib/queries'
 import { ApplicationPill, Badge, StatusPill } from '@/components/ui/Badge'
 import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState, Notice, Panel } from '@/components/ui/Panel'
 import { IconBriefcase, IconLayers, IconPlus, IconSearch, IconSparkles } from '@/components/ui/Icons'
 import { Avatar } from '@/components/Avatar'
-import { QuestCard, QuestRow } from '@/components/QuestCard'
+import { GigCard, GigRow } from '@/components/GigCard'
 import { StarRating } from '@/components/StarRating'
-import type { QuestStatus, QuestWithRelations } from '@/lib/types'
+import type { GigStatus, GigWithRelations } from '@/lib/types'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
-  description: 'Your quests, applications and profile.',
+  description: 'Your gigs, applications and profile.',
 }
 
 export default async function DashboardPage() {
@@ -34,20 +34,20 @@ export default async function DashboardPage() {
   const isStudent = profile.role === 'student'
 
   const [posted, assigned, applications, mySkills] = await Promise.all([
-    getQuestsPostedBy(userId),
-    isStudent ? getQuestsAssignedTo(userId) : Promise.resolve([]),
+    getGigsPostedBy(userId),
+    isStudent ? getGigsAssignedTo(userId) : Promise.resolve([]),
     isStudent ? getMyApplications(userId) : Promise.resolve([]),
     isStudent ? getProfileSkills(userId) : Promise.resolve([]),
   ])
 
-  // Quests matching the student's own tags, minus anything they already touched.
+  // Gigs matching the student's own tags, minus anything they already touched.
   const recommended = isStudent && mySkills.length
-    ? await getQuests({ skills: mySkills.map((s) => s.id), sort: 'recent' }).then(({ quests }) => {
+    ? await getGigs({ skills: mySkills.map((s) => s.id), sort: 'recent' }).then(({ gigs }) => {
         const seen = new Set([
-          ...applications.map((a) => a.quest_id),
+          ...applications.map((a) => a.gig_id),
           ...assigned.map((q) => q.id),
         ])
-        return quests.filter((q) => q.hirer_id !== userId && !seen.has(q.id)).slice(0, 6)
+        return gigs.filter((q) => q.hirer_id !== userId && !seen.has(q.id)).slice(0, 6)
       })
     : []
 
@@ -81,9 +81,9 @@ export default async function DashboardPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/quests/new" size="sm">
+          <ButtonLink href="/gigs/new" size="sm">
             <IconPlus className="size-4" />
-            Post a quest
+            Post a gig
           </ButtonLink>
           <ButtonLink href="/profile/edit" variant="secondary" size="sm">
             Edit profile
@@ -108,7 +108,7 @@ export default async function DashboardPage() {
         {isStudent ? (
           <>
             <Metric label="Live applications" value={live.length} accent="cyan" />
-            <Metric label="Quests won" value={won.length} accent="lime" />
+            <Metric label="Gigs won" value={won.length} accent="lime" />
             <Metric
               label="In progress"
               value={assigned.filter((q) => q.status !== 'completed' && q.status !== 'cancelled').length}
@@ -118,7 +118,7 @@ export default async function DashboardPage() {
           </>
         ) : (
           <>
-            <Metric label="Open quests" value={openPosted.length} accent="lime" />
+            <Metric label="Open gigs" value={openPosted.length} accent="lime" />
             <Metric label="Total posted" value={posted.length} accent="cyan" />
             <Metric
               label="Applicants waiting"
@@ -135,7 +135,7 @@ export default async function DashboardPage() {
         <Panel className="mt-6 flex flex-wrap items-center justify-between gap-4 p-5">
           <div>
             <p className="text-[13.5px] font-medium text-chalk">
-              Your email qualifies you to claim quests too
+              Your email qualifies you to claim gigs too
             </p>
             <p className="mt-0.5 text-[12.5px] text-mist">
               You are set up as a hirer. Switch to a student account and you can apply for work as
@@ -150,15 +150,15 @@ export default async function DashboardPage() {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         {/* ── Left: what you're doing ────────────────────────────────────── */}
-        {/* min-w-0: without it the grid column inflates to the widest quest
+        {/* min-w-0: without it the grid column inflates to the widest gig
             title instead of letting `truncate` do its job on narrow screens. */}
         <section className="min-w-0 space-y-4">
           <SectionTitle
             icon={<IconBriefcase className="size-4" />}
-            title={isStudent ? 'Work you are doing' : 'Quests you posted'}
+            title={isStudent ? 'Work you are doing' : 'Gigs you posted'}
             action={
               isStudent ? undefined : (
-                <Link href="/quests/new" className="text-[12.5px] text-cyan hover:underline">
+                <Link href="/gigs/new" className="text-[12.5px] text-cyan hover:underline">
                   Post another
                 </Link>
               )
@@ -170,29 +170,29 @@ export default async function DashboardPage() {
               <EmptyState
                 icon={<IconSearch className="size-5" />}
                 title="Nothing assigned yet"
-                blurb="Apply to a few quests that match your tags. Hirers reply fastest to pitches that name a specific thing you have already done."
+                blurb="Apply to a few gigs that match your tags. Hirers reply fastest to pitches that name a specific thing you have already done."
                 action={
-                  <ButtonLink href="/quests" size="sm">
+                  <ButtonLink href="/gigs" size="sm">
                     Browse the board
                   </ButtonLink>
                 }
               />
             ) : (
-              <QuestList quests={assigned} />
+              <GigList gigs={assigned} />
             )
           ) : posted.length === 0 ? (
             <EmptyState
               icon={<IconPlus className="size-5" />}
               title="You have not posted anything yet"
-              blurb="Describe the work, name a reward, pick a few skill tags. Most quests get their first applicant within a day."
+              blurb="Describe the work, name a reward, pick a few skill tags. Most gigs get their first applicant within a day."
               action={
-                <ButtonLink href="/quests/new" size="sm">
-                  Post your first quest
+                <ButtonLink href="/gigs/new" size="sm">
+                  Post your first gig
                 </ButtonLink>
               }
             />
           ) : (
-            <PostedList quests={posted} />
+            <PostedList gigs={posted} />
           )}
 
           {/* Hirers who are also students see both lists. */}
@@ -200,9 +200,9 @@ export default async function DashboardPage() {
             <>
               <SectionTitle
                 icon={<IconPlus className="size-4" />}
-                title="Quests you posted"
+                title="Gigs you posted"
               />
-              <PostedList quests={posted} />
+              <PostedList gigs={posted} />
             </>
           )}
         </section>
@@ -226,23 +226,23 @@ export default async function DashboardPage() {
                     <div key={application.id} className="p-4">
                       <div className="flex items-start justify-between gap-3">
                         <Link
-                          href={`/quests/${application.quest_id}`}
+                          href={`/gigs/${application.gig_id}`}
                           className="line-clamp-2 text-[13.5px] font-medium leading-snug text-chalk hover:text-cyan"
                         >
-                          {application.quest?.title ?? 'Quest'}
+                          {application.gig?.title ?? 'Gig'}
                         </Link>
                         <ApplicationPill status={application.status} />
                       </div>
                       <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
-                        {application.quest && (
+                        {application.gig && (
                           <span className="hud text-mist">
-                            {formatRupees(application.quest.reward_amount)}
+                            {formatRupees(application.gig.reward_amount)}
                           </span>
                         )}
                         <span>Applied {relativeTime(application.created_at)}</span>
-                        {application.quest && (
+                        {application.gig && (
                           <span className="text-dimmer">
-                            Quest is {QUEST_STATUS_LABEL[application.quest.status].toLowerCase()}
+                            Gig is {GIG_STATUS_LABEL[application.gig.status].toLowerCase()}
                           </span>
                         )}
                       </p>
@@ -258,7 +258,7 @@ export default async function DashboardPage() {
                     title="Matched to your tags"
                     action={
                       <Link
-                        href={`/quests?skills=${mySkills.map((s) => s.id).join(',')}`}
+                        href={`/gigs?skills=${mySkills.map((s) => s.id).join(',')}`}
                         className="text-[12.5px] text-cyan hover:underline"
                       >
                         See all
@@ -266,8 +266,8 @@ export default async function DashboardPage() {
                     }
                   />
                   <div className="grid gap-3 sm:grid-cols-2">
-                    {recommended.slice(0, 4).map((quest, i) => (
-                      <QuestCard key={quest.id} quest={quest} index={i} />
+                    {recommended.slice(0, 4).map((gig, i) => (
+                      <GigCard key={gig.id} gig={gig} index={i} />
                     ))}
                   </div>
                 </>
@@ -281,7 +281,7 @@ export default async function DashboardPage() {
               />
               <Panel className="space-y-3.5 p-5 text-[13px] leading-relaxed text-mist">
                 <Tip n={1} title="Name a real number">
-                  Quests with a reward under ₹500 rarely get replies. Students compare your posting
+                  Gigs with a reward under ₹500 rarely get replies. Students compare your posting
                   against tuition work, which pays well.
                 </Tip>
                 <Tip n={2} title="Tag precisely">
@@ -307,7 +307,7 @@ export default async function DashboardPage() {
                       .map((q) => (
                         <li key={q.id}>
                           <Link
-                            href={`/quests/${q.id}`}
+                            href={`/gigs/${q.id}`}
                             className="flex items-center justify-between gap-3 rounded-lg border border-line bg-white/[0.02] px-3 py-2.5 transition-colors hover:border-cyan/35"
                           >
                             <span className="truncate text-[13px] text-chalk">{q.title}</span>
@@ -319,7 +319,7 @@ export default async function DashboardPage() {
                       ))}
                     {openPosted.every((q) => (q.application_count ?? 0) === 0) && (
                       <li className="text-[12.5px] text-dim">
-                        No applicants yet on your open quests.
+                        No applicants yet on your open gigs.
                       </li>
                     )}
                   </ul>
@@ -375,45 +375,45 @@ function SectionTitle({
   )
 }
 
-function QuestList({ quests }: { quests: QuestWithRelations[] }) {
+function GigList({ gigs }: { gigs: GigWithRelations[] }) {
   return (
     <Panel className="divide-y divide-line/70 p-0">
-      {quests.map((quest) => (
-        <QuestRow key={quest.id} quest={quest} />
+      {gigs.map((gig) => (
+        <GigRow key={gig.id} gig={gig} />
       ))}
     </Panel>
   )
 }
 
 /** Owner's view of their own postings — status first, applicant count loud. */
-function PostedList({ quests }: { quests: QuestWithRelations[] }) {
-  const order: QuestStatus[] = ['open', 'assigned', 'in_progress', 'completed', 'cancelled']
-  const sorted = [...quests].sort(
+function PostedList({ gigs }: { gigs: GigWithRelations[] }) {
+  const order: GigStatus[] = ['open', 'assigned', 'in_progress', 'completed', 'cancelled']
+  const sorted = [...gigs].sort(
     (a, b) => order.indexOf(a.status) - order.indexOf(b.status),
   )
 
   return (
     <Panel className="divide-y divide-line/70 p-0">
-      {sorted.map((quest) => (
+      {sorted.map((gig) => (
         <Link
-          key={quest.id}
-          href={`/quests/${quest.id}`}
+          key={gig.id}
+          href={`/gigs/${gig.id}`}
           className="block p-4 transition-colors hover:bg-white/[0.035]"
         >
           <div className="flex items-start justify-between gap-3">
             <p className="line-clamp-2 text-[13.5px] font-medium leading-snug text-chalk">
-              {quest.title}
+              {gig.title}
             </p>
-            <StatusPill status={quest.status} />
+            <StatusPill status={gig.status} />
           </div>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
-            <span className="hud text-mist">{formatRupees(quest.reward_amount)}</span>
+            <span className="hud text-mist">{formatRupees(gig.reward_amount)}</span>
             <span>
-              {quest.application_count ?? 0}{' '}
-              {(quest.application_count ?? 0) === 1 ? 'applicant' : 'applicants'}
+              {gig.application_count ?? 0}{' '}
+              {(gig.application_count ?? 0) === 1 ? 'applicant' : 'applicants'}
             </span>
-            <span>{quest.views} views</span>
-            <span className="text-dimmer">{relativeTime(quest.created_at)}</span>
+            <span>{gig.views} views</span>
+            <span className="text-dimmer">{relativeTime(gig.created_at)}</span>
           </p>
         </Link>
       ))}

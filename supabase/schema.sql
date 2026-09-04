@@ -1,5 +1,5 @@
 -- ============================================================================
---  QuestBoard — schema
+--  GigNest — schema
 --  IIT BHU part-time work marketplace
 --
 --  HOW TO RUN
@@ -19,13 +19,13 @@ begin
     create type public.user_role as enum ('student', 'hirer', 'admin');
   end if;
 
-  if not exists (select 1 from pg_type where typname = 'quest_type') then
-    create type public.quest_type as enum
+  if not exists (select 1 from pg_type where typname = 'gig_type') then
+    create type public.gig_type as enum
       ('one_time', 'weekly', 'monthly', 'part_time', 'internship');
   end if;
 
-  if not exists (select 1 from pg_type where typname = 'quest_status') then
-    create type public.quest_status as enum
+  if not exists (select 1 from pg_type where typname = 'gig_status') then
+    create type public.gig_status as enum
       ('open', 'assigned', 'in_progress', 'completed', 'cancelled');
   end if;
 
@@ -41,7 +41,7 @@ $$;
 --  1.  The institute gate
 --
 --  This is the heart of the product rule: only a real institute mailbox may
---  hold the `student` role, and only a `student` may claim a quest.
+--  hold the `student` role, and only a `student` may claim a gig.
 --
 --  It lives in the DATABASE, not the browser, so a hand-crafted API call
 --  cannot get around it.
@@ -127,13 +127,13 @@ create table if not exists public.profile_skills (
   primary key (profile_id, skill_id)
 );
 
-create table if not exists public.quests (
+create table if not exists public.gigs (
   id              uuid primary key default gen_random_uuid(),
   hirer_id        uuid not null references public.profiles(id) on delete cascade,
   title           text not null check (char_length(title) between 6 and 120),
   description     text not null check (char_length(description) between 20 and 4000),
-  quest_type      public.quest_type   not null default 'one_time',
-  status          public.quest_status not null default 'open',
+  gig_type      public.gig_type   not null default 'one_time',
+  status          public.gig_status not null default 'open',
   reward_amount   integer not null check (reward_amount >= 0 and reward_amount <= 10000000),
   estimated_hours numeric(5,1) check (estimated_hours > 0),
   deadline        timestamptz,
@@ -163,31 +163,31 @@ create table if not exists public.quests (
   ) stored
 );
 
-create table if not exists public.quest_skills (
-  quest_id uuid    not null references public.quests(id) on delete cascade,
+create table if not exists public.gig_skills (
+  gig_id uuid    not null references public.gigs(id) on delete cascade,
   skill_id integer not null references public.skills(id) on delete cascade,
-  primary key (quest_id, skill_id)
+  primary key (gig_id, skill_id)
 );
 
 -- Hirer's phone number. A SEPARATE TABLE so RLS can hide it row-wise: the
--- board shows the quest but simply returns no contact row until you're hired.
-create table if not exists public.quest_contacts (
-  quest_id    uuid primary key references public.quests(id) on delete cascade,
+-- board shows the gig but simply returns no contact row until you're hired.
+create table if not exists public.gig_contacts (
+  gig_id    uuid primary key references public.gigs(id) on delete cascade,
   phone       text not null check (phone ~ '^[0-9+][0-9 ()+-]{7,19}$'),
   alt_contact text check (char_length(alt_contact) <= 160)
 );
 
 create table if not exists public.applications (
   id         uuid primary key default gen_random_uuid(),
-  quest_id   uuid not null references public.quests(id)   on delete cascade,
+  gig_id   uuid not null references public.gigs(id)   on delete cascade,
   student_id uuid not null references public.profiles(id) on delete cascade,
   cover_note text not null check (char_length(cover_note) between 10 and 1500),
   status     public.application_status not null default 'pending',
   created_at timestamptz not null default now(),
-  unique (quest_id, student_id)
+  unique (gig_id, student_id)
 );
 
--- Mirror image of quest_contacts: the applicant's number, revealed to the
+-- Mirror image of gig_contacts: the applicant's number, revealed to the
 -- hirer only once that application is accepted.
 create table if not exists public.application_contacts (
   application_id uuid primary key references public.applications(id) on delete cascade,
@@ -196,20 +196,20 @@ create table if not exists public.application_contacts (
 
 create table if not exists public.reviews (
   id          uuid primary key default gen_random_uuid(),
-  quest_id    uuid not null references public.quests(id)   on delete cascade,
+  gig_id    uuid not null references public.gigs(id)   on delete cascade,
   reviewer_id uuid not null references public.profiles(id) on delete cascade,
   reviewee_id uuid not null references public.profiles(id) on delete cascade,
   rating      smallint not null check (rating between 1 and 5),
   comment     text check (char_length(comment) <= 800),
   created_at  timestamptz not null default now(),
-  unique (quest_id, reviewer_id),
+  unique (gig_id, reviewer_id),
   check (reviewer_id <> reviewee_id)
 );
 
 
 -- Additive migrations, so re-running this file upgrades an older project
 -- (`create table if not exists` alone would skip new columns).
-alter table public.quests
+alter table public.gigs
   add column if not exists application_count integer not null default 0;
 
 alter table public.profiles
@@ -220,14 +220,14 @@ alter table public.profiles
 --  3.  Indexes
 -- ────────────────────────────────────────────────────────────────────────────
 
-create index if not exists quests_search_idx        on public.quests using gin (search_tsv);
-create index if not exists quests_status_created_idx on public.quests (status, created_at desc);
-create index if not exists quests_reward_idx        on public.quests (reward_amount desc);
-create index if not exists quests_hirer_idx         on public.quests (hirer_id);
-create index if not exists quests_assigned_idx      on public.quests (assigned_to);
-create index if not exists quest_skills_skill_idx   on public.quest_skills (skill_id);
+create index if not exists gigs_search_idx        on public.gigs using gin (search_tsv);
+create index if not exists gigs_status_created_idx on public.gigs (status, created_at desc);
+create index if not exists gigs_reward_idx        on public.gigs (reward_amount desc);
+create index if not exists gigs_hirer_idx         on public.gigs (hirer_id);
+create index if not exists gigs_assigned_idx      on public.gigs (assigned_to);
+create index if not exists gig_skills_skill_idx   on public.gig_skills (skill_id);
 create index if not exists applications_student_idx on public.applications (student_id);
-create index if not exists applications_quest_idx   on public.applications (quest_id);
+create index if not exists applications_gig_idx   on public.applications (gig_id);
 create index if not exists reviews_reviewee_idx     on public.reviews (reviewee_id);
 
 
@@ -261,7 +261,7 @@ as $$
   select coalesce((select is_banned from public.profiles where id = auth.uid()), true);
 $$;
 
-create or replace function public.owns_quest(p_quest uuid)
+create or replace function public.owns_gig(p_gig uuid)
 returns boolean
 language sql
 security definer
@@ -269,11 +269,11 @@ stable
 set search_path = public
 as $$
   select exists (
-    select 1 from public.quests where id = p_quest and hirer_id = auth.uid()
+    select 1 from public.gigs where id = p_gig and hirer_id = auth.uid()
   );
 $$;
 
-create or replace function public.has_accepted_application(p_quest uuid, p_student uuid)
+create or replace function public.has_accepted_application(p_gig uuid, p_student uuid)
 returns boolean
 language sql
 security definer
@@ -282,7 +282,7 @@ set search_path = public
 as $$
   select exists (
     select 1 from public.applications
-    where quest_id = p_quest and student_id = p_student and status = 'accepted'
+    where gig_id = p_gig and student_id = p_student and status = 'accepted'
   );
 $$;
 
@@ -315,7 +315,7 @@ begin
   -- (a) the institute gate
   if new.role = 'student' and not public.is_institute_email(new.id) then
     raise exception
-      'Only a verified % address can claim quests. Sign in with your institute Google account.',
+      'Only a verified % address can claim gigs. Sign in with your institute Google account.',
       array_to_string(public.institute_domains(), ' / ')
       using errcode = '42501';
   end if;
@@ -373,7 +373,7 @@ begin
 end;
 $$;
 
--- Banning a hirer should not leave live quests pointing at them.
+-- Banning a hirer should not leave live gigs pointing at them.
 create or replace function public.on_profile_banned()
 returns trigger
 language plpgsql
@@ -382,7 +382,7 @@ set search_path = public
 as $$
 begin
   if new.is_banned and not coalesce(old.is_banned, false) then
-    update public.quests
+    update public.gigs
        set status = 'cancelled', updated_at = now()
      where hirer_id = new.id
        and status in ('open', 'assigned', 'in_progress');
@@ -412,24 +412,24 @@ begin
 end;
 $$;
 
--- quests.application_count is likewise a cache, for the reason given on the
+-- gigs.application_count is likewise a cache, for the reason given on the
 -- column. Recount rather than +/- 1 so it self-heals if it ever drifts.
-create or replace function public.recount_quest_applications()
+create or replace function public.recount_gig_applications()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  v_quest uuid := coalesce(new.quest_id, old.quest_id);
+  v_gig uuid := coalesce(new.gig_id, old.gig_id);
 begin
-  update public.quests q
+  update public.gigs q
      set application_count = (
            select count(*) from public.applications a
-            where a.quest_id = v_quest
+            where a.gig_id = v_gig
               and a.status <> 'withdrawn'
          )
-   where q.id = v_quest;
+   where q.id = v_gig;
   return null;
 end;
 $$;
@@ -437,7 +437,7 @@ $$;
 drop trigger if exists trg_profiles_touch          on public.profiles;
 drop trigger if exists trg_profiles_guard          on public.profiles;
 drop trigger if exists trg_profiles_banned         on public.profiles;
-drop trigger if exists trg_quests_touch            on public.quests;
+drop trigger if exists trg_gigs_touch            on public.gigs;
 drop trigger if exists trg_reviews_rating          on public.reviews;
 drop trigger if exists trg_applications_recount    on public.applications;
 drop trigger if exists on_auth_user_created        on auth.users;
@@ -454,8 +454,8 @@ create trigger trg_profiles_banned
   after update of is_banned on public.profiles
   for each row execute function public.on_profile_banned();
 
-create trigger trg_quests_touch
-  before update on public.quests
+create trigger trg_gigs_touch
+  before update on public.gigs
   for each row execute function public.touch_updated_at();
 
 create trigger trg_reviews_rating
@@ -464,7 +464,7 @@ create trigger trg_reviews_rating
 
 create trigger trg_applications_recount
   after insert or update or delete on public.applications
-  for each row execute function public.recount_quest_applications();
+  for each row execute function public.recount_gig_applications();
 
 create trigger on_auth_user_created
   after insert on auth.users
@@ -475,16 +475,16 @@ create trigger on_auth_user_created
 --  6.  Row Level Security
 --
 --  Every table is locked by default and opened deliberately. Read the
---  quest_contacts / application_contacts policies together — they are the
+--  gig_contacts / application_contacts policies together — they are the
 --  two halves of "contact details appear only after you're hired".
 -- ────────────────────────────────────────────────────────────────────────────
 
 alter table public.profiles             enable row level security;
 alter table public.skills               enable row level security;
 alter table public.profile_skills       enable row level security;
-alter table public.quests               enable row level security;
-alter table public.quest_skills         enable row level security;
-alter table public.quest_contacts       enable row level security;
+alter table public.gigs               enable row level security;
+alter table public.gig_skills         enable row level security;
+alter table public.gig_contacts       enable row level security;
 alter table public.applications         enable row level security;
 alter table public.application_contacts enable row level security;
 alter table public.reviews              enable row level security;
@@ -497,8 +497,8 @@ begin
     select schemaname, tablename, policyname
     from pg_policies
     where schemaname = 'public'
-      and tablename in ('profiles','skills','profile_skills','quests','quest_skills',
-                        'quest_contacts','applications','application_contacts','reviews')
+      and tablename in ('profiles','skills','profile_skills','gigs','gig_skills',
+                        'gig_contacts','applications','application_contacts','reviews')
   loop
     execute format('drop policy %I on %I.%I', r.policyname, r.schemaname, r.tablename);
   end loop;
@@ -530,59 +530,59 @@ create policy "profile_skills: manage own"
   on public.profile_skills for all
   using (profile_id = auth.uid()) with check (profile_id = auth.uid());
 
--- ── quests ─────────────────────────────────────────────────────────────────
-create policy "quests: public read unless flagged"
-  on public.quests for select
+-- ── gigs ─────────────────────────────────────────────────────────────────
+create policy "gigs: public read unless flagged"
+  on public.gigs for select
   using (is_flagged = false or hirer_id = auth.uid());
 
 -- Anyone signed in and not banned may post. Note this is NOT restricted to
 -- role='hirer' — a student hiring a junior is a feature, not a bug.
-create policy "quests: signed-in users post"
-  on public.quests for insert
+create policy "gigs: signed-in users post"
+  on public.gigs for insert
   with check (auth.uid() = hirer_id and public.actor_is_banned() = false);
 
-create policy "quests: owner edits"
-  on public.quests for update
+create policy "gigs: owner edits"
+  on public.gigs for update
   using (hirer_id = auth.uid()) with check (hirer_id = auth.uid());
 
-create policy "quests: owner deletes"
-  on public.quests for delete using (hirer_id = auth.uid());
+create policy "gigs: owner deletes"
+  on public.gigs for delete using (hirer_id = auth.uid());
 
--- ── quest_skills ───────────────────────────────────────────────────────────
-create policy "quest_skills: public read"
-  on public.quest_skills for select using (true);
+-- ── gig_skills ───────────────────────────────────────────────────────────
+create policy "gig_skills: public read"
+  on public.gig_skills for select using (true);
 
-create policy "quest_skills: owner manages"
-  on public.quest_skills for all
-  using (public.owns_quest(quest_id)) with check (public.owns_quest(quest_id));
+create policy "gig_skills: owner manages"
+  on public.gig_skills for all
+  using (public.owns_gig(gig_id)) with check (public.owns_gig(gig_id));
 
--- ── quest_contacts ── the hirer's phone number ─────────────────────────────
-create policy "quest_contacts: owner or hired student reads"
-  on public.quest_contacts for select
+-- ── gig_contacts ── the hirer's phone number ─────────────────────────────
+create policy "gig_contacts: owner or hired student reads"
+  on public.gig_contacts for select
   using (
-       public.owns_quest(quest_id)
-    or public.has_accepted_application(quest_id, auth.uid())
+       public.owns_gig(gig_id)
+    or public.has_accepted_application(gig_id, auth.uid())
   );
 
-create policy "quest_contacts: owner writes"
-  on public.quest_contacts for all
-  using (public.owns_quest(quest_id)) with check (public.owns_quest(quest_id));
+create policy "gig_contacts: owner writes"
+  on public.gig_contacts for all
+  using (public.owns_gig(gig_id)) with check (public.owns_gig(gig_id));
 
 -- ── applications ───────────────────────────────────────────────────────────
-create policy "applications: applicant and quest owner read"
+create policy "applications: applicant and gig owner read"
   on public.applications for select
-  using (student_id = auth.uid() or public.owns_quest(quest_id));
+  using (student_id = auth.uid() or public.owns_gig(gig_id));
 
 -- THE gate. is_active_student() can only be true for an institute mailbox,
 -- because guard_profile_changes() refuses to write role='student' otherwise.
-create policy "applications: students apply to open quests"
+create policy "applications: students apply to open gigs"
   on public.applications for insert
   with check (
     student_id = auth.uid()
     and public.is_active_student()
     and exists (
-      select 1 from public.quests q
-      where q.id = quest_id
+      select 1 from public.gigs q
+      where q.id = gig_id
         and q.status = 'open'
         and q.hirer_id <> auth.uid()   -- no applying to your own posting
     )
@@ -593,9 +593,9 @@ create policy "applications: applicant withdraws"
   using (student_id = auth.uid())
   with check (student_id = auth.uid() and status in ('pending', 'withdrawn'));
 
-create policy "applications: quest owner decides"
+create policy "applications: gig owner decides"
   on public.applications for update
-  using (public.owns_quest(quest_id)) with check (public.owns_quest(quest_id));
+  using (public.owns_gig(gig_id)) with check (public.owns_gig(gig_id));
 
 -- ── application_contacts ── the student's phone number ─────────────────────
 create policy "application_contacts: applicant always, hirer after accept"
@@ -606,7 +606,7 @@ create policy "application_contacts: applicant always, hirer after accept"
       where a.id = application_id
         and (
              a.student_id = auth.uid()
-          or (public.owns_quest(a.quest_id) and a.status = 'accepted')
+          or (public.owns_gig(a.gig_id) and a.status = 'accepted')
         )
     )
   );
@@ -626,15 +626,15 @@ create policy "application_contacts: applicant writes own"
 create policy "reviews: public read"
   on public.reviews for select using (true);
 
--- You may only review your counterparty, only on a quest you both did, and
+-- You may only review your counterparty, only on a gig you both did, and
 -- only once it is complete.
 create policy "reviews: participants after completion"
   on public.reviews for insert
   with check (
     reviewer_id = auth.uid()
     and exists (
-      select 1 from public.quests q
-      where q.id = quest_id
+      select 1 from public.gigs q
+      where q.id = gig_id
         and q.status = 'completed'
         and (
              (q.hirer_id    = auth.uid() and q.assigned_to = reviewee_id)
@@ -652,42 +652,42 @@ create policy "reviews: participants after completion"
 --  caller's authority itself, because SECURITY DEFINER bypasses RLS.
 -- ────────────────────────────────────────────────────────────────────────────
 
-create or replace function public.set_quest_status(
-  p_quest  uuid,
-  p_status public.quest_status
+create or replace function public.set_gig_status(
+  p_gig  uuid,
+  p_status public.gig_status
 )
-returns public.quests
+returns public.gigs
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  v_q   public.quests;
+  v_q   public.gigs;
   v_uid uuid := auth.uid();
 begin
   if v_uid is null then
     raise exception 'Not signed in' using errcode = '42501';
   end if;
 
-  select * into v_q from public.quests where id = p_quest for update;
+  select * into v_q from public.gigs where id = p_gig for update;
   if not found then
-    raise exception 'Quest not found' using errcode = 'P0002';
+    raise exception 'Gig not found' using errcode = 'P0002';
   end if;
 
   if v_q.hirer_id = v_uid then
-    null;  -- the owner may move the quest anywhere
+    null;  -- the owner may move the gig anywhere
   elsif v_q.assigned_to = v_uid then
     if p_status <> 'in_progress' then
-      raise exception 'The assigned student can only mark a quest in progress'
+      raise exception 'The assigned student can only mark a gig in progress'
         using errcode = '42501';
     end if;
   else
-    raise exception 'You are not part of this quest' using errcode = '42501';
+    raise exception 'You are not part of this gig' using errcode = '42501';
   end if;
 
-  update public.quests
+  update public.gigs
      set status = p_status, updated_at = now()
-   where id = p_quest
+   where id = p_gig
   returning * into v_q;
 
   return v_q;
@@ -696,16 +696,16 @@ $$;
 
 
 -- Accept one applicant: mark them accepted, auto-reject the rest, assign the
--- quest. One transaction so the board can never show two hired students.
+-- gig. One transaction so the board can never show two hired students.
 create or replace function public.accept_application(p_application uuid)
-returns public.quests
+returns public.gigs
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
   v_app public.applications;
-  v_q   public.quests;
+  v_q   public.gigs;
   v_uid uuid := auth.uid();
 begin
   if v_uid is null then
@@ -717,23 +717,23 @@ begin
     raise exception 'Application not found' using errcode = 'P0002';
   end if;
 
-  select * into v_q from public.quests where id = v_app.quest_id for update;
+  select * into v_q from public.gigs where id = v_app.gig_id for update;
 
   if v_q.hirer_id <> v_uid then
-    raise exception 'Only the quest owner can accept an applicant'
+    raise exception 'Only the gig owner can accept an applicant'
       using errcode = '42501';
   end if;
   if v_q.status <> 'open' then
-    raise exception 'This quest is no longer open' using errcode = '22023';
+    raise exception 'This gig is no longer open' using errcode = '22023';
   end if;
 
   update public.applications set status = 'accepted'  where id = p_application;
   update public.applications set status = 'rejected'
-   where quest_id = v_app.quest_id and id <> p_application and status = 'pending';
+   where gig_id = v_app.gig_id and id <> p_application and status = 'pending';
 
-  update public.quests
+  update public.gigs
      set status = 'assigned', assigned_to = v_app.student_id, updated_at = now()
-   where id = v_app.quest_id
+   where id = v_app.gig_id
   returning * into v_q;
 
   return v_q;
@@ -741,13 +741,13 @@ end;
 $$;
 
 
-create or replace function public.increment_quest_views(p_quest uuid)
+create or replace function public.increment_gig_views(p_gig uuid)
 returns void
 language sql
 security definer
 set search_path = public
 as $$
-  update public.quests set views = views + 1 where id = p_quest;
+  update public.gigs set views = views + 1 where id = p_gig;
 $$;
 
 
@@ -761,12 +761,12 @@ stable
 set search_path = public
 as $$
   select jsonb_build_object(
-    'open_quests',    (select count(*) from public.quests where status = 'open' and is_flagged = false),
-    'total_quests',   (select count(*) from public.quests where is_flagged = false),
+    'open_gigs',    (select count(*) from public.gigs where status = 'open' and is_flagged = false),
+    'total_gigs',   (select count(*) from public.gigs where is_flagged = false),
     'students',       (select count(*) from public.profiles where role = 'student' and is_banned = false),
     'hirers',         (select count(*) from public.profiles where role <> 'student' and is_banned = false),
-    'reward_pool',    (select coalesce(sum(reward_amount), 0) from public.quests where status = 'open' and is_flagged = false),
-    'completed',      (select count(*) from public.quests where status = 'completed')
+    'reward_pool',    (select coalesce(sum(reward_amount), 0) from public.gigs where status = 'open' and is_flagged = false),
+    'completed',      (select count(*) from public.gigs where status = 'completed')
   );
 $$;
 
@@ -784,9 +784,9 @@ grant select on all tables in schema public to anon, authenticated;
 grant insert, update, delete on
   public.profiles,
   public.profile_skills,
-  public.quests,
-  public.quest_skills,
-  public.quest_contacts,
+  public.gigs,
+  public.gig_skills,
+  public.gig_contacts,
   public.applications,
   public.application_contacts,
   public.reviews
@@ -794,9 +794,9 @@ to authenticated;
 
 grant usage, select on all sequences in schema public to authenticated;
 
-grant execute on function public.set_quest_status(uuid, public.quest_status) to authenticated;
+grant execute on function public.set_gig_status(uuid, public.gig_status) to authenticated;
 grant execute on function public.accept_application(uuid)                   to authenticated;
-grant execute on function public.increment_quest_views(uuid)                to anon, authenticated;
+grant execute on function public.increment_gig_views(uuid)                to anon, authenticated;
 grant execute on function public.platform_stats()                           to anon, authenticated;
 grant execute on function public.is_institute_email(uuid)                   to authenticated;
 grant execute on function public.institute_domains()                        to anon, authenticated;

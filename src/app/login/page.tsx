@@ -11,7 +11,7 @@ import { PasswordForm } from './PasswordForm'
 
 export const metadata: Metadata = {
   title: 'Sign in',
-  description: `Sign in to QuestBoard. ${INSTITUTE_NAME} students verify with Google; anyone can create a hirer account.`,
+  description: `Sign in to GigNest. ${INSTITUTE_NAME} students verify with Google; anyone can create a hirer account.`,
 }
 
 const OAUTH_ERRORS: Record<string, string> = {
@@ -45,11 +45,11 @@ export default async function LoginPage({
       {/* Left: the pitch, so the page isn't a bare form */}
       <div className="space-y-8">
         <Link
-          href="/quests"
+          href="/gigs"
           className="inline-flex items-center gap-1.5 text-[13px] text-mist transition-colors hover:text-chalk"
         >
           <IconArrowLeft className="size-3.5" />
-          Back to the quest board
+          Back to the gig board
         </Link>
 
         <div className="space-y-4">
@@ -75,7 +75,7 @@ export default async function LoginPage({
               </p>
               <p className="text-[13px] leading-relaxed text-mist">
                 Signing in with your <span className="hud text-chalk">@itbhu.ac.in</span> Google
-                account is what proves you study here. It is the only route to claiming quests.
+                account is what proves you study here. It is the only route to claiming gigs.
               </p>
             </div>
           </Panel>
@@ -104,14 +104,14 @@ export default async function LoginPage({
           <p className="text-[13px] text-mist">
             {mode === 'signup'
               ? 'Students should use the Google button — it verifies you instantly.'
-              : 'Sign in to post a quest, apply to one, or check your dashboard.'}
+              : 'Sign in to post a gig, apply to one, or check your dashboard.'}
           </p>
         </div>
 
         {!isSupabaseConfigured && (
           <Notice tone="warn" title="Demo mode" className="mt-5">
             No Supabase keys are configured, so sign-in is switched off. Everything else on the site
-            runs on sample data — browse the quest board to see it.
+            runs on sample data — browse the gig board to see it.
           </Notice>
         )}
 
@@ -163,7 +163,7 @@ export default async function LoginPage({
 
         <p className="mt-6 text-center text-[11.5px] leading-relaxed text-dimmer">
           By continuing you agree that payments are settled directly between hirer and student.
-          QuestBoard does not hold funds.
+          GigNest does not hold funds.
         </p>
       </Panel>
     </div>

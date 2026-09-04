@@ -6,22 +6,22 @@ import { Notice, Panel } from '@/components/ui/Panel'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { IconLock, IconPhone } from '@/components/ui/Icons'
 import type { ActionResult } from '@/lib/types'
-import { applyToQuest } from '../actions'
+import { applyToGig } from '../actions'
 
 /**
- * The claim form. Only rendered for signed-in students on an open quest —
+ * The claim form. Only rendered for signed-in students on an open gig —
  * every other case gets a static explainer from the page instead.
  */
 export function ApplyForm({
-  questId,
+  gigId,
   reward,
   defaultPhone,
 }: {
-  questId: string
+  gigId: string
   reward: string
   defaultPhone?: string | null
 }) {
-  const [result, action] = useActionState<ActionResult | null, FormData>(applyToQuest, null)
+  const [result, action] = useActionState<ActionResult | null, FormData>(applyToGig, null)
 
   if (result?.ok) {
     return (
@@ -38,7 +38,7 @@ export function ApplyForm({
   return (
     <Panel className="p-5" glow>
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-base font-semibold text-chalk">Claim this quest</h2>
+        <h2 className="text-base font-semibold text-chalk">Claim this gig</h2>
         <span className="hud text-sm text-lime">{reward}</span>
       </div>
       <p className="mt-1 text-[13px] leading-relaxed text-mist">
@@ -47,7 +47,7 @@ export function ApplyForm({
       </p>
 
       <form action={action} className="mt-4 space-y-4">
-        <input type="hidden" name="questId" value={questId} />
+        <input type="hidden" name="gigId" value={gigId} />
 
         <Field
           label="Your pitch"

@@ -118,7 +118,7 @@ export function normalizePhone(raw: string): string {
 }
 
 /**
- * Matches the CHECK constraint on quest_contacts.phone, plus a digit-count
+ * Matches the CHECK constraint on gig_contacts.phone, plus a digit-count
  * sanity check so "+++++++++" is rejected.
  */
 export function requirePhone(form: FormData, key: string, label = 'Phone number'): string {
@@ -195,13 +195,13 @@ export async function runAction(fn: () => Promise<ActionResult>): Promise<Action
 
 /** Turn the rawest Postgres errors into something a human can act on. */
 export function friendlyDbError(message: string): string {
-  if (/claim quests|institute/i.test(message)) return message
+  if (/claim gigs|institute/i.test(message)) return message
   if (/duplicate key|already exists/i.test(message)) {
     return 'You have already done that.'
   }
   if (/violates row-level security/i.test(message)) {
     return "You do not have permission to do that. If you just signed up, finish your profile first."
   }
-  if (/no longer open/i.test(message)) return 'That quest is no longer open.'
+  if (/no longer open/i.test(message)) return 'That gig is no longer open.'
   return message
 }

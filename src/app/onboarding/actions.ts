@@ -89,7 +89,7 @@ export async function completeOnboarding(
 
     if (error) {
       // The institute-gate exception surfaces here; it is already human-readable.
-      throw new FieldError(error.message, /institute|claim quests/i.test(error.message) ? 'role' : undefined)
+      throw new FieldError(error.message, /institute|claim gigs/i.test(error.message) ? 'role' : undefined)
     }
 
     if (role === 'student') {

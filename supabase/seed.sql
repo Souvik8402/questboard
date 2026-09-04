@@ -1,10 +1,10 @@
 -- ============================================================================
---  QuestBoard — seed data
+--  GigNest — seed data
 --
 --  Run AFTER schema.sql:  Supabase → SQL Editor → paste → Run.
 --  Safe to re-run; existing tags are left alone.
 --
---  This seeds the skill-tag vocabulary only. Quests and profiles come from
+--  This seeds the skill-tag vocabulary only. Gigs and profiles come from
 --  real signups, because both are foreign-keyed to auth.users and cannot be
 --  faked from SQL. For an offline demo, run the app with no .env.local and it
 --  serves a built-in sample dataset instead.
@@ -127,19 +127,19 @@ on conflict (slug) do nothing;
 
 
 -- ============================================================================
---  Optional: give your live project a few quests to look at.
+--  Optional: give your live project a few gigs to look at.
 --
 --  Sign in through the app first so you have a profile, then replace the email
 --  below with yours and run this block.
 --
 --    do $$
---    declare v_me uuid; v_quest uuid;
+--    declare v_me uuid; v_gig uuid;
 --    begin
 --      select id into v_me from auth.users where email = 'you@example.com';
 --      if v_me is null then raise exception 'No such user — sign in first'; end if;
 --
---      insert into public.quests
---        (hirer_id, title, description, quest_type, reward_amount,
+--      insert into public.gigs
+--        (hirer_id, title, description, gig_type, reward_amount,
 --         estimated_hours, deadline, is_remote, location_label, lat, lng)
 --      values
 --        (v_me,
@@ -148,13 +148,13 @@ on conflict (slug) do nothing;
 --         'in Figma, you just need to build it responsively and deploy it.',
 --         'one_time', 4000, 12, now() + interval '10 days',
 --         false, 'Limbdi Corner, IIT BHU', 25.2677, 82.9913)
---      returning id into v_quest;
+--      returning id into v_gig;
 --
---      insert into public.quest_contacts (quest_id, phone)
---      values (v_quest, '+91 98765 43210');
+--      insert into public.gig_contacts (gig_id, phone)
+--      values (v_gig, '+91 98765 43210');
 --
---      insert into public.quest_skills (quest_id, skill_id)
---      select v_quest, id from public.skills
+--      insert into public.gig_skills (gig_id, skill_id)
+--      select v_gig, id from public.skills
 --       where slug in ('web-development', 'frontend', 'ui-ux');
 --    end $$;
 -- ============================================================================

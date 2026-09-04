@@ -8,8 +8,8 @@ import { ButtonLink } from '@/components/ui/Button'
 import { IconLogout, IconPlus } from '@/components/ui/Icons'
 
 const PUBLIC_LINKS: NavLink[] = [
-  { href: '/quests', label: 'Quest board' },
-  { href: '/quests/map', label: 'Map' },
+  { href: '/gigs', label: 'Gig board' },
+  { href: '/gigs/map', label: 'Map' },
 ]
 
 /**
@@ -27,8 +27,8 @@ export async function Nav() {
 
   const signedOutActions = (
     <>
-      <ButtonLink href="/quests/new" variant="ghost" size="sm">
-        Post a quest
+      <ButtonLink href="/gigs/new" variant="ghost" size="sm">
+        Post a gig
       </ButtonLink>
       <ButtonLink href="/login" size="sm">
         Sign in
@@ -38,7 +38,7 @@ export async function Nav() {
 
   const signedInActions = (
     <>
-      <ButtonLink href="/quests/new" variant="outline" size="sm" className="gap-1.5">
+      <ButtonLink href="/gigs/new" variant="outline" size="sm" className="gap-1.5">
         <IconPlus className="size-3.5" />
         Post
       </ButtonLink>
@@ -71,8 +71,8 @@ export async function Nav() {
 
   const mobileExtras = session ? (
     <>
-      <ButtonLink href="/quests/new" size="sm" className="w-full">
-        Post a quest
+      <ButtonLink href="/gigs/new" size="sm" className="w-full">
+        Post a gig
       </ButtonLink>
       <ButtonLink
         href={profile ? `/profile/${profile.id}` : '/onboarding'}
@@ -96,8 +96,8 @@ export async function Nav() {
       <ButtonLink href="/login" size="sm" className="w-full">
         {isSupabaseConfigured ? 'Sign in' : 'Sign in (demo)'}
       </ButtonLink>
-      <ButtonLink href="/quests/new" variant="secondary" size="sm" className="w-full">
-        Post a quest
+      <ButtonLink href="/gigs/new" variant="secondary" size="sm" className="w-full">
+        Post a gig
       </ButtonLink>
     </>
   )

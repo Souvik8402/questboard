@@ -8,7 +8,7 @@ import {
   getProfileBio,
   getProfileSkills,
   getPublicProfile,
-  getQuestsPostedBy,
+  getGigsPostedBy,
   getReviewsFor,
 } from '@/lib/queries'
 import { Avatar } from '@/components/Avatar'
@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   return {
     title: profile.full_name ?? 'Profile',
-    description: `${ROLE_LABEL[profile.role]} on QuestBoard${
+    description: `${ROLE_LABEL[profile.role]} on GigNest${
       profile.department ? ` · ${profile.department}` : ''
     }.`,
   }
@@ -49,11 +49,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     getProfileBio(id),
     getProfileSkills(id),
     getReviewsFor(id),
-    getQuestsPostedBy(id),
+    getGigsPostedBy(id),
   ])
 
   // Only live postings belong on a stranger's profile — draft-ish states are noise.
-  const publicQuests = posted.filter((q) => q.status === 'open' || q.status === 'assigned')
+  const publicGigs = posted.filter((q) => q.status === 'open' || q.status === 'assigned')
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -97,7 +97,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           ) : (
             isStudent && (
               <div className="text-right">
-                <p className="text-[11px] uppercase tracking-wider text-dimmer">Quests reviewed</p>
+                <p className="text-[11px] uppercase tracking-wider text-dimmer">Gigs reviewed</p>
                 <p className="hud text-2xl font-semibold text-lime">{profile.rating_count}</p>
               </div>
             )
@@ -129,7 +129,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 title="No reviews yet"
                 blurb={
                   isSelf
-                    ? 'Finish a quest and your counterparty can review you. Ratings are permanent, so they are worth earning.'
+                    ? 'Finish a gig and your counterparty can review you. Ratings are permanent, so they are worth earning.'
                     : 'Nobody has reviewed this account yet. That means new, not bad — but agree the terms in writing.'
                 }
               />
@@ -143,31 +143,31 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </section>
 
           {/* ── Their open postings ──────────────────────────────────────── */}
-          {publicQuests.length > 0 && (
+          {publicGigs.length > 0 && (
             <section className="space-y-4">
               <h2 className="flex items-center gap-2 text-base font-semibold text-chalk">
                 <IconBriefcase className="size-4 text-cyan" />
                 Currently hiring
               </h2>
               <Panel className="divide-y divide-line/70 p-0">
-                {publicQuests.map((quest) => (
+                {publicGigs.map((gig) => (
                   <Link
-                    key={quest.id}
-                    href={`/quests/${quest.id}`}
+                    key={gig.id}
+                    href={`/gigs/${gig.id}`}
                     className="block p-4 transition-colors hover:bg-white/[0.035]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <p className="line-clamp-2 text-[13.5px] font-medium leading-snug text-chalk">
-                        {quest.title}
+                        {gig.title}
                       </p>
-                      <StatusPill status={quest.status} />
+                      <StatusPill status={gig.status} />
                     </div>
                     <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
-                      <span className="hud text-mist">{formatRupees(quest.reward_amount)}</span>
+                      <span className="hud text-mist">{formatRupees(gig.reward_amount)}</span>
                       <span>
-                        {quest.is_remote ? 'Remote' : (quest.location_label ?? 'On site')}
+                        {gig.is_remote ? 'Remote' : (gig.location_label ?? 'On site')}
                       </span>
-                      <span className="text-dimmer">{relativeTime(quest.created_at)}</span>
+                      <span className="text-dimmer">{relativeTime(gig.created_at)}</span>
                     </p>
                   </Link>
                 ))}
@@ -227,11 +227,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               </p>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {skills.map((skill) => (
-                  <SkillChip key={skill.id} name={skill.name} href={`/quests?skills=${skill.id}`} />
+                  <SkillChip key={skill.id} name={skill.name} href={`/gigs?skills=${skill.id}`} />
                 ))}
               </div>
               <p className="mt-3 text-[11.5px] leading-relaxed text-dim">
-                Tap a tag to see open quests wanting it.
+                Tap a tag to see open gigs wanting it.
               </p>
             </Panel>
           )}
@@ -243,11 +243,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 Want to hire them?
               </p>
               <p className="mt-1.5 text-[12.5px] leading-relaxed text-mist">
-                There is no direct-message inbox yet. Post a quest with the tags they carry — it
+                There is no direct-message inbox yet. Post a gig with the tags they carry — it
                 lands on their board immediately.
               </p>
-              <ButtonLink href="/quests/new" size="sm" className="mt-4 w-full">
-                Post a quest
+              <ButtonLink href="/gigs/new" size="sm" className="mt-4 w-full">
+                Post a gig
               </ButtonLink>
             </Panel>
           )}
@@ -293,10 +293,10 @@ function ReviewCard({ review }: { review: Review }) {
           )}
 
           <Link
-            href={`/quests/${review.quest_id}`}
+            href={`/gigs/${review.gig_id}`}
             className="mt-2.5 inline-block text-[11.5px] text-dim transition-colors hover:text-cyan"
           >
-            View the quest →
+            View the gig →
           </Link>
         </div>
       </div>

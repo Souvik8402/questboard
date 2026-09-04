@@ -1,24 +1,24 @@
 'use client'
 
 import { useActionState } from 'react'
-import { QUEST_STATUS_LABEL } from '@/lib/constants'
-import type { ActionResult, QuestStatus } from '@/lib/types'
+import { GIG_STATUS_LABEL } from '@/lib/constants'
+import type { ActionResult, GigStatus } from '@/lib/types'
 import { Notice, Panel } from '@/components/ui/Panel'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { StatusPill } from '@/components/ui/Badge'
-import { updateQuestStatus, withdrawApplication } from '../actions'
+import { updateGigStatus, withdrawApplication } from '../actions'
 
-type Move = { status: QuestStatus; label: string; variant?: 'primary' | 'secondary' | 'danger' | 'ghost' }
+type Move = { status: GigStatus; label: string; variant?: 'primary' | 'secondary' | 'danger' | 'ghost' }
 
 /**
- * What each side may do next. Mirrors `set_quest_status` in schema.sql: the
- * owner can move a quest anywhere, the assigned student can only start it.
+ * What each side may do next. Mirrors `set_gig_status` in schema.sql: the
+ * owner can move a gig anywhere, the assigned student can only start it.
  */
-function movesFor(status: QuestStatus, isOwner: boolean): Move[] {
+function movesFor(status: GigStatus, isOwner: boolean): Move[] {
   if (isOwner) {
     switch (status) {
       case 'open':
-        return [{ status: 'cancelled', label: 'Cancel quest', variant: 'danger' }]
+        return [{ status: 'cancelled', label: 'Cancel gig', variant: 'danger' }]
       case 'assigned':
         return [
           { status: 'in_progress', label: 'Mark in progress', variant: 'secondary' },
@@ -33,7 +33,7 @@ function movesFor(status: QuestStatus, isOwner: boolean): Move[] {
       case 'completed':
         return []
       case 'cancelled':
-        return [{ status: 'open', label: 'Reopen quest', variant: 'secondary' }]
+        return [{ status: 'open', label: 'Reopen gig', variant: 'secondary' }]
     }
   }
   // Assigned student.
@@ -43,13 +43,13 @@ function movesFor(status: QuestStatus, isOwner: boolean): Move[] {
 }
 
 export function StatusControls({
-  questId,
+  gigId,
   status,
   isOwner,
   applicationId,
 }: {
-  questId: string
-  status: QuestStatus
+  gigId: string
+  status: GigStatus
   isOwner: boolean
   /** Present when the viewer is a student with a live application. */
   applicationId?: string | null
@@ -57,7 +57,7 @@ export function StatusControls({
   const [result, act] = useActionState<ActionResult | null, FormData>(async (prev, form) => {
     return form.get('intent') === 'withdraw'
       ? withdrawApplication(prev, form)
-      : updateQuestStatus(prev, form)
+      : updateGigStatus(prev, form)
   }, null)
 
   const moves = movesFor(status, isOwner)
@@ -69,13 +69,13 @@ export function StatusControls({
     <Panel className="p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-chalk">
-          {isOwner ? 'Manage quest' : 'Your quest'}
+          {isOwner ? 'Manage gig' : 'Your gig'}
         </h2>
         <StatusPill status={status} />
       </div>
 
       <p className="mt-1.5 text-[12.5px] leading-relaxed text-mist">
-        Currently <span className="text-chalk">{QUEST_STATUS_LABEL[status].toLowerCase()}</span>.
+        Currently <span className="text-chalk">{GIG_STATUS_LABEL[status].toLowerCase()}</span>.
         {status === 'completed'
           ? ' Reviews are open — leave one below.'
           : isOwner
@@ -90,7 +90,7 @@ export function StatusControls({
       )}
 
       <form action={act} className="mt-4 flex flex-wrap gap-2">
-        <input type="hidden" name="questId" value={questId} />
+        <input type="hidden" name="gigId" value={gigId} />
         {moves.map((move) => (
           <SubmitButton
             key={move.status}
@@ -106,7 +106,7 @@ export function StatusControls({
 
       {canWithdraw && (
         <form action={act} className="mt-2 flex flex-wrap items-center gap-2">
-          <input type="hidden" name="questId" value={questId} />
+          <input type="hidden" name="gigId" value={gigId} />
           <input type="hidden" name="applicationId" value={applicationId ?? ''} />
           <input type="hidden" name="intent" value="withdraw" />
           <SubmitButton size="sm" variant="ghost">

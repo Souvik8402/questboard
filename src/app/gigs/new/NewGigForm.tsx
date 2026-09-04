@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useActionState, useEffect, useState } from 'react'
-import { QUEST_TYPES } from '@/lib/constants'
+import { GIG_TYPES } from '@/lib/constants'
 import { compactRupees } from '@/lib/format'
 import type { ActionResult, Skill } from '@/lib/types'
 import { Field, Input, InputWithPrefix, Select, Textarea } from '@/components/ui/Field'
@@ -11,7 +11,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton'
 import { IconLock, IconPhone, IconWifi } from '@/components/ui/Icons'
 import { MapPicker } from '@/components/MapPicker'
 import { TagPicker } from '@/components/TagPicker'
-import { createQuest } from './actions'
+import { createGig } from './actions'
 
 /** Rewards students actually accept, by type — anchors the number for hirers. */
 const REWARD_HINTS: Record<string, string> = {
@@ -22,11 +22,11 @@ const REWARD_HINTS: Record<string, string> = {
   internship: 'Typical stipend: ₹5,000 – ₹25,000 a month.',
 }
 
-export function NewQuestForm({ skills }: { skills: Skill[] }) {
+export function NewGigForm({ skills }: { skills: Skill[] }) {
   const router = useRouter()
-  const [result, action] = useActionState<ActionResult | null, FormData>(createQuest, null)
+  const [result, action] = useActionState<ActionResult | null, FormData>(createGig, null)
 
-  const [questType, setQuestType] = useState('one_time')
+  const [gigType, setGigType] = useState('one_time')
   const [isRemote, setIsRemote] = useState(false)
   const [reward, setReward] = useState('')
 
@@ -48,7 +48,7 @@ export function NewQuestForm({ skills }: { skills: Skill[] }) {
 
   if (result?.ok) {
     return (
-      <Notice tone="success" title="Quest posted">
+      <Notice tone="success" title="Gig posted">
         {result.message} Taking you to it…
       </Notice>
     )
@@ -103,14 +103,14 @@ export function NewQuestForm({ skills }: { skills: Skill[] }) {
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Type" htmlFor="quest_type" required error={fieldError('quest_type')}>
+          <Field label="Type" htmlFor="gig_type" required error={fieldError('gig_type')}>
             <Select
-              id="quest_type"
-              name="quest_type"
-              value={questType}
-              onChange={(e) => setQuestType(e.target.value)}
+              id="gig_type"
+              name="gig_type"
+              value={gigType}
+              onChange={(e) => setGigType(e.target.value)}
             >
-              {QUEST_TYPES.map((t) => (
+              {GIG_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label} — {t.blurb}
                 </option>
@@ -123,7 +123,7 @@ export function NewQuestForm({ skills }: { skills: Skill[] }) {
             htmlFor="reward_amount"
             required
             error={fieldError('reward_amount')}
-            hint={REWARD_HINTS[questType]}
+            hint={REWARD_HINTS[gigType]}
           >
             <InputWithPrefix
               prefix="₹"
@@ -162,7 +162,7 @@ export function NewQuestForm({ skills }: { skills: Skill[] }) {
             label="Deadline"
             htmlFor="deadline"
             error={fieldError('deadline')}
-            hint="Optional. Quests under 48 hours out get flagged as urgent."
+            hint="Optional. Gigs under 48 hours out get flagged as urgent."
           >
             <Input id="deadline" name="deadline" type="datetime-local" />
           </Field>
@@ -192,7 +192,7 @@ export function NewQuestForm({ skills }: { skills: Skill[] }) {
               This can be done remotely
             </span>
             <span className="block text-xs leading-relaxed text-dim">
-              No pin needed. Remote quests do not appear in the map view.
+              No pin needed. Remote gigs do not appear in the map view.
             </span>
           </span>
         </label>
@@ -293,7 +293,7 @@ export function NewQuestForm({ skills }: { skills: Skill[] }) {
 
       <div className="flex flex-wrap items-center gap-3">
         <SubmitButton size="lg" pendingLabel="Posting…">
-          Post quest{rewardNumber > 0 ? ` · ${compactRupees(rewardNumber)}` : ''}
+          Post gig{rewardNumber > 0 ? ` · ${compactRupees(rewardNumber)}` : ''}
         </SubmitButton>
         <p className="text-[12px] text-dim">
           You can cancel or edit it any time from your dashboard.

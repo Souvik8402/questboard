@@ -5,14 +5,14 @@
 
 export type UserRole = 'student' | 'hirer' | 'admin'
 
-export type QuestType =
+export type GigType =
   | 'one_time'
   | 'weekly'
   | 'monthly'
   | 'part_time'
   | 'internship'
 
-export type QuestStatus =
+export type GigStatus =
   | 'open'
   | 'assigned'
   | 'in_progress'
@@ -55,13 +55,13 @@ export interface Skill {
   category: string
 }
 
-export interface Quest {
+export interface Gig {
   id: string
   hirer_id: string
   title: string
   description: string
-  quest_type: QuestType
-  status: QuestStatus
+  gig_type: GigType
+  status: GigStatus
   reward_amount: number
   estimated_hours: number | null
   deadline: string | null
@@ -76,7 +76,7 @@ export interface Quest {
   updated_at: string
 }
 
-export interface QuestWithRelations extends Quest {
+export interface GigWithRelations extends Gig {
   hirer: PublicProfile | null
   skills: Skill[]
   application_count?: number
@@ -84,7 +84,7 @@ export interface QuestWithRelations extends Quest {
 
 export interface Application {
   id: string
-  quest_id: string
+  gig_id: string
   student_id: string
   cover_note: string
   status: ApplicationStatus
@@ -96,12 +96,12 @@ export interface ApplicationWithRelations extends Application {
   /** Non-null only when RLS let us read it — i.e. own row, or accepted. */
   phone: string | null
   student_skills?: Skill[]
-  quest?: QuestWithRelations
+  gig?: GigWithRelations
 }
 
 export interface Review {
   id: string
-  quest_id: string
+  gig_id: string
   reviewer_id: string
   reviewee_id: string
   rating: number
@@ -111,27 +111,27 @@ export interface Review {
 }
 
 export interface PlatformStats {
-  open_quests: number
-  total_quests: number
+  open_gigs: number
+  total_gigs: number
   students: number
   hirers: number
   reward_pool: number
   completed: number
 }
 
-/** Filters driving the quest board. All optional. */
-export interface QuestFilters {
+/** Filters driving the gig board. All optional. */
+export interface GigFilters {
   q?: string
   skills?: number[]
-  types?: QuestType[]
+  types?: GigType[]
   minReward?: number
   maxReward?: number
   remoteOnly?: boolean
-  sort?: QuestSort
+  sort?: GigSort
   page?: number
 }
 
-export type QuestSort = 'recent' | 'reward_high' | 'reward_low' | 'deadline'
+export type GigSort = 'recent' | 'reward_high' | 'reward_low' | 'deadline'
 
 /** Uniform return shape for every Server Action. */
 export type ActionResult =

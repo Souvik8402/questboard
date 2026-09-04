@@ -3,9 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { isSupabaseConfigured } from '@/lib/config'
-import { QUEST_TYPES } from '@/lib/constants'
+import { GIG_TYPES } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/server'
-import type { ActionResult, QuestType } from '@/lib/types'
+import type { ActionResult, GigType } from '@/lib/types'
 import {
   FieldError,
   checkbox,
@@ -20,20 +20,20 @@ import {
   runAction,
 } from '@/lib/validate'
 
-const TYPE_VALUES = QUEST_TYPES.map((t) => t.value) as QuestType[]
+const TYPE_VALUES = GIG_TYPES.map((t) => t.value) as GigType[]
 
 /**
- * Post a quest.
+ * Post a gig.
  *
  * Anyone signed in may post — the exclusivity is on *claiming*, not offering.
- * A phone number is mandatory, but it lands in `quest_contacts`, which RLS
+ * A phone number is mandatory, but it lands in `gig_contacts`, which RLS
  * keeps hidden until the hirer accepts an applicant.
  */
-export async function createQuest(_prev: unknown, form: FormData): Promise<ActionResult> {
+export async function createGig(_prev: unknown, form: FormData): Promise<ActionResult> {
   return runAction(async () => {
     if (!isSupabaseConfigured) {
       throw new FieldError(
-        'Demo mode — no database connected, so the quest cannot be saved. Add your Supabase keys to .env.local to make this live.',
+        'Demo mode — no database connected, so the gig cannot be saved. Add your Supabase keys to .env.local to make this live.',
       )
     }
 
@@ -52,7 +52,7 @@ export async function createQuest(_prev: unknown, form: FormData): Promise<Actio
       min: 20,
       max: 4000,
     })
-    const questType = requireEnum(form, 'quest_type', TYPE_VALUES, 'quest type')
+    const gigType = requireEnum(form, 'gig_type', TYPE_VALUES, 'gig type')
     const reward = requireInt(form, 'reward_amount', {
       label: 'Reward',
       min: 0,
@@ -87,13 +87,13 @@ export async function createQuest(_prev: unknown, form: FormData): Promise<Actio
 
     const supabase = await createClient()
 
-    const { data: quest, error } = await supabase
-      .from('quests')
+    const { data: gig, error } = await supabase
+      .from('gigs')
       .insert({
         hirer_id: session.userId,
         title,
         description,
-        quest_type: questType,
+        gig_type: gigType,
         reward_amount: reward,
         estimated_hours: estimatedHours,
         deadline,
@@ -108,36 +108,36 @@ export async function createQuest(_prev: unknown, form: FormData): Promise<Actio
 
     if (error) throw new Error(error.message)
 
-    // Tags and the phone number are separate inserts. If either fails the quest
+    // Tags and the phone number are separate inserts. If either fails the gig
     // still exists, so report it instead of pretending everything worked.
     const [{ error: skillError }, { error: contactError }] = await Promise.all([
       supabase
-        .from('quest_skills')
-        .insert(skills.map((skillId) => ({ quest_id: quest.id, skill_id: skillId }))),
+        .from('gig_skills')
+        .insert(skills.map((skillId) => ({ gig_id: gig.id, skill_id: skillId }))),
       supabase
-        .from('quest_contacts')
-        .insert({ quest_id: quest.id, phone, alt_contact: altContact }),
+        .from('gig_contacts')
+        .insert({ gig_id: gig.id, phone, alt_contact: altContact }),
     ])
 
-    revalidatePath('/quests')
-    revalidatePath('/quests/map')
+    revalidatePath('/gigs')
+    revalidatePath('/gigs/map')
     revalidatePath('/dashboard')
     revalidatePath('/')
 
     if (skillError || contactError) {
       return {
         ok: true,
-        message: `Quest posted, but ${
+        message: `Gig posted, but ${
           skillError ? 'the skill tags' : 'your phone number'
-        } could not be saved. Edit the quest from your dashboard to fix it.`,
-        redirectTo: `/quests/${quest.id}`,
+        } could not be saved. Edit the gig from your dashboard to fix it.`,
+        redirectTo: `/gigs/${gig.id}`,
       }
     }
 
     return {
       ok: true,
-      message: 'Quest posted. Students matching your tags will see it immediately.',
-      redirectTo: `/quests/${quest.id}`,
+      message: 'Gig posted. Students matching your tags will see it immediately.',
+      redirectTo: `/gigs/${gig.id}`,
     }
   })
 }

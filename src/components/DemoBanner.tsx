@@ -15,7 +15,7 @@ export function DemoBanner() {
           <span className="font-semibold">Demo mode</span>
           <span className="hidden sm:inline">
             {' '}
-            — showing sample quests. Add Supabase keys to <code className="hud">.env.local</code> to
+            — showing sample gigs. Add Supabase keys to <code className="hud">.env.local</code> to
             enable sign-in, posting and applying.
           </span>
           <span className="sm:hidden"> — sample data, sign-in disabled.</span>

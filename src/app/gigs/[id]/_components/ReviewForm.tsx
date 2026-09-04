@@ -11,15 +11,15 @@ import { submitReview } from '../actions'
 
 /**
  * Post-completion review. The RLS INSERT policy only permits this on a
- * completed quest, between its two participants, once each — so the worst a
+ * completed gig, between its two participants, once each — so the worst a
  * tampered form can do is get rejected.
  */
 export function ReviewForm({
-  questId,
+  gigId,
   reviewee,
   role,
 }: {
-  questId: string
+  gigId: string
   reviewee: PublicProfile
   /** Which side the reviewee is on, so the prompt reads naturally. */
   role: 'student' | 'hirer'
@@ -47,7 +47,7 @@ export function ReviewForm({
       </div>
 
       <form action={action} className="mt-4 space-y-4">
-        <input type="hidden" name="questId" value={questId} />
+        <input type="hidden" name="gigId" value={gigId} />
         <input type="hidden" name="revieweeId" value={reviewee.id} />
 
         <Field label="Rating" required>

@@ -2,36 +2,36 @@
 
 import { useActionState, useState } from 'react'
 import Link from 'next/link'
-import type { AdminQuest } from '@/lib/admin-queries'
-import { QUEST_STATUSES, QUEST_STATUS_LABEL, QUEST_TYPE_LABEL } from '@/lib/constants'
+import type { AdminGig } from '@/lib/admin-queries'
+import { GIG_STATUSES, GIG_STATUS_LABEL, GIG_TYPE_LABEL } from '@/lib/constants'
 import { formatRupees, relativeTime } from '@/lib/format'
-import type { ActionResult, QuestStatus, QuestType } from '@/lib/types'
+import type { ActionResult, GigStatus, GigType } from '@/lib/types'
 import { Badge, StatusPill } from '@/components/ui/Badge'
 import { Notice, Panel } from '@/components/ui/Panel'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { IconSearch, IconTrash } from '@/components/ui/Icons'
-import { adminDeleteQuest, adminSetQuestStatus } from '../../actions'
+import { adminDeleteGig, adminSetGigStatus } from '../../actions'
 
-export function QuestTable({ quests }: { quests: AdminQuest[] }) {
+export function GigTable({ gigs }: { gigs: AdminGig[] }) {
   // One action slot for both mutations; the hidden `intent` picks the branch.
   const [result, act] = useActionState<ActionResult | null, FormData>(async (prev, form) => {
     return form.get('intent') === 'delete'
-      ? adminDeleteQuest(prev, form)
-      : adminSetQuestStatus(prev, form)
+      ? adminDeleteGig(prev, form)
+      : adminSetGigStatus(prev, form)
   }, null)
 
-  const [status, setStatus] = useState<QuestStatus | 'all'>('all')
+  const [status, setStatus] = useState<GigStatus | 'all'>('all')
   const [query, setQuery] = useState('')
   const [confirming, setConfirming] = useState<string | null>(null)
 
   const q = query.trim().toLowerCase()
-  const shown = quests.filter((quest) => {
-    if (status !== 'all' && quest.status !== status) return false
+  const shown = gigs.filter((gig) => {
+    if (status !== 'all' && gig.status !== status) return false
     if (!q) return true
     return (
-      quest.title.toLowerCase().includes(q) ||
-      (quest.hirer_name ?? '').toLowerCase().includes(q) ||
-      (quest.location_label ?? '').toLowerCase().includes(q)
+      gig.title.toLowerCase().includes(q) ||
+      (gig.hirer_name ?? '').toLowerCase().includes(q) ||
+      (gig.location_label ?? '').toLowerCase().includes(q)
     )
   })
 
@@ -49,7 +49,7 @@ export function QuestTable({ quests }: { quests: AdminQuest[] }) {
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {(['all', ...QUEST_STATUSES] as const).map((value) => (
+          {(['all', ...GIG_STATUSES] as const).map((value) => (
             <button
               key={value}
               type="button"
@@ -60,7 +60,7 @@ export function QuestTable({ quests }: { quests: AdminQuest[] }) {
                   : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
               }`}
             >
-              {value === 'all' ? 'All' : QUEST_STATUS_LABEL[value]}
+              {value === 'all' ? 'All' : GIG_STATUS_LABEL[value]}
             </button>
           ))}
         </div>
@@ -70,49 +70,49 @@ export function QuestTable({ quests }: { quests: AdminQuest[] }) {
 
       <Panel className="divide-y divide-line/70 p-0">
         {shown.length === 0 && (
-          <p className="px-4 py-10 text-center text-[13px] text-dim">No quest matches that.</p>
+          <p className="px-4 py-10 text-center text-[13px] text-dim">No gig matches that.</p>
         )}
 
-        {shown.map((quest) => (
-          <div key={quest.id} className="p-4">
+        {shown.map((gig) => (
+          <div key={gig.id} className="p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-[220px] flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <StatusPill status={quest.status} />
+                  <StatusPill status={gig.status} />
                   <Badge tone="neutral">
-                    {QUEST_TYPE_LABEL[quest.quest_type as QuestType] ?? quest.quest_type}
+                    {GIG_TYPE_LABEL[gig.gig_type as GigType] ?? gig.gig_type}
                   </Badge>
-                  {quest.is_remote && <Badge tone="teal">Remote</Badge>}
+                  {gig.is_remote && <Badge tone="teal">Remote</Badge>}
                 </div>
                 <Link
-                  href={`/quests/${quest.id}`}
+                  href={`/gigs/${gig.id}`}
                   className="mt-2 block text-[13.5px] font-medium leading-snug text-chalk hover:text-cyan"
                 >
-                  {quest.title}
+                  {gig.title}
                 </Link>
                 <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
-                  <span className="hud text-mist">{formatRupees(quest.reward_amount)}</span>
-                  <Link href={`/profile/${quest.hirer_id}`} className="hover:text-cyan">
-                    {quest.hirer_name ?? 'Unknown hirer'}
+                  <span className="hud text-mist">{formatRupees(gig.reward_amount)}</span>
+                  <Link href={`/profile/${gig.hirer_id}`} className="hover:text-cyan">
+                    {gig.hirer_name ?? 'Unknown hirer'}
                   </Link>
-                  <span>{quest.application_count} applied</span>
-                  <span>{quest.views} views</span>
-                  <span className="text-dimmer">{relativeTime(quest.created_at)}</span>
+                  <span>{gig.application_count} applied</span>
+                  <span>{gig.views} views</span>
+                  <span className="text-dimmer">{relativeTime(gig.created_at)}</span>
                 </p>
               </div>
 
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <form action={act} className="flex items-center gap-1.5">
                   <input type="hidden" name="intent" value="status" />
-                  <input type="hidden" name="quest_id" value={quest.id} />
+                  <input type="hidden" name="gig_id" value={gig.id} />
                   <select
                     name="status"
-                    defaultValue={quest.status}
+                    defaultValue={gig.status}
                     className="rounded-lg border border-line bg-ink/70 px-2 py-1.5 text-[12px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
                   >
-                    {QUEST_STATUSES.map((s) => (
+                    {GIG_STATUSES.map((s) => (
                       <option key={s} value={s}>
-                        {QUEST_STATUS_LABEL[s]}
+                        {GIG_STATUS_LABEL[s]}
                       </option>
                     ))}
                   </select>
@@ -121,10 +121,10 @@ export function QuestTable({ quests }: { quests: AdminQuest[] }) {
                   </SubmitButton>
                 </form>
 
-                {confirming === quest.id ? (
+                {confirming === gig.id ? (
                   <form action={act} className="flex items-center gap-1.5">
                     <input type="hidden" name="intent" value="delete" />
-                    <input type="hidden" name="quest_id" value={quest.id} />
+                    <input type="hidden" name="gig_id" value={gig.id} />
                     <SubmitButton size="sm" variant="danger" pendingLabel="Deleting…">
                       Confirm delete
                     </SubmitButton>
@@ -139,9 +139,9 @@ export function QuestTable({ quests }: { quests: AdminQuest[] }) {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setConfirming(quest.id)}
-                    aria-label="Delete quest"
-                    title="Delete quest and its applications"
+                    onClick={() => setConfirming(gig.id)}
+                    aria-label="Delete gig"
+                    title="Delete gig and its applications"
                     className="grid size-8 place-items-center rounded-lg border border-line text-dim transition-colors hover:border-rose/40 hover:text-rose"
                   >
                     <IconTrash className="size-3.5" />
@@ -154,7 +154,7 @@ export function QuestTable({ quests }: { quests: AdminQuest[] }) {
       </Panel>
 
       <p className="text-[11.5px] text-dim">
-        Showing {shown.length} of {quests.length}. Forcing a status here skips the normal
+        Showing {shown.length} of {gigs.length}. Forcing a status here skips the normal
         transition rules — deleting also removes applications, tags and the stored phone number.
       </p>
     </div>

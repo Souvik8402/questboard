@@ -5,8 +5,8 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
     title: 'For students',
     links: [
-      { href: '/quests', label: 'Browse quests' },
-      { href: '/quests/map', label: 'Quests near me' },
+      { href: '/gigs', label: 'Browse gigs' },
+      { href: '/gigs/map', label: 'Gigs near me' },
       { href: '/login', label: 'Verify with institute email' },
       { href: '/dashboard', label: 'My applications' },
     ],
@@ -14,7 +14,7 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
     title: 'For hirers',
     links: [
-      { href: '/quests/new', label: 'Post a quest' },
+      { href: '/gigs/new', label: 'Post a gig' },
       { href: '/login', label: 'Create an account' },
       { href: '/dashboard', label: 'Manage postings' },
     ],
@@ -37,7 +37,7 @@ export function Footer() {
                 </svg>
               </span>
               <span className="text-[15px] font-semibold tracking-tight text-chalk">
-                Quest<span className="text-cyan">Board</span>
+                Gig<span className="text-cyan">Nest</span>
               </span>
             </Link>
             <p className="max-w-xs text-[13px] leading-relaxed text-dim">

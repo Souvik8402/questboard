@@ -1,4 +1,4 @@
-import { QuestCardSkeleton } from '@/components/QuestCard'
+import { GigCardSkeleton } from '@/components/GigCard'
 
 export default function Loading() {
   return (
@@ -10,7 +10,7 @@ export default function Loading() {
       <div className="mt-8 h-12 animate-pulse rounded-xl bg-white/[0.04]" />
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
-          <QuestCardSkeleton key={i} index={i} />
+          <GigCardSkeleton key={i} index={i} />
         ))}
       </div>
     </div>

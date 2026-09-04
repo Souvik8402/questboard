@@ -1,15 +1,15 @@
-import { QUESTS_PER_PAGE } from './constants'
+import { GIGS_PER_PAGE } from './constants'
 import { isSupabaseConfigured } from './config'
 import {
-  DEMO_QUESTS,
+  DEMO_GIGS,
   DEMO_REVIEWS,
   DEMO_SKILLS,
   DEMO_STATS,
   demoApplicationsFor,
   demoProfileById,
-  demoQuestById,
-  demoQuestsAssignedTo,
-  demoQuestsPostedBy,
+  demoGigById,
+  demoGigsAssignedTo,
+  demoGigsPostedBy,
 } from './demo-data'
 import { createClient } from './supabase/server'
 import type {
@@ -17,9 +17,9 @@ import type {
   ApplicationWithRelations,
   PlatformStats,
   PublicProfile,
-  Quest,
-  QuestFilters,
-  QuestWithRelations,
+  Gig,
+  GigFilters,
+  GigWithRelations,
   Review,
   Skill,
 } from './types'
@@ -31,21 +31,21 @@ import type {
  * dataset, so pages never have to care which mode they're in.
  */
 
-const QUEST_SELECT = `
-  id, hirer_id, title, description, quest_type, status, reward_amount,
+const GIG_SELECT = `
+  id, hirer_id, title, description, gig_type, status, reward_amount,
   estimated_hours, deadline, is_remote, location_label, lat, lng,
   assigned_to, views, is_flagged, application_count, created_at, updated_at,
-  hirer:profiles!quests_hirer_id_fkey (
+  hirer:profiles!gigs_hirer_id_fkey (
     id, full_name, avatar_url, role, rating, rating_count, department, year
   ),
-  quest_skills ( skill:skills ( id, slug, name, category ) )
+  gig_skills ( skill:skills ( id, slug, name, category ) )
 `
 
-/** Shape PostgREST actually hands back for QUEST_SELECT. */
-interface RawQuest extends Quest {
+/** Shape PostgREST actually hands back for GIG_SELECT. */
+interface RawGig extends Gig {
   application_count: number
   hirer: PublicProfile | PublicProfile[] | null
-  quest_skills: { skill: Skill | null }[] | null
+  gig_skills: { skill: Skill | null }[] | null
 }
 
 function one<T>(value: T | T[] | null | undefined): T | null {
@@ -53,12 +53,12 @@ function one<T>(value: T | T[] | null | undefined): T | null {
   return value ?? null
 }
 
-function normalizeQuest(row: RawQuest): QuestWithRelations {
-  const { quest_skills, hirer, ...quest } = row
+function normalizeGig(row: RawGig): GigWithRelations {
+  const { gig_skills, hirer, ...gig } = row
   return {
-    ...quest,
+    ...gig,
     hirer: one(hirer),
-    skills: (quest_skills ?? [])
+    skills: (gig_skills ?? [])
       .map((qs) => qs.skill)
       .filter((s): s is Skill => Boolean(s))
       .sort((a, b) => a.name.localeCompare(b.name)),
@@ -108,40 +108,40 @@ export async function getPlatformStats(): Promise<PlatformStats> {
   }
 }
 
-// ── Quest board ─────────────────────────────────────────────────────────────
+// ── Gig board ─────────────────────────────────────────────────────────────
 
-export interface QuestPage {
-  quests: QuestWithRelations[]
+export interface GigPage {
+  gigs: GigWithRelations[]
   total: number
   page: number
   pageCount: number
 }
 
-export async function getQuests(filters: QuestFilters = {}): Promise<QuestPage> {
+export async function getGigs(filters: GigFilters = {}): Promise<GigPage> {
   const page = Math.max(1, filters.page ?? 1)
 
-  if (!isSupabaseConfigured) return demoQuestPage(filters, page)
+  if (!isSupabaseConfigured) return demoGigPage(filters, page)
 
   const supabase = await createClient()
 
   let query = supabase
-    .from('quests')
-    .select(QUEST_SELECT, { count: 'exact' })
+    .from('gigs')
+    .select(GIG_SELECT, { count: 'exact' })
     .eq('status', 'open')
     .eq('is_flagged', false)
 
   // Skill filter runs as a separate lookup rather than an inner join: joining
-  // with `quest_skills!inner` would prune the embedded skill list down to just
+  // with `gig_skills!inner` would prune the embedded skill list down to just
   // the matched tags, and the cards need to show all of them.
   if (filters.skills?.length) {
     const { data: matches } = await supabase
-      .from('quest_skills')
-      .select('quest_id')
+      .from('gig_skills')
+      .select('gig_id')
       .in('skill_id', filters.skills)
       .limit(1000)
 
-    const ids = [...new Set((matches ?? []).map((m) => m.quest_id as string))]
-    if (ids.length === 0) return { quests: [], total: 0, page: 1, pageCount: 0 }
+    const ids = [...new Set((matches ?? []).map((m) => m.gig_id as string))]
+    if (ids.length === 0) return { gigs: [], total: 0, page: 1, pageCount: 0 }
     query = query.in('id', ids)
   }
 
@@ -151,7 +151,7 @@ export async function getQuests(filters: QuestFilters = {}): Promise<QuestPage> 
       config: 'english',
     })
   }
-  if (filters.types?.length) query = query.in('quest_type', filters.types)
+  if (filters.types?.length) query = query.in('gig_type', filters.types)
   if (filters.minReward !== undefined) query = query.gte('reward_amount', filters.minReward)
   if (filters.maxReward !== undefined) query = query.lte('reward_amount', filters.maxReward)
   if (filters.remoteOnly) query = query.eq('is_remote', true)
@@ -170,26 +170,26 @@ export async function getQuests(filters: QuestFilters = {}): Promise<QuestPage> 
       query = query.order('created_at', { ascending: false })
   }
 
-  const from = (page - 1) * QUESTS_PER_PAGE
-  const { data, count, error } = await query.range(from, from + QUESTS_PER_PAGE - 1)
+  const from = (page - 1) * GIGS_PER_PAGE
+  const { data, count, error } = await query.range(from, from + GIGS_PER_PAGE - 1)
 
   if (error) {
-    console.error('[getQuests]', error.message)
-    return { quests: [], total: 0, page, pageCount: 0 }
+    console.error('[getGigs]', error.message)
+    return { gigs: [], total: 0, page, pageCount: 0 }
   }
 
   const total = count ?? 0
   return {
-    quests: (data as unknown as RawQuest[]).map(normalizeQuest),
+    gigs: (data as unknown as RawGig[]).map(normalizeGig),
     total,
     page,
-    pageCount: Math.max(1, Math.ceil(total / QUESTS_PER_PAGE)),
+    pageCount: Math.max(1, Math.ceil(total / GIGS_PER_PAGE)),
   }
 }
 
 /** Same filters as the live query, applied in JS over the demo dataset. */
-function demoQuestPage(filters: QuestFilters, page: number): QuestPage {
-  let list = DEMO_QUESTS.filter((q) => q.status === 'open' && !q.is_flagged)
+function demoGigPage(filters: GigFilters, page: number): GigPage {
+  let list = DEMO_GIGS.filter((q) => q.status === 'open' && !q.is_flagged)
 
   if (filters.q) {
     const needle = filters.q.toLowerCase()
@@ -207,7 +207,7 @@ function demoQuestPage(filters: QuestFilters, page: number): QuestPage {
   }
   if (filters.types?.length) {
     const wanted = new Set(filters.types)
-    list = list.filter((q) => wanted.has(q.quest_type))
+    list = list.filter((q) => wanted.has(q.gig_type))
   }
   if (filters.minReward !== undefined) {
     list = list.filter((q) => q.reward_amount >= filters.minReward!)
@@ -236,36 +236,36 @@ function demoQuestPage(filters: QuestFilters, page: number): QuestPage {
       sorted.sort((a, b) => b.created_at.localeCompare(a.created_at))
   }
 
-  const from = (page - 1) * QUESTS_PER_PAGE
+  const from = (page - 1) * GIGS_PER_PAGE
   return {
-    quests: sorted.slice(from, from + QUESTS_PER_PAGE),
+    gigs: sorted.slice(from, from + GIGS_PER_PAGE),
     total: sorted.length,
     page,
-    pageCount: Math.max(1, Math.ceil(sorted.length / QUESTS_PER_PAGE)),
+    pageCount: Math.max(1, Math.ceil(sorted.length / GIGS_PER_PAGE)),
   }
 }
 
-/** Every open quest that has coordinates — used by the map view. */
-export async function getMappableQuests(
-  filters: QuestFilters = {},
-): Promise<QuestWithRelations[]> {
-  const { quests } = await getQuests({ ...filters, page: 1 })
-  return quests.filter((q) => q.lat !== null && q.lng !== null)
+/** Every open gig that has coordinates — used by the map view. */
+export async function getMappableGigs(
+  filters: GigFilters = {},
+): Promise<GigWithRelations[]> {
+  const { gigs } = await getGigs({ ...filters, page: 1 })
+  return gigs.filter((q) => q.lat !== null && q.lng !== null)
 }
 
-// ── Single quest ────────────────────────────────────────────────────────────
+// ── Single gig ────────────────────────────────────────────────────────────
 
-export async function getQuest(id: string): Promise<QuestWithRelations | null> {
-  if (!isSupabaseConfigured) return demoQuestById(id)
+export async function getGig(id: string): Promise<GigWithRelations | null> {
+  if (!isSupabaseConfigured) return demoGigById(id)
 
   const supabase = await createClient()
-  const { data, error } = await supabase.from('quests').select(QUEST_SELECT).eq('id', id).maybeSingle()
+  const { data, error } = await supabase.from('gigs').select(GIG_SELECT).eq('id', id).maybeSingle()
 
   if (error || !data) return null
-  return normalizeQuest(data as unknown as RawQuest)
+  return normalizeGig(data as unknown as RawGig)
 }
 
-export interface QuestContact {
+export interface GigContact {
   phone: string
   alt_contact: string | null
 }
@@ -274,23 +274,23 @@ export interface QuestContact {
  * Returns null when RLS declined to hand the row over — i.e. the viewer is
  * neither the hirer nor an accepted applicant. That "null" IS the feature.
  */
-export async function getQuestContact(questId: string): Promise<QuestContact | null> {
+export async function getGigContact(gigId: string): Promise<GigContact | null> {
   if (!isSupabaseConfigured) return null
 
   const supabase = await createClient()
   const { data } = await supabase
-    .from('quest_contacts')
+    .from('gig_contacts')
     .select('phone, alt_contact')
-    .eq('quest_id', questId)
+    .eq('gig_id', gigId)
     .maybeSingle()
 
-  return (data as QuestContact | null) ?? null
+  return (data as GigContact | null) ?? null
 }
 
 // ── Applications ────────────────────────────────────────────────────────────
 
 const APPLICATION_SELECT = `
-  id, quest_id, student_id, cover_note, status, created_at,
+  id, gig_id, student_id, cover_note, status, created_at,
   student:profiles!applications_student_id_fkey (
     id, full_name, avatar_url, role, rating, rating_count, department, year
   ),
@@ -311,9 +311,9 @@ function normalizeApplication(row: RawApplication): ApplicationWithRelations {
   }
 }
 
-/** Applicants for a quest. RLS means only the quest owner gets rows back. */
-export async function getQuestApplications(
-  questId: string,
+/** Applicants for a gig. RLS means only the gig owner gets rows back. */
+export async function getGigApplications(
+  gigId: string,
 ): Promise<ApplicationWithRelations[]> {
   if (!isSupabaseConfigured) return []
 
@@ -321,7 +321,7 @@ export async function getQuestApplications(
   const { data, error } = await supabase
     .from('applications')
     .select(APPLICATION_SELECT)
-    .eq('quest_id', questId)
+    .eq('gig_id', gigId)
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
@@ -329,7 +329,7 @@ export async function getQuestApplications(
 }
 
 export async function getMyApplicationFor(
-  questId: string,
+  gigId: string,
   userId: string,
 ): Promise<ApplicationWithRelations | null> {
   if (!isSupabaseConfigured) return null
@@ -338,7 +338,7 @@ export async function getMyApplicationFor(
   const { data } = await supabase
     .from('applications')
     .select(APPLICATION_SELECT)
-    .eq('quest_id', questId)
+    .eq('gig_id', gigId)
     .eq('student_id', userId)
     .maybeSingle()
 
@@ -346,7 +346,7 @@ export async function getMyApplicationFor(
   return normalizeApplication(data as unknown as RawApplication)
 }
 
-/** A student's own applications, newest first, with the quest embedded. */
+/** A student's own applications, newest first, with the gig embedded. */
 export async function getMyApplications(userId: string): Promise<ApplicationWithRelations[]> {
   if (!isSupabaseConfigured) return demoApplicationsFor(userId)
 
@@ -354,23 +354,23 @@ export async function getMyApplications(userId: string): Promise<ApplicationWith
   const { data, error } = await supabase
     .from('applications')
     .select(
-      `id, quest_id, student_id, cover_note, status, created_at,
-       quest:quests!applications_quest_id_fkey ( ${QUEST_SELECT} )`,
+      `id, gig_id, student_id, cover_note, status, created_at,
+       gig:gigs!applications_gig_id_fkey ( ${GIG_SELECT} )`,
     )
     .eq('student_id', userId)
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
 
-  return (data as unknown as (Application & { quest: RawQuest | RawQuest[] | null })[]).map(
+  return (data as unknown as (Application & { gig: RawGig | RawGig[] | null })[]).map(
     (row) => {
-      const { quest, ...application } = row
-      const raw = one(quest)
+      const { gig, ...application } = row
+      const raw = one(gig)
       return {
         ...application,
         student: null,
         phone: null,
-        quest: raw ? normalizeQuest(raw) : undefined,
+        gig: raw ? normalizeGig(raw) : undefined,
       }
     },
   )
@@ -378,32 +378,32 @@ export async function getMyApplications(userId: string): Promise<ApplicationWith
 
 // ── Dashboard lists ─────────────────────────────────────────────────────────
 
-export async function getQuestsPostedBy(userId: string): Promise<QuestWithRelations[]> {
-  if (!isSupabaseConfigured) return demoQuestsPostedBy(userId)
+export async function getGigsPostedBy(userId: string): Promise<GigWithRelations[]> {
+  if (!isSupabaseConfigured) return demoGigsPostedBy(userId)
 
   const supabase = await createClient()
   const { data, error } = await supabase
-    .from('quests')
-    .select(QUEST_SELECT)
+    .from('gigs')
+    .select(GIG_SELECT)
     .eq('hirer_id', userId)
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
-  return (data as unknown as RawQuest[]).map(normalizeQuest)
+  return (data as unknown as RawGig[]).map(normalizeGig)
 }
 
-export async function getQuestsAssignedTo(userId: string): Promise<QuestWithRelations[]> {
-  if (!isSupabaseConfigured) return demoQuestsAssignedTo(userId)
+export async function getGigsAssignedTo(userId: string): Promise<GigWithRelations[]> {
+  if (!isSupabaseConfigured) return demoGigsAssignedTo(userId)
 
   const supabase = await createClient()
   const { data, error } = await supabase
-    .from('quests')
-    .select(QUEST_SELECT)
+    .from('gigs')
+    .select(GIG_SELECT)
     .eq('assigned_to', userId)
     .order('updated_at', { ascending: false })
 
   if (error || !data) return []
-  return (data as unknown as RawQuest[]).map(normalizeQuest)
+  return (data as unknown as RawGig[]).map(normalizeGig)
 }
 
 // ── Profiles ────────────────────────────────────────────────────────────────
@@ -462,7 +462,7 @@ export async function getReviewsFor(profileId: string): Promise<Review[]> {
   const { data, error } = await supabase
     .from('reviews')
     .select(
-      `id, quest_id, reviewer_id, reviewee_id, rating, comment, created_at,
+      `id, gig_id, reviewer_id, reviewee_id, rating, comment, created_at,
        reviewer:profiles!reviews_reviewer_id_fkey (
          id, full_name, avatar_url, role, rating, rating_count, department, year
        )`,
@@ -477,15 +477,15 @@ export async function getReviewsFor(profileId: string): Promise<Review[]> {
   )
 }
 
-/** Has the viewer already reviewed their counterparty on this quest? */
-export async function hasReviewed(questId: string, reviewerId: string): Promise<boolean> {
+/** Has the viewer already reviewed their counterparty on this gig? */
+export async function hasReviewed(gigId: string, reviewerId: string): Promise<boolean> {
   if (!isSupabaseConfigured) return false
 
   const supabase = await createClient()
   const { data } = await supabase
     .from('reviews')
     .select('id')
-    .eq('quest_id', questId)
+    .eq('gig_id', gigId)
     .eq('reviewer_id', reviewerId)
     .maybeSingle()
 
