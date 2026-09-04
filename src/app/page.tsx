@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getPlatformStats, getGigs, getSkillsByCategory } from '@/lib/queries'
 import { INSTITUTE_NAME, INSTITUTE_SHORT, GIG_TYPES } from '@/lib/constants'
+import { cn } from '@/lib/cn'
 import { compactRupees } from '@/lib/format'
 import { GigCard } from '@/components/GigCard'
 import { SkillChip } from '@/components/ui/Badge'
@@ -11,10 +12,12 @@ import {
   IconBriefcase,
   IconCheck,
   IconCoins,
+  IconLayers,
   IconMapPin,
   IconSearch,
   IconShield,
   IconSparkles,
+  IconStar,
   IconUsers,
 } from '@/components/ui/Icons'
 
@@ -38,6 +41,7 @@ export default async function HomePage() {
       <FeaturedGigs gigs={featured} />
       <SkillBand tags={tagSample} />
       <TwoSides />
+      <GrowthLoop />
       <TrustBand />
       <FinalCta />
     </>
@@ -358,7 +362,141 @@ function TwoSides() {
   )
 }
 
+/* ── Growth loop ──────────────────────────────────────────────────────────── */
+
+/**
+ * The four stages that turn a gig board into a way out of the "no experience,
+ * no job" trap.
+ *
+ * `live` is load-bearing, not decoration. Stages 1 and 2 are shipped features —
+ * the board pays, and completed gigs plus database-computed ratings already
+ * amount to a track record on a public profile. Stages 3 and 4 are not built.
+ * Labelling them honestly costs a little polish and buys the section its
+ * credibility; a judge who clicks a "Browse sprints" button and gets a 404 will
+ * discount everything else on the page.
+ */
+const LOOP = [
+  {
+    icon: <IconCoins className="size-[18px]" />,
+    title: 'Earn while you are still learning',
+    body: 'A first paid job with no CV attached. Micro-gigs are small enough to take between classes and real enough to pay — a reel, a landing page, a weekend of tutoring.',
+    accent: 'lime',
+    live: true,
+  },
+  {
+    icon: <IconStar className="size-[18px]" />,
+    title: 'Every finished gig becomes proof',
+    body: 'Completed work, a two-way rating and the hirer’s review land on your public profile. Ratings are computed by the database from real reviews, so the track record is one you cannot write yourself.',
+    accent: 'cyan',
+    live: true,
+  },
+  {
+    icon: <IconLayers className="size-[18px]" />,
+    title: 'Close the gap with short sprints',
+    body: 'A gig you nearly qualified for tells us exactly what to teach. Focused two-week sprints, built around the skills the board is actually asking for — not a syllabus written a year ago.',
+    accent: 'violet',
+    live: false,
+  },
+  {
+    icon: <IconUsers className="size-[18px]" />,
+    title: 'Learn from the student ahead of you',
+    body: 'The senior who shipped that client site last semester is the best possible mentor for it, and they are two hostels away. Mentorship stays student-led, and mentoring counts on your profile too.',
+    accent: 'amber',
+    live: false,
+  },
+] as const
+
+const LOOP_ACCENT = {
+  lime: 'border-lime/25 bg-lime/10 text-lime',
+  cyan: 'border-cyan/25 bg-cyan/10 text-cyan',
+  violet: 'border-violet/25 bg-violet/10 text-violet',
+  amber: 'border-amber/25 bg-amber/10 text-amber',
+}
+
+function GrowthLoop() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+      <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-12">
+        {/* The trap, stated plainly. */}
+        <div className="lg:sticky lg:top-24">
+          <SectionHeading
+            eyebrow="Skills and experience"
+            title={
+              <>
+                <span className="text-dim">No experience, no job.</span>
+                <br />
+                <span className="text-dim">No job,</span>{' '}
+                <span className="gradient-text">no experience.</span>
+              </>
+            }
+            blurb="Every student hits the same closed circle, and a résumé workshop does not open it — only paid work that someone actually needed does. GigNest is built to break the loop at the cheapest point: a small job you can get today, which becomes the proof you are missing tomorrow."
+          >
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ButtonLink href="/gigs" size="sm">
+                Find your first gig
+                <IconArrowRight className="size-3.5" />
+              </ButtonLink>
+              <ButtonLink href="/login" variant="ghost" size="sm">
+                Start a profile
+              </ButtonLink>
+            </div>
+          </SectionHeading>
+        </div>
+
+        {/* The four stages. */}
+        <ol className="space-y-3">
+          {LOOP.map((stage, i) => (
+            <li key={stage.title}>
+              <Panel
+                glow
+                className="reveal flex gap-4 p-5 sm:gap-5 sm:p-6"
+                style={{ '--i': i } as React.CSSProperties}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <span
+                    className={cn(
+                      'grid size-10 shrink-0 place-items-center rounded-xl border',
+                      LOOP_ACCENT[stage.accent],
+                    )}
+                  >
+                    {stage.icon}
+                  </span>
+                  {/* Connector, so the four read as one loop rather than four cards. */}
+                  {i < LOOP.length - 1 && (
+                    <span className="hidden w-px flex-1 bg-linear-to-b from-line to-transparent sm:block" />
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <span className="hud text-[11px] tracking-widest text-dimmer">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="text-[15px] font-semibold text-chalk">{stage.title}</h3>
+                    <span
+                      className={cn(
+                        'rounded-full border px-2 py-0.5 text-[10.5px] font-medium tracking-wide',
+                        stage.live
+                          ? 'border-lime/25 bg-lime/[0.08] text-lime'
+                          : 'border-line bg-white/[0.03] text-dim',
+                      )}
+                    >
+                      {stage.live ? 'Live now' : 'Next build'}
+                    </span>
+                  </div>
+                  <p className="text-[13px] leading-relaxed text-mist">{stage.body}</p>
+                </div>
+              </Panel>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )
+}
+
 /* ── Trust ────────────────────────────────────────────────────────────────── */
+
 
 const TRUST = [
   {
