@@ -775,7 +775,7 @@ $$;
 --  8.  Grants
 --
 --  RLS decides which ROWS; these decide which TABLES are reachable at all.
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────��─────────────────────────────────────────────────────────
 
 grant usage on schema public to anon, authenticated;
 
