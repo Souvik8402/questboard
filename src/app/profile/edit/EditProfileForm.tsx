@@ -36,7 +36,7 @@ export function EditProfileForm({
       <Panel className="space-y-5 p-6">
         <div>
           <h2 className="text-base font-semibold text-chalk">About you</h2>
-          <p className="mt-1 text-[13px] text-mist">
+          <p className="mt-1 text-[14px] text-mist">
             This is what the other side sees before they decide to work with you.
           </p>
         </div>
@@ -82,7 +82,7 @@ export function EditProfileForm({
           <Panel className="space-y-5 p-6">
             <div>
               <h2 className="text-base font-semibold text-chalk">At the institute</h2>
-              <p className="mt-1 text-[13px] text-mist">
+              <p className="mt-1 text-[14px] text-mist">
                 Hirers use this to judge fit — a fourth-year Civil student reads differently on a
                 site-survey gig.
               </p>
@@ -120,7 +120,7 @@ export function EditProfileForm({
           <Panel className="space-y-5 p-6">
             <div>
               <h2 className="text-base font-semibold text-chalk">Your skills</h2>
-              <p className="mt-1 text-[13px] text-mist">
+              <p className="mt-1 text-[14px] text-mist">
                 Your dashboard surfaces gigs matching these tags, so keep them honest — wrong tags
                 mean wrong gigs.
               </p>
@@ -139,8 +139,8 @@ export function EditProfileForm({
       )}
 
       <Panel className="p-5">
-        <p className="text-[13px] font-medium text-chalk">Account type</p>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-mist">
+        <p className="text-[14px] font-medium text-chalk">Account type</p>
+        <p className="mt-1 text-[13.5px] leading-relaxed text-mist">
           You are set up as a{' '}
           <span className="text-chalk">{isStudent ? 'student' : 'hirer'}</span>. Switching roles
           re-checks your email against the institute domain, so it happens in{' '}
@@ -155,7 +155,7 @@ export function EditProfileForm({
 
       <div className="flex flex-wrap items-center gap-3">
         <SubmitButton pendingLabel="Saving…">Save changes</SubmitButton>
-        <a href={`/profile/${profile.id}`} className="text-[13px] text-dim hover:text-cyan">
+        <a href={`/profile/${profile.id}`} className="text-[14px] text-dim hover:text-cyan">
           View public profile
         </a>
       </div>

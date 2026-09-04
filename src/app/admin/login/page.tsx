@@ -33,7 +33,7 @@ export default async function AdminLoginPage({
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-12 sm:px-6">
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 self-start text-[13px] text-dim transition-colors hover:text-cyan"
+        className="inline-flex items-center gap-1.5 self-start text-[14px] text-dim transition-colors hover:text-cyan"
       >
         <IconArrowLeft className="size-3.5" />
         Back to GigNest
@@ -46,7 +46,7 @@ export default async function AdminLoginPage({
           </span>
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-chalk">Admin panel</h1>
-            <p className="text-[12.5px] text-dim">Moderation and platform stats</p>
+            <p className="text-[13.5px] text-dim">Moderation and platform stats</p>
           </div>
         </div>
 
@@ -54,7 +54,7 @@ export default async function AdminLoginPage({
           {configError ? (
             <Notice tone="warn" title="Not configured yet">
               {configError}
-              <span className="mt-2 block text-[12px] leading-relaxed">
+              <span className="mt-2 block text-[13px] leading-relaxed">
                 Add both <span className="hud">ADMIN_PASSWORD</span> and a 16-character{' '}
                 <span className="hud">ADMIN_SECRET</span> to <span className="hud">.env.local</span>,
                 then restart the dev server.
@@ -65,7 +65,7 @@ export default async function AdminLoginPage({
           )}
         </div>
 
-        <p className="mt-6 flex items-start gap-2 border-t border-line pt-5 text-[11.5px] leading-relaxed text-dim">
+        <p className="mt-6 flex items-start gap-2 border-t border-line pt-5 text-[12.5px] leading-relaxed text-dim">
           <IconLock className="mt-0.5 size-3.5 shrink-0" />
           <span>
             The session is an HMAC-signed, httpOnly cookie valid for 8 hours — page JavaScript

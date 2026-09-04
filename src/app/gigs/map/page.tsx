@@ -36,7 +36,7 @@ export default async function GigMapPage({ searchParams }: { searchParams: Promi
             <span className="text-chalk">Gigs </span>
             <span className="gradient-text">near you</span>
           </h1>
-          <p className="max-w-xl text-[14.5px] leading-relaxed text-mist">
+          <p className="max-w-xl text-[15.5px] leading-relaxed text-mist">
             Everything with a location, pinned. Colour tells you the reward tier — click a pin to
             open the gig.
           </p>
@@ -73,7 +73,7 @@ export default async function GigMapPage({ searchParams }: { searchParams: Promi
             <MapLoader gigs={gigs} />
           )}
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-1 text-[11.5px] text-dim">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-1 text-[12.5px] text-dim">
             <span className="uppercase tracking-wider text-dimmer">Reward tier</span>
             {REWARD_TIERS.map((t) => (
               <span key={t.tier} className="inline-flex items-center gap-1.5">
@@ -92,10 +92,10 @@ export default async function GigMapPage({ searchParams }: { searchParams: Promi
 
         <Panel className="max-h-[min(70dvh,620px)] overflow-y-auto p-0" glow={false}>
           <div className="sticky top-0 z-1 border-b border-line bg-panel/95 px-4 py-3 backdrop-blur">
-            <p className="text-[13px] font-semibold text-chalk">
+            <p className="text-[14px] font-semibold text-chalk">
               {gigs.length} pinned {gigs.length === 1 ? 'gig' : 'gigs'}
             </p>
-            <p className="mt-0.5 text-[11.5px] text-dim">Sorted the same way as the board.</p>
+            <p className="mt-0.5 text-[12.5px] text-dim">Sorted the same way as the board.</p>
           </div>
           <ul className="divide-y divide-line/70">
             {gigs.map((q) => (
@@ -105,17 +105,17 @@ export default async function GigMapPage({ searchParams }: { searchParams: Promi
                   className="block px-4 py-3 transition-colors hover:bg-white/[0.035]"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <p className="line-clamp-2 text-[13px] font-medium leading-snug text-chalk">
+                    <p className="line-clamp-2 text-[14px] font-medium leading-snug text-chalk">
                       {q.title}
                     </p>
                     <span
-                      className={`hud shrink-0 text-[12.5px] tier-${rewardTier(q.reward_amount)}`}
+                      className={`hud shrink-0 text-[13.5px] tier-${rewardTier(q.reward_amount)}`}
                       style={{ color: 'var(--tier)' }}
                     >
                       {formatRupees(q.reward_amount)}
                     </span>
                   </div>
-                  <p className="mt-1 flex items-center gap-1.5 text-[11.5px] text-dim">
+                  <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-dim">
                     <IconMapPin className="size-3" />
                     <span className="truncate">{q.location_label ?? 'Location on request'}</span>
                     <span className="text-dimmer">· {GIG_TYPE_LABEL[q.gig_type]}</span>

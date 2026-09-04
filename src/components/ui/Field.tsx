@@ -32,7 +32,7 @@ export function Field({
   return (
     <div className={cn('space-y-1.5', className)}>
       {label && (
-        <label htmlFor={htmlFor} className="flex items-baseline gap-1.5 text-[13px] font-medium text-chalk">
+        <label htmlFor={htmlFor} className="flex items-baseline gap-1.5 text-[14px] font-medium text-chalk">
           {label}
           {required && <span className="text-rose/80">*</span>}
         </label>
@@ -111,7 +111,7 @@ export function Checkbox({
         {...rest}
       />
       <span className="space-y-0.5">
-        <span className="block text-[13px] font-medium text-chalk">{label}</span>
+        <span className="block text-[14px] font-medium text-chalk">{label}</span>
         {hint && <span className="block text-xs leading-relaxed text-dim">{hint}</span>}
       </span>
     </label>

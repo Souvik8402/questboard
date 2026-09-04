@@ -58,8 +58,8 @@ export function TagPicker({
       ))}
 
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[13px] font-medium text-chalk">{label}</span>
-        <span className={cn('hud text-[11px]', full ? 'text-amber' : 'text-dim')}>
+        <span className="text-[14px] font-medium text-chalk">{label}</span>
+        <span className={cn('hud text-[12px]', full ? 'text-amber' : 'text-dim')}>
           {selected.length}/{max}
         </span>
       </div>
@@ -73,7 +73,7 @@ export function TagPicker({
             return (
               <span
                 key={id}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-cyan/45 bg-cyan/15 px-2 py-1 text-[11.5px] font-medium text-cyan"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-cyan/45 bg-cyan/15 px-2 py-1 text-[12.5px] font-medium text-cyan"
               >
                 {skill.name}
                 <button
@@ -105,7 +105,7 @@ export function TagPicker({
       {/* Catalogue */}
       <div className="max-h-72 space-y-4 overflow-y-auto rounded-xl border border-line bg-ink/40 p-3.5">
         {grouped.length === 0 && (
-          <p className="py-6 text-center text-[13px] text-dim">
+          <p className="py-6 text-center text-[14px] text-dim">
             No skill matches “{query}”. Try a broader word.
           </p>
         )}
@@ -122,7 +122,7 @@ export function TagPicker({
                     onClick={() => toggle(s.id)}
                     disabled={!on && full}
                     className={cn(
-                      'rounded-lg border px-2 py-1 text-[11.5px] font-medium transition-colors',
+                      'rounded-lg border px-2 py-1 text-[12.5px] font-medium transition-colors',
                       on
                         ? 'border-cyan/45 bg-cyan/15 text-cyan'
                         : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',

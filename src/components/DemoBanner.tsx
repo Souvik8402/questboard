@@ -9,7 +9,7 @@ export function DemoBanner() {
 
   return (
     <div className="relative z-40 border-b border-amber/20 bg-amber/[0.07]">
-      <div className="mx-auto flex max-w-7xl items-center gap-2.5 px-4 py-2 text-[12px] sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center gap-2.5 px-4 py-2 text-[13px] sm:px-6 lg:px-8">
         <span className="live-dot size-1.5 shrink-0 rounded-full bg-amber" />
         <p className="text-amber/90">
           <span className="font-semibold">Demo mode</span>

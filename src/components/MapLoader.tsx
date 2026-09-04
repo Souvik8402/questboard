@@ -15,7 +15,7 @@ const GigMap = dynamic(() => import('@/components/GigMap'), {
       className="grid w-full place-items-center rounded-[var(--radius-card)] border border-line bg-ink/60"
       style={{ height: 'min(70dvh, 620px)' }}
     >
-      <div className="flex items-center gap-2.5 text-[13px] text-dim">
+      <div className="flex items-center gap-2.5 text-[14px] text-dim">
         <span className="size-3.5 animate-spin rounded-full border-2 border-cyan/30 border-t-cyan" />
         Loading map tiles…
       </div>

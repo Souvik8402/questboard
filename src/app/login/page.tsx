@@ -46,7 +46,7 @@ export default async function LoginPage({
       <div className="space-y-8">
         <Link
           href="/gigs"
-          className="inline-flex items-center gap-1.5 text-[13px] text-mist transition-colors hover:text-chalk"
+          className="inline-flex items-center gap-1.5 text-[14px] text-mist transition-colors hover:text-chalk"
         >
           <IconArrowLeft className="size-3.5" />
           Back to the gig board
@@ -58,7 +58,7 @@ export default async function LoginPage({
             <span className="text-chalk">One board.</span>{' '}
             <span className="gradient-text">Two kinds of account.</span>
           </h1>
-          <p className="max-w-md text-[15px] leading-relaxed text-mist">
+          <p className="max-w-md text-[16px] leading-relaxed text-mist">
             Whether you are looking for work or looking for someone to do it, you start in the same
             place.
           </p>
@@ -73,7 +73,7 @@ export default async function LoginPage({
               <p className="text-sm font-semibold text-chalk">
                 {INSTITUTE_SHORT} student? Use Google.
               </p>
-              <p className="text-[13px] leading-relaxed text-mist">
+              <p className="text-[14px] leading-relaxed text-mist">
                 Signing in with your <span className="hud text-chalk">@itbhu.ac.in</span> Google
                 account is what proves you study here. It is the only route to claiming gigs.
               </p>
@@ -86,7 +86,7 @@ export default async function LoginPage({
             </span>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-chalk">Want to hire? Any email works.</p>
-              <p className="text-[13px] leading-relaxed text-mist">
+              <p className="text-[14px] leading-relaxed text-mist">
                 Shopkeepers, startups, professors, parents, alumni — create an account with an email
                 and password and post in a couple of minutes.
               </p>
@@ -101,7 +101,7 @@ export default async function LoginPage({
           <h2 className="text-xl font-semibold tracking-tight text-chalk">
             {mode === 'signup' ? 'Create your account' : 'Welcome back'}
           </h2>
-          <p className="text-[13px] text-mist">
+          <p className="text-[14px] text-mist">
             {mode === 'signup'
               ? 'Students should use the Google button — it verifies you instantly.'
               : 'Sign in to post a gig, apply to one, or check your dashboard.'}
@@ -130,13 +130,13 @@ export default async function LoginPage({
 
           <div className="flex items-center gap-3">
             <div className="hairline flex-1" />
-            <span className="text-[11px] uppercase tracking-widest text-dimmer">or</span>
+            <span className="text-[12px] uppercase tracking-widest text-dimmer">or</span>
             <div className="hairline flex-1" />
           </div>
 
           <PasswordForm mode={mode} next={next} />
 
-          <p className="text-center text-[13px] text-mist">
+          <p className="text-center text-[14px] text-mist">
             {mode === 'signup' ? (
               <>
                 Already have an account?{' '}
@@ -161,7 +161,7 @@ export default async function LoginPage({
           </p>
         </div>
 
-        <p className="mt-6 text-center text-[11.5px] leading-relaxed text-dimmer">
+        <p className="mt-6 text-center text-[12.5px] leading-relaxed text-dimmer">
           By continuing you agree that payments are settled directly between hirer and student.
           GigNest does not hold funds.
         </p>

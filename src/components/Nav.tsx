@@ -47,11 +47,11 @@ export async function Nav() {
         className="flex items-center gap-2 rounded-xl border border-line bg-white/[0.02] py-1 pl-1 pr-3 transition-colors hover:border-cyan/30 hover:bg-white/[0.06]"
       >
         <Avatar name={profile?.full_name} src={profile?.avatar_url} size="sm" />
-        <span className="max-w-28 truncate text-[13px] font-medium text-chalk">
+        <span className="max-w-28 truncate text-[14px] font-medium text-chalk">
           {profile?.full_name?.split(' ')[0] ?? 'Finish setup'}
         </span>
         {profile && (
-          <span className="hidden text-[10px] uppercase tracking-wider text-dim lg:inline">
+          <span className="hidden text-[11px] uppercase tracking-wider text-dim lg:inline">
             {ROLE_LABEL[profile.role]}
           </span>
         )}
@@ -85,7 +85,7 @@ export async function Nav() {
       <form action="/auth/signout" method="post">
         <button
           type="submit"
-          className="w-full rounded-xl px-3 py-2 text-[13px] font-medium text-dim transition-colors hover:bg-white/5 hover:text-rose"
+          className="w-full rounded-xl px-3 py-2 text-[14px] font-medium text-dim transition-colors hover:bg-white/5 hover:text-rose"
         >
           Sign out
         </button>
@@ -102,8 +102,25 @@ export async function Nav() {
     </>
   )
 
+  // Kept in the mobile bar rather than the drawer: signed out, the whole point
+  // of the site is behind sign-in; signed in, the avatar doubles as the "am I
+  // logged in?" answer people scan the top-right corner for.
+  const mobilePrimary = session ? (
+    <Link
+      href={profile ? `/profile/${profile.id}` : '/onboarding'}
+      aria-label="Your profile"
+      className="grid place-items-center rounded-full"
+    >
+      <Avatar name={profile?.full_name} src={profile?.avatar_url} size="sm" />
+    </Link>
+  ) : (
+    <ButtonLink href="/login" size="sm">
+      Sign in
+    </ButtonLink>
+  )
+
   return (
-    <NavClient links={links} mobileExtras={mobileExtras}>
+    <NavClient links={links} mobilePrimary={mobilePrimary} mobileExtras={mobileExtras}>
       {session ? signedInActions : signedOutActions}
     </NavClient>
   )

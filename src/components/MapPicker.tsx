@@ -8,7 +8,7 @@ import { IconMapPin, IconX } from '@/components/ui/Icons'
 const MapPickerInner = dynamic(() => import('./MapPickerInner'), {
   ssr: false,
   loading: () => (
-    <div className="grid h-64 w-full place-items-center rounded-xl border border-line bg-ink/60 text-[13px] text-dim">
+    <div className="grid h-64 w-full place-items-center rounded-xl border border-line bg-ink/60 text-[14px] text-dim">
       Loading map…
     </div>
   ),
@@ -84,7 +84,7 @@ export function MapPicker({
           type="button"
           onClick={useMyLocation}
           disabled={locating}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white/[0.03] px-2.5 py-1.5 text-[12px] font-medium text-mist transition-colors hover:border-cyan/35 hover:text-chalk disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white/[0.03] px-2.5 py-1.5 text-[13px] font-medium text-mist transition-colors hover:border-cyan/35 hover:text-chalk disabled:opacity-50"
         >
           {locating ? (
             <span className="size-3 animate-spin rounded-full border-2 border-cyan/30 border-t-cyan" />
@@ -96,25 +96,25 @@ export function MapPicker({
 
         {point ? (
           <>
-            <span className="hud text-[11.5px] text-cyan">
+            <span className="hud text-[12.5px] text-cyan">
               {point.lat.toFixed(4)}°N, {point.lng.toFixed(4)}°E
             </span>
             <button
               type="button"
               onClick={() => setPoint(null)}
-              className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[12px] text-dim transition-colors hover:text-rose"
+              className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[13px] text-dim transition-colors hover:text-rose"
             >
               <IconX className="size-3" />
               Clear pin
             </button>
           </>
         ) : (
-          <span className="text-[11.5px] text-dim">
+          <span className="text-[12.5px] text-dim">
             Click the map to drop a pin — optional, but gigs with one show up in the map view.
           </span>
         )}
 
-        <span className="ml-auto hud text-[10.5px] text-dimmer">
+        <span className="ml-auto hud text-[11.5px] text-dimmer">
           centre {CAMPUS_CENTER.lat}°N {CAMPUS_CENTER.lng}°E
         </span>
       </div>

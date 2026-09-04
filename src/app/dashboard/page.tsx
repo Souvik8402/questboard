@@ -72,7 +72,7 @@ export default async function DashboardPage() {
             </h1>
             <StarRating value={profile.rating} count={profile.rating_count} size="sm" />
             {isStudent && profile.department && (
-              <p className="text-[12.5px] text-dim">
+              <p className="text-[13.5px] text-dim">
                 {profile.department}
                 {profile.year ? ` · Year ${profile.year}` : ''}
               </p>
@@ -134,10 +134,10 @@ export default async function DashboardPage() {
       {!isStudent && isStudentEligible && (
         <Panel className="mt-6 flex flex-wrap items-center justify-between gap-4 p-5">
           <div>
-            <p className="text-[13.5px] font-medium text-chalk">
+            <p className="text-[14.5px] font-medium text-chalk">
               Your email qualifies you to claim gigs too
             </p>
-            <p className="mt-0.5 text-[12.5px] text-mist">
+            <p className="mt-0.5 text-[13.5px] text-mist">
               You are set up as a hirer. Switch to a student account and you can apply for work as
               well as post it.
             </p>
@@ -158,7 +158,7 @@ export default async function DashboardPage() {
             title={isStudent ? 'Work you are doing' : 'Gigs you posted'}
             action={
               isStudent ? undefined : (
-                <Link href="/gigs/new" className="text-[12.5px] text-cyan hover:underline">
+                <Link href="/gigs/new" className="text-[13.5px] text-cyan hover:underline">
                   Post another
                 </Link>
               )
@@ -215,7 +215,7 @@ export default async function DashboardPage() {
                 icon={<IconLayers className="size-4" />}
                 title="Your applications"
                 action={
-                  <span className="hud text-[11.5px] text-dim">{applications.length} total</span>
+                  <span className="hud text-[12.5px] text-dim">{applications.length} total</span>
                 }
               />
               {applications.length === 0 ? (
@@ -227,13 +227,13 @@ export default async function DashboardPage() {
                       <div className="flex items-start justify-between gap-3">
                         <Link
                           href={`/gigs/${application.gig_id}`}
-                          className="line-clamp-2 text-[13.5px] font-medium leading-snug text-chalk hover:text-cyan"
+                          className="line-clamp-2 text-[14.5px] font-medium leading-snug text-chalk hover:text-cyan"
                         >
                           {application.gig?.title ?? 'Gig'}
                         </Link>
                         <ApplicationPill status={application.status} />
                       </div>
-                      <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
+                      <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[12.5px] text-dim">
                         {application.gig && (
                           <span className="hud text-mist">
                             {formatRupees(application.gig.reward_amount)}
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
                     action={
                       <Link
                         href={`/gigs?skills=${mySkills.map((s) => s.id).join(',')}`}
-                        className="text-[12.5px] text-cyan hover:underline"
+                        className="text-[13.5px] text-cyan hover:underline"
                       >
                         See all
                       </Link>
@@ -279,7 +279,7 @@ export default async function DashboardPage() {
                 icon={<IconSparkles className="size-4" />}
                 title="Getting good applicants"
               />
-              <Panel className="space-y-3.5 p-5 text-[13px] leading-relaxed text-mist">
+              <Panel className="space-y-3.5 p-5 text-[14px] leading-relaxed text-mist">
                 <Tip n={1} title="Name a real number">
                   Gigs with a reward under ₹500 rarely get replies. Students compare your posting
                   against tuition work, which pays well.
@@ -300,7 +300,7 @@ export default async function DashboardPage() {
 
               {openPosted.length > 0 && (
                 <Panel className="p-5">
-                  <p className="text-[13px] font-semibold text-chalk">Waiting on you</p>
+                  <p className="text-[14px] font-semibold text-chalk">Waiting on you</p>
                   <ul className="mt-3 space-y-2">
                     {openPosted
                       .filter((q) => (q.application_count ?? 0) > 0)
@@ -310,7 +310,7 @@ export default async function DashboardPage() {
                             href={`/gigs/${q.id}`}
                             className="flex items-center justify-between gap-3 rounded-lg border border-line bg-white/[0.02] px-3 py-2.5 transition-colors hover:border-cyan/35"
                           >
-                            <span className="truncate text-[13px] text-chalk">{q.title}</span>
+                            <span className="truncate text-[14px] text-chalk">{q.title}</span>
                             <Badge tone="amber">
                               {q.application_count} to review
                             </Badge>
@@ -318,7 +318,7 @@ export default async function DashboardPage() {
                         </li>
                       ))}
                     {openPosted.every((q) => (q.application_count ?? 0) === 0) && (
-                      <li className="text-[12.5px] text-dim">
+                      <li className="text-[13.5px] text-dim">
                         No applicants yet on your open gigs.
                       </li>
                     )}
@@ -350,7 +350,7 @@ function Metric({
   return (
     <div className="glass p-4">
       <p className={`hud font-semibold ${colour} ${mono ? 'text-xl' : 'text-2xl'}`}>{value}</p>
-      <p className="mt-1 text-[12.5px] text-mist">{label}</p>
+      <p className="mt-1 text-[13.5px] text-mist">{label}</p>
     </div>
   )
 }
@@ -401,12 +401,12 @@ function PostedList({ gigs }: { gigs: GigWithRelations[] }) {
           className="block p-4 transition-colors hover:bg-white/[0.035]"
         >
           <div className="flex items-start justify-between gap-3">
-            <p className="line-clamp-2 text-[13.5px] font-medium leading-snug text-chalk">
+            <p className="line-clamp-2 text-[14.5px] font-medium leading-snug text-chalk">
               {gig.title}
             </p>
             <StatusPill status={gig.status} />
           </div>
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[12.5px] text-dim">
             <span className="hud text-mist">{formatRupees(gig.reward_amount)}</span>
             <span>
               {gig.application_count ?? 0}{' '}
@@ -424,7 +424,7 @@ function PostedList({ gigs }: { gigs: GigWithRelations[] }) {
 function Tip({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
-      <span className="hud mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border border-cyan/25 bg-cyan/10 text-[10.5px] text-cyan">
+      <span className="hud mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border border-cyan/25 bg-cyan/10 text-[11.5px] text-cyan">
         {n}
       </span>
       <p>

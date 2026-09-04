@@ -41,7 +41,7 @@ export function ApplyForm({
         <h2 className="text-base font-semibold text-chalk">Claim this gig</h2>
         <span className="hud text-sm text-lime">{reward}</span>
       </div>
-      <p className="mt-1 text-[13px] leading-relaxed text-mist">
+      <p className="mt-1 text-[14px] leading-relaxed text-mist">
         Tell the hirer why you. Specifics beat enthusiasm — name the thing you have done that is
         closest to this.
       </p>
@@ -92,7 +92,7 @@ export function ApplyForm({
 
         <div className="flex flex-wrap items-center gap-3">
           <SubmitButton pendingLabel="Sending…">Send application</SubmitButton>
-          <span className="inline-flex items-center gap-1.5 text-[11.5px] text-dim">
+          <span className="inline-flex items-center gap-1.5 text-[12.5px] text-dim">
             <IconLock className="size-3" />
             Contact details stay hidden both ways until accepted
           </span>

@@ -35,7 +35,7 @@ export function Badge({
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1',
-        'text-[11px] font-medium leading-none tracking-wide',
+        'text-[12px] font-medium leading-none tracking-wide',
         TONES[tone],
         className,
       )}
@@ -98,7 +98,7 @@ export function SkillChip({
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-lg border px-2 py-1',
-        'text-[11.5px] font-medium transition-colors',
+        'text-[12.5px] font-medium transition-colors',
         active
           ? 'border-cyan/45 bg-cyan/15 text-cyan'
           : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',

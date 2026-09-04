@@ -16,7 +16,7 @@ export function StarRating({
   className?: string
 }) {
   const clamped = Math.max(0, Math.min(5, value))
-  const px = size === 'sm' ? 'text-[13px]' : 'text-[15px]'
+  const px = size === 'sm' ? 'text-[14px]' : 'text-[16px]'
 
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
@@ -35,14 +35,14 @@ export function StarRating({
         </span>
       </span>
       {count === undefined ? (
-        <span className="hud text-[11px] text-mist">{clamped.toFixed(1)}</span>
+        <span className="hud text-[12px] text-mist">{clamped.toFixed(1)}</span>
       ) : count > 0 ? (
-        <span className="hud text-[11px] text-mist">
+        <span className="hud text-[12px] text-mist">
           {clamped.toFixed(1)}
           <span className="text-dimmer"> ({count})</span>
         </span>
       ) : (
-        <span className="text-[11px] text-dimmer">No reviews yet</span>
+        <span className="text-[12px] text-dimmer">No reviews yet</span>
       )}
     </span>
   )

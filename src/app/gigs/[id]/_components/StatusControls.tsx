@@ -74,7 +74,7 @@ export function StatusControls({
         <StatusPill status={status} />
       </div>
 
-      <p className="mt-1.5 text-[12.5px] leading-relaxed text-mist">
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-mist">
         Currently <span className="text-chalk">{GIG_STATUS_LABEL[status].toLowerCase()}</span>.
         {status === 'completed'
           ? ' Reviews are open — leave one below.'

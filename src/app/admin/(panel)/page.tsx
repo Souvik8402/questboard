@@ -105,14 +105,14 @@ export default async function AdminPage({
                 key={t.value}
                 href={`/admin?tab=${t.value}`}
                 scroll={false}
-                className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[14px] font-medium transition-colors ${
                   active
                     ? 'border-cyan/45 bg-cyan/15 text-cyan'
                     : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
                 }`}
               >
                 {t.label}
-                <span className={`hud text-[11px] ${active ? 'text-cyan/80' : 'text-dim'}`}>
+                <span className={`hud text-[12px] ${active ? 'text-cyan/80' : 'text-dim'}`}>
                   {count}
                 </span>
               </Link>
@@ -152,8 +152,8 @@ function StatBlock({
       <dl className="mt-3 space-y-1 border-t border-line pt-2.5">
         {rows.map(([k, v]) => (
           <div key={k} className="flex items-baseline justify-between gap-2">
-            <dt className="text-[11.5px] text-dim">{k}</dt>
-            <dd className="hud text-[11.5px] text-chalk">{v}</dd>
+            <dt className="text-[12.5px] text-dim">{k}</dt>
+            <dd className="hud text-[12.5px] text-chalk">{v}</dd>
           </div>
         ))}
       </dl>

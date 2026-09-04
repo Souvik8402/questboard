@@ -19,11 +19,18 @@ export interface NavLink {
 export function NavClient({
   links,
   children,
+  mobilePrimary,
   mobileExtras,
 }: {
   links: NavLink[]
   /** Right-hand actions, rendered by the server (sign in / avatar / post). */
   children: React.ReactNode
+  /**
+   * The single most important action, kept visible in the mobile bar instead
+   * of buried behind the hamburger — signing in should never cost a tap to
+   * discover.
+   */
+  mobilePrimary: React.ReactNode
   mobileExtras: React.ReactNode
 }) {
   const pathname = usePathname()
@@ -70,7 +77,7 @@ export function NavClient({
               />
             </svg>
           </span>
-          <span className="text-[15px] font-semibold tracking-tight text-chalk">
+          <span className="text-[16px] font-semibold tracking-tight text-chalk">
             Gig<span className="text-cyan">Nest</span>
           </span>
         </Link>
@@ -81,7 +88,7 @@ export function NavClient({
               key={l.href}
               href={l.href}
               className={cn(
-                'relative rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors',
+                'relative rounded-lg px-3 py-2 text-[14.5px] font-medium transition-colors',
                 isActive(l.href) ? 'text-chalk' : 'text-mist hover:text-chalk',
               )}
             >
@@ -95,6 +102,7 @@ export function NavClient({
 
         <div className="ml-auto flex items-center gap-2">
           <div className="hidden items-center gap-2 md:flex">{children}</div>
+          <div className="md:hidden">{mobilePrimary}</div>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}

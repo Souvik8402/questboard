@@ -38,30 +38,30 @@ export function ReviewList({ reviews }: { reviews: AdminReview[] }) {
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/profile/${review.reviewer_id}`}
-                  className="text-[13px] font-medium text-chalk hover:text-cyan"
+                  className="text-[14px] font-medium text-chalk hover:text-cyan"
                 >
                   {review.reviewer?.full_name ?? 'Someone'}
                 </Link>
-                <span className="text-[11.5px] text-dimmer">rated</span>
+                <span className="text-[12.5px] text-dimmer">rated</span>
                 <Link
                   href={`/profile/${review.reviewee_id}`}
-                  className="text-[13px] font-medium text-chalk hover:text-cyan"
+                  className="text-[14px] font-medium text-chalk hover:text-cyan"
                 >
                   {review.reviewee?.full_name ?? 'their counterparty'}
                 </Link>
                 <StarRating value={review.rating} size="sm" />
-                <span className="text-[11px] text-dimmer">{relativeTime(review.created_at)}</span>
+                <span className="text-[12px] text-dimmer">{relativeTime(review.created_at)}</span>
               </div>
 
               {review.comment ? (
-                <p className="mt-1.5 text-[13px] leading-relaxed text-mist">{review.comment}</p>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-mist">{review.comment}</p>
               ) : (
-                <p className="mt-1.5 text-[12.5px] italic text-dimmer">No comment left.</p>
+                <p className="mt-1.5 text-[13.5px] italic text-dimmer">No comment left.</p>
               )}
 
               <Link
                 href={`/gigs/${review.gig_id}`}
-                className="mt-1.5 inline-block text-[11.5px] text-dim hover:text-cyan"
+                className="mt-1.5 inline-block text-[12.5px] text-dim hover:text-cyan"
               >
                 View the gig →
               </Link>
@@ -77,7 +77,7 @@ export function ReviewList({ reviews }: { reviews: AdminReview[] }) {
         ))}
       </Panel>
 
-      <p className="text-[11.5px] text-dim">
+      <p className="text-[12.5px] text-dim">
         Removing a review re-runs the rating trigger, so the profile average updates immediately.
       </p>
     </div>

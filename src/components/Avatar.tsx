@@ -5,7 +5,7 @@ import { initials } from '@/lib/format'
 import type { PublicProfile } from '@/lib/types'
 
 const SIZES = {
-  sm: 'size-7 text-[10px]',
+  sm: 'size-7 text-[11px]',
   md: 'size-9 text-xs',
   lg: 'size-12 text-sm',
   xl: 'size-20 text-xl',
@@ -77,8 +77,8 @@ export function UserChip({
     <span className={cn('flex min-w-0 items-center gap-2.5', className)}>
       <Avatar name={profile?.full_name} src={profile?.avatar_url} size={size} />
       <span className="min-w-0">
-        <span className="block truncate text-[13px] font-medium text-chalk">{name}</span>
-        {meta && <span className="block truncate text-[11px] text-dim">{meta}</span>}
+        <span className="block truncate text-[14px] font-medium text-chalk">{name}</span>
+        {meta && <span className="block truncate text-[12px] text-dim">{meta}</span>}
       </span>
     </span>
   )

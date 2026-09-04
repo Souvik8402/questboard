@@ -32,20 +32,20 @@ export default async function AdminPanelLayout({ children }: { children: React.R
           </span>
           <div>
             <h1 className="text-lg font-semibold tracking-tight text-chalk">Admin panel</h1>
-            <p className="text-[12px] text-dim">
+            <p className="text-[13px] text-dim">
               Service-role access · bypasses row-level security
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-[13px] text-dim transition-colors hover:text-cyan">
+          <Link href="/" className="text-[14px] text-dim transition-colors hover:text-cyan">
             View site
           </Link>
           <form action={adminLogout}>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white/[0.03] px-3 py-1.5 text-[12.5px] text-mist transition-colors hover:border-rose/35 hover:text-rose"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white/[0.03] px-3 py-1.5 text-[13.5px] text-mist transition-colors hover:border-rose/35 hover:text-rose"
             >
               <IconLogout className="size-3.5" />
               Lock panel

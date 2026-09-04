@@ -33,6 +33,12 @@
   --font-mono: var(--font-jetbrains), ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
 
   --radius-card: 1rem;
+
+  /* Tailwind ships max-w-7xl at 80rem, which left ~320px of dead margin on
+     each side of a 1080p screen and made the whole page read as small. Every
+     page container uses max-w-7xl, so widening the token here widens all 16
+     of them at once. */
+  --container-7xl: 96rem;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */

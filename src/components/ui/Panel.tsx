@@ -43,7 +43,7 @@ export function SectionHeading({
       )}
       <h2 className="text-2xl font-semibold tracking-tight text-chalk sm:text-3xl">{title}</h2>
       {blurb && (
-        <p className={cn('max-w-2xl text-[15px] leading-relaxed text-mist')}>{blurb}</p>
+        <p className={cn('max-w-2xl text-[16px] leading-relaxed text-mist')}>{blurb}</p>
       )}
       {children}
     </div>

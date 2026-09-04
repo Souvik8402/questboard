@@ -81,7 +81,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               </h1>
               <StarRating value={profile.rating} count={profile.rating_count} />
               {(profile.department || profile.year) && (
-                <p className="text-[13px] text-mist">
+                <p className="text-[14px] text-mist">
                   {profile.department}
                   {profile.department && profile.year ? ' · ' : ''}
                   {profile.year ? `Year ${profile.year}` : ''}
@@ -97,7 +97,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           ) : (
             isStudent && (
               <div className="text-right">
-                <p className="text-[11px] uppercase tracking-wider text-dimmer">Gigs reviewed</p>
+                <p className="text-[12px] uppercase tracking-wider text-dimmer">Gigs reviewed</p>
                 <p className="hud text-2xl font-semibold text-lime">{profile.rating_count}</p>
               </div>
             )
@@ -105,7 +105,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </div>
 
         {bio && (
-          <p className="mt-6 max-w-2xl whitespace-pre-line border-t border-line pt-5 text-[14px] leading-relaxed text-mist">
+          <p className="mt-6 max-w-2xl whitespace-pre-line border-t border-line pt-5 text-[15px] leading-relaxed text-mist">
             {bio}
           </p>
         )}
@@ -119,7 +119,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <IconStar className="size-4 text-amber" />
               Reviews
               {reviews.length > 0 && (
-                <span className="hud text-[12px] font-normal text-dim">{reviews.length}</span>
+                <span className="hud text-[13px] font-normal text-dim">{reviews.length}</span>
               )}
             </h2>
 
@@ -157,12 +157,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     className="block p-4 transition-colors hover:bg-white/[0.035]"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <p className="line-clamp-2 text-[13.5px] font-medium leading-snug text-chalk">
+                      <p className="line-clamp-2 text-[14.5px] font-medium leading-snug text-chalk">
                         {gig.title}
                       </p>
                       <StatusPill status={gig.status} />
                     </div>
-                    <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
+                    <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-[12.5px] text-dim">
                       <span className="hud text-mist">{formatRupees(gig.reward_amount)}</span>
                       <span>
                         {gig.is_remote ? 'Remote' : (gig.location_label ?? 'On site')}
@@ -181,14 +181,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <Panel className="p-5">
             <p className="eyebrow">Rating</p>
             {profile.rating_count === 0 ? (
-              <p className="mt-2 text-[13px] text-dim">No ratings yet.</p>
+              <p className="mt-2 text-[14px] text-dim">No ratings yet.</p>
             ) : (
               <>
                 <p className="mt-1.5 flex items-baseline gap-2">
                   <span className="hud text-3xl font-semibold text-amber">
                     {profile.rating.toFixed(1)}
                   </span>
-                  <span className="text-[12.5px] text-dim">
+                  <span className="text-[13.5px] text-dim">
                     from {profile.rating_count}{' '}
                     {profile.rating_count === 1 ? 'review' : 'reviews'}
                   </span>
@@ -199,20 +199,20 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     const pct = reviews.length ? (n / reviews.length) * 100 : 0
                     return (
                       <div key={star} className="flex items-center gap-2">
-                        <span className="hud w-3 text-[11px] text-dim">{star}</span>
+                        <span className="hud w-3 text-[12px] text-dim">{star}</span>
                         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
                           <div
                             className="h-full rounded-full bg-amber/70"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="hud w-4 text-right text-[11px] text-dimmer">{n}</span>
+                        <span className="hud w-4 text-right text-[12px] text-dimmer">{n}</span>
                       </div>
                     )
                   })}
                 </div>
                 {reviews.length < profile.rating_count && (
-                  <p className="mt-3 text-[11px] text-dimmer">
+                  <p className="mt-3 text-[12px] text-dimmer">
                     Distribution covers the {reviews.length} most recent.
                   </p>
                 )}
@@ -230,7 +230,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   <SkillChip key={skill.id} name={skill.name} href={`/gigs?skills=${skill.id}`} />
                 ))}
               </div>
-              <p className="mt-3 text-[11.5px] leading-relaxed text-dim">
+              <p className="mt-3 text-[12.5px] leading-relaxed text-dim">
                 Tap a tag to see open gigs wanting it.
               </p>
             </Panel>
@@ -238,11 +238,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
           {isStudent && !isSelf && (
             <Panel className="p-5">
-              <p className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-chalk">
+              <p className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-chalk">
                 <IconSparkles className="size-4 text-cyan" />
                 Want to hire them?
               </p>
-              <p className="mt-1.5 text-[12.5px] leading-relaxed text-mist">
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-mist">
                 There is no direct-message inbox yet. Post a gig with the tags they carry — it
                 lands on their board immediately.
               </p>
@@ -268,18 +268,18 @@ function ReviewCard({ review }: { review: Review }) {
               {review.reviewer ? (
                 <Link
                   href={`/profile/${review.reviewer.id}`}
-                  className="text-[13.5px] font-medium text-chalk hover:text-cyan"
+                  className="text-[14.5px] font-medium text-chalk hover:text-cyan"
                 >
                   {review.reviewer.full_name ?? 'Someone'}
                 </Link>
               ) : (
-                <span className="text-[13.5px] font-medium text-chalk">Someone</span>
+                <span className="text-[14.5px] font-medium text-chalk">Someone</span>
               )}
               {review.reviewer && (
                 <Badge tone="neutral">{ROLE_LABEL[review.reviewer.role]}</Badge>
               )}
             </div>
-            <span className="text-[11.5px] text-dimmer">{relativeTime(review.created_at)}</span>
+            <span className="text-[12.5px] text-dimmer">{relativeTime(review.created_at)}</span>
           </div>
 
           <div className="mt-1.5">
@@ -287,14 +287,14 @@ function ReviewCard({ review }: { review: Review }) {
           </div>
 
           {review.comment && (
-            <p className="mt-2.5 whitespace-pre-line text-[13.5px] leading-relaxed text-mist">
+            <p className="mt-2.5 whitespace-pre-line text-[14.5px] leading-relaxed text-mist">
               {review.comment}
             </p>
           )}
 
           <Link
             href={`/gigs/${review.gig_id}`}
-            className="mt-2.5 inline-block text-[11.5px] text-dim transition-colors hover:text-cyan"
+            className="mt-2.5 inline-block text-[12.5px] text-dim transition-colors hover:text-cyan"
           >
             View the gig →
           </Link>

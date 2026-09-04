@@ -35,7 +35,7 @@ export function ReviewForm({
       <h2 className="text-base font-semibold text-chalk">
         Rate {reviewee.full_name?.split(' ')[0] ?? 'your counterparty'}
       </h2>
-      <p className="mt-1 text-[13px] leading-relaxed text-mist">
+      <p className="mt-1 text-[14px] leading-relaxed text-mist">
         {role === 'student'
           ? 'Did they do the work well, on time, without chasing?'
           : 'Was the brief clear, the reward paid, the person straightforward to deal with?'}{' '}

@@ -36,11 +36,11 @@ export function Footer() {
                   />
                 </svg>
               </span>
-              <span className="text-[15px] font-semibold tracking-tight text-chalk">
+              <span className="text-[16px] font-semibold tracking-tight text-chalk">
                 Gig<span className="text-cyan">Nest</span>
               </span>
             </Link>
-            <p className="max-w-xs text-[13px] leading-relaxed text-dim">
+            <p className="max-w-xs text-[14px] leading-relaxed text-dim">
               Paid work around Varanasi, claimed by verified {INSTITUTE_NAME} students. Post in a
               minute, hire the same day.
             </p>
@@ -54,7 +54,7 @@ export function Footer() {
                   <li key={l.label}>
                     <Link
                       href={l.href}
-                      className="text-[13px] text-mist transition-colors hover:text-chalk"
+                      className="text-[14px] text-mist transition-colors hover:text-chalk"
                     >
                       {l.label}
                     </Link>
@@ -70,13 +70,13 @@ export function Footer() {
               <li>
                 <Link
                   href="/admin/login"
-                  className="text-[13px] text-mist transition-colors hover:text-chalk"
+                  className="text-[14px] text-mist transition-colors hover:text-chalk"
                 >
                   Admin
                 </Link>
               </li>
               <li>
-                <span className="text-[13px] text-dimmer">Payments happen off-platform</span>
+                <span className="text-[14px] text-dimmer">Payments happen off-platform</span>
               </li>
             </ul>
           </div>
@@ -84,7 +84,7 @@ export function Footer() {
 
         <div className="hairline my-9" />
 
-        <div className="flex flex-col items-start justify-between gap-3 text-[12px] text-dimmer sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-3 text-[13px] text-dimmer sm:flex-row sm:items-center">
           <p>
             Prototype built for a startup idea weekend. Not affiliated with {INSTITUTE_NAME}.
           </p>

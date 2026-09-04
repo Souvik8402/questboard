@@ -60,11 +60,11 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
             style={{ '--i': 0 } as React.CSSProperties}
           >
             <span className="live-dot size-1.5 rounded-full bg-lime" />
-            <span className="text-[11.5px] font-medium text-mist">
+            <span className="text-[12.5px] font-medium text-mist">
               {stats.open_gigs} gigs open right now
             </span>
             <span className="text-dimmer">·</span>
-            <span className="hud text-[11.5px] text-cyan">
+            <span className="hud text-[12.5px] text-cyan">
               {compactRupees(stats.reward_pool)} on the board
             </span>
           </div>
@@ -80,7 +80,7 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
           </h1>
 
           <p
-            className="reveal mx-auto mt-6 max-w-xl text-balance text-[15px] leading-relaxed text-mist sm:text-base"
+            className="reveal mx-auto mt-6 max-w-xl text-balance text-[16px] leading-relaxed text-mist sm:text-base"
             style={{ '--i': 2 } as React.CSSProperties}
           >
             Anyone can post a paid gig — a café that needs a website, a shop that needs reels, a
@@ -102,7 +102,7 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
           </div>
 
           <p
-            className="reveal mt-4 text-[12px] text-dimmer"
+            className="reveal mt-4 text-[13px] text-dimmer"
             style={{ '--i': 4 } as React.CSSProperties}
           >
             No listing fee · No commission · Payment settled directly between you
@@ -194,10 +194,10 @@ function HowItWorks() {
               <span className="grid size-10 place-items-center rounded-xl border border-cyan/25 bg-cyan/10 text-cyan">
                 {s.icon}
               </span>
-              <span className="hud text-[11px] tracking-widest text-dimmer">{s.eyebrow}</span>
+              <span className="hud text-[12px] tracking-widest text-dimmer">{s.eyebrow}</span>
             </div>
-            <h3 className="text-[15px] font-semibold text-chalk">{s.title}</h3>
-            <p className="text-[13px] leading-relaxed text-mist">{s.body}</p>
+            <h3 className="text-[16px] font-semibold text-chalk">{s.title}</h3>
+            <p className="text-[14px] leading-relaxed text-mist">{s.body}</p>
           </Panel>
         ))}
       </div>
@@ -258,7 +258,7 @@ function SkillBand({ tags }: { tags: Awaited<ReturnType<typeof getSkillsByCatego
             ))}
             <Link
               href="/gigs"
-              className="inline-flex items-center gap-1 rounded-lg border border-cyan/30 bg-cyan/[0.08] px-2 py-1 text-[11.5px] font-medium text-cyan transition-colors hover:bg-cyan/15"
+              className="inline-flex items-center gap-1 rounded-lg border border-cyan/30 bg-cyan/[0.08] px-2 py-1 text-[12.5px] font-medium text-cyan transition-colors hover:bg-cyan/15"
             >
               and more
               <IconArrowRight className="size-3" />
@@ -299,7 +299,7 @@ function TwoSides() {
               'Apply with a short pitch; the hirer sees your rating and past reviews',
               'Take one-off errands between classes or a month-long internship',
             ].map((line) => (
-              <li key={line} className="flex gap-2.5 text-[13.5px] leading-relaxed text-mist">
+              <li key={line} className="flex gap-2.5 text-[14.5px] leading-relaxed text-mist">
                 <IconCheck className="mt-0.5 size-4 shrink-0 text-lime" />
                 {line}
               </li>
@@ -332,7 +332,7 @@ function TwoSides() {
               'Set your own reward. No commission, no listing fee, no middleman',
               'Applicants are verified students, so you know who you are talking to',
             ].map((line) => (
-              <li key={line} className="flex gap-2.5 text-[13.5px] leading-relaxed text-mist">
+              <li key={line} className="flex gap-2.5 text-[14.5px] leading-relaxed text-mist">
                 <IconCheck className="mt-0.5 size-4 shrink-0 text-cyan" />
                 {line}
               </li>
@@ -353,8 +353,8 @@ function TwoSides() {
             className="reveal rounded-xl border border-line bg-white/[0.02] p-4"
             style={{ '--i': i } as React.CSSProperties}
           >
-            <p className="text-[13px] font-semibold text-chalk">{t.label}</p>
-            <p className="mt-1 text-[11.5px] leading-relaxed text-dim">{t.blurb}</p>
+            <p className="text-[14px] font-semibold text-chalk">{t.label}</p>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-dim">{t.blurb}</p>
           </div>
         ))}
       </div>
@@ -469,13 +469,13 @@ function GrowthLoop() {
 
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="hud text-[11px] tracking-widest text-dimmer">
+                    <span className="hud text-[12px] tracking-widest text-dimmer">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <h3 className="text-[15px] font-semibold text-chalk">{stage.title}</h3>
+                    <h3 className="text-[16px] font-semibold text-chalk">{stage.title}</h3>
                     <span
                       className={cn(
-                        'rounded-full border px-2 py-0.5 text-[10.5px] font-medium tracking-wide',
+                        'rounded-full border px-2 py-0.5 text-[11.5px] font-medium tracking-wide',
                         stage.live
                           ? 'border-lime/25 bg-lime/[0.08] text-lime'
                           : 'border-line bg-white/[0.03] text-dim',
@@ -484,7 +484,7 @@ function GrowthLoop() {
                       {stage.live ? 'Live now' : 'Next build'}
                     </span>
                   </div>
-                  <p className="text-[13px] leading-relaxed text-mist">{stage.body}</p>
+                  <p className="text-[14px] leading-relaxed text-mist">{stage.body}</p>
                 </div>
               </Panel>
             </li>
@@ -535,8 +535,8 @@ function TrustBand() {
             <span className="grid size-10 place-items-center rounded-xl border border-line bg-white/[0.04] text-cyan">
               {t.icon}
             </span>
-            <h3 className="text-[14.5px] font-semibold text-chalk">{t.title}</h3>
-            <p className="text-[13px] leading-relaxed text-mist">{t.body}</p>
+            <h3 className="text-[15.5px] font-semibold text-chalk">{t.title}</h3>
+            <p className="text-[14px] leading-relaxed text-mist">{t.body}</p>
           </Panel>
         ))}
       </div>
@@ -554,7 +554,7 @@ function FinalCta() {
           <span className="text-chalk">There is work on campus right now.</span>{' '}
           <span className="gradient-text">Go claim it.</span>
         </h2>
-        <p className="mx-auto mt-4 max-w-lg text-balance text-[15px] leading-relaxed text-mist">
+        <p className="mx-auto mt-4 max-w-lg text-balance text-[16px] leading-relaxed text-mist">
           Free to post, free to apply. Sign in with your institute email and the board opens up.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

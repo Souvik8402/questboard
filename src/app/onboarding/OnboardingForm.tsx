@@ -47,7 +47,7 @@ export function OnboardingForm({
 
       {/* ── Role ─────────────────────────────────────────────────────────── */}
       <fieldset className="space-y-3">
-        <legend className="text-[13px] font-medium text-chalk">
+        <legend className="text-[14px] font-medium text-chalk">
           What are you here to do?
           <span className="ml-1 text-rose/80">*</span>
         </legend>
@@ -188,7 +188,7 @@ export function OnboardingForm({
         <Button type="submit" size="lg" disabled={pending} className="sm:w-auto">
           {pending ? 'Saving…' : role === 'student' ? 'Start claiming gigs' : 'Start posting gigs'}
         </Button>
-        <p className="text-[12px] text-dim">You can change all of this later from your profile.</p>
+        <p className="text-[13px] text-dim">You can change all of this later from your profile.</p>
       </div>
     </form>
   )
@@ -241,10 +241,10 @@ function RoleCard({
             <p className="text-sm font-semibold text-chalk">{title}</p>
             {active && <IconCheck className={cn('size-3.5', accent.icon)} />}
           </div>
-          <p className="text-[12.5px] leading-relaxed text-mist">{blurb}</p>
+          <p className="text-[13.5px] leading-relaxed text-mist">{blurb}</p>
           <p
             className={cn(
-              'hud text-[10.5px] uppercase tracking-wider',
+              'hud text-[11.5px] uppercase tracking-wider',
               disabled ? 'text-dimmer' : active ? accent.chip : 'text-dim',
             )}
           >

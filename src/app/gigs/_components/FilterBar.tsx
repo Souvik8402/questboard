@@ -160,7 +160,7 @@ export function FilterBar({
             value={currentSort}
             onChange={(e) => apply({ sort: e.target.value })}
             aria-label="Sort gigs"
-            className="rounded-xl border border-line bg-ink/70 px-3.5 py-3 text-[13px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
+            className="rounded-xl border border-line bg-ink/70 px-3.5 py-3 text-[14px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -175,7 +175,7 @@ export function FilterBar({
 
           <Link
             href={otherViewQuery ? `${otherView}?${otherViewQuery}` : otherView}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-white/[0.02] px-3.5 text-[13px] font-medium text-chalk transition-colors hover:border-cyan/40 hover:bg-white/[0.06]"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-white/[0.02] px-3.5 text-[14px] font-medium text-chalk transition-colors hover:border-cyan/40 hover:bg-white/[0.06]"
           >
             <IconLayers className="size-4" />
             <span className="hidden sm:inline">{otherViewLabel}</span>
@@ -190,7 +190,7 @@ export function FilterBar({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors',
+            'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
             activeCount > 0
               ? 'border-cyan/40 bg-cyan/10 text-cyan'
               : 'border-line bg-white/[0.03] text-mist hover:text-chalk',
@@ -215,7 +215,7 @@ export function FilterBar({
             type="button"
             onClick={() => toggleType(t.value)}
             className={cn(
-              'rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors',
+              'rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
               types.includes(t.value)
                 ? 'border-violet/45 bg-violet/12 text-violet'
                 : 'border-line bg-white/[0.03] text-mist hover:border-violet/30 hover:text-chalk',
@@ -233,7 +233,7 @@ export function FilterBar({
             apply({ remote: next })
           }}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors',
+            'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
             remote
               ? 'border-teal/45 bg-teal/12 text-teal'
               : 'border-line bg-white/[0.03] text-mist hover:border-teal/30 hover:text-chalk',
@@ -243,14 +243,14 @@ export function FilterBar({
           Remote
         </button>
 
-        <span className="ml-auto hud text-[11.5px] text-dim">
+        <span className="ml-auto hud text-[12.5px] text-dim">
           {total} {total === 1 ? 'gig' : 'gigs'}
         </span>
 
         {activeCount > 0 && (
           <Link
             href={basePath}
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[12px] text-dim transition-colors hover:text-rose"
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[13px] text-dim transition-colors hover:text-rose"
           >
             <IconX className="size-3" />
             Clear
@@ -261,13 +261,13 @@ export function FilterBar({
       {/* Selected skills, always visible so they can't be forgotten */}
       {selectedSkills.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] uppercase tracking-wider text-dimmer">Skills:</span>
+          <span className="text-[12px] uppercase tracking-wider text-dimmer">Skills:</span>
           {selectedSkills.map((id) => (
             <button
               key={id}
               type="button"
               onClick={() => toggleSkill(id)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan/45 bg-cyan/15 px-2 py-1 text-[11.5px] font-medium text-cyan hover:bg-cyan/25"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan/45 bg-cyan/15 px-2 py-1 text-[12.5px] font-medium text-cyan hover:bg-cyan/25"
             >
               {byId.get(id)?.name ?? `#${id}`}
               <IconX className="size-2.5" strokeWidth={3} />
@@ -288,7 +288,7 @@ export function FilterBar({
                 value={skillQuery}
                 onChange={(e) => setSkillQuery(e.target.value)}
                 placeholder="Type a skill — react, tabla, autocad…"
-                className="w-full rounded-lg border border-line bg-ink/70 py-2 pl-9 pr-3 text-[13px] text-chalk outline-none placeholder:text-dimmer focus:border-cyan/60"
+                className="w-full rounded-lg border border-line bg-ink/70 py-2 pl-9 pr-3 text-[14px] text-chalk outline-none placeholder:text-dimmer focus:border-cyan/60"
               />
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -298,7 +298,7 @@ export function FilterBar({
                   type="button"
                   onClick={() => toggleSkill(s.id)}
                   className={cn(
-                    'rounded-lg border px-2 py-1 text-[11.5px] font-medium transition-colors',
+                    'rounded-lg border px-2 py-1 text-[12.5px] font-medium transition-colors',
                     selectedSkills.includes(s.id)
                       ? 'border-cyan/45 bg-cyan/15 text-cyan'
                       : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',
@@ -308,10 +308,10 @@ export function FilterBar({
                 </button>
               ))}
               {skillQuery.trim() && skillMatches.length === 0 && (
-                <p className="text-[12px] text-dim">No skill matches “{skillQuery}”.</p>
+                <p className="text-[13px] text-dim">No skill matches “{skillQuery}”.</p>
               )}
               {!skillQuery.trim() && (
-                <p className="text-[12px] text-dim">
+                <p className="text-[13px] text-dim">
                   Start typing to see matching tags. {skills.length} tags available.
                 </p>
               )}
@@ -332,7 +332,7 @@ export function FilterBar({
                       apply({ min: p.min, max: p.max })
                     }}
                     className={cn(
-                      'rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors',
+                      'rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
                       active
                         ? 'border-amber/45 bg-amber/12 text-amber'
                         : 'border-line bg-white/[0.03] text-mist hover:border-amber/30 hover:text-chalk',
@@ -344,7 +344,7 @@ export function FilterBar({
               })}
             </div>
             {(reward.min || reward.max) && (
-              <p className="hud text-[11.5px] text-dim">
+              <p className="hud text-[12.5px] text-dim">
                 Showing {reward.min ? compactRupees(reward.min) : '₹0'} –{' '}
                 {reward.max ? compactRupees(reward.max) : 'no cap'}
               </p>

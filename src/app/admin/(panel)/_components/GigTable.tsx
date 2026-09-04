@@ -45,7 +45,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search title, hirer or place…"
-            className="w-full rounded-xl border border-line bg-ink/70 py-2 pl-10 pr-3.5 text-[13px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60"
+            className="w-full rounded-xl border border-line bg-ink/70 py-2 pl-10 pr-3.5 text-[14px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -54,7 +54,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
               key={value}
               type="button"
               onClick={() => setStatus(value)}
-              className={`rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
+              className={`rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
                 status === value
                   ? 'border-cyan/45 bg-cyan/15 text-cyan'
                   : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
@@ -70,7 +70,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
 
       <Panel className="divide-y divide-line/70 p-0">
         {shown.length === 0 && (
-          <p className="px-4 py-10 text-center text-[13px] text-dim">No gig matches that.</p>
+          <p className="px-4 py-10 text-center text-[14px] text-dim">No gig matches that.</p>
         )}
 
         {shown.map((gig) => (
@@ -86,11 +86,11 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
                 </div>
                 <Link
                   href={`/gigs/${gig.id}`}
-                  className="mt-2 block text-[13.5px] font-medium leading-snug text-chalk hover:text-cyan"
+                  className="mt-2 block text-[14.5px] font-medium leading-snug text-chalk hover:text-cyan"
                 >
                   {gig.title}
                 </Link>
-                <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[11.5px] text-dim">
+                <p className="mt-1 flex flex-wrap items-center gap-x-3 text-[12.5px] text-dim">
                   <span className="hud text-mist">{formatRupees(gig.reward_amount)}</span>
                   <Link href={`/profile/${gig.hirer_id}`} className="hover:text-cyan">
                     {gig.hirer_name ?? 'Unknown hirer'}
@@ -108,7 +108,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
                   <select
                     name="status"
                     defaultValue={gig.status}
-                    className="rounded-lg border border-line bg-ink/70 px-2 py-1.5 text-[12px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
+                    className="rounded-lg border border-line bg-ink/70 px-2 py-1.5 text-[13px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
                   >
                     {GIG_STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -131,7 +131,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
                     <button
                       type="button"
                       onClick={() => setConfirming(null)}
-                      className="text-[12px] text-dim hover:text-chalk"
+                      className="text-[13px] text-dim hover:text-chalk"
                     >
                       Cancel
                     </button>
@@ -153,7 +153,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
         ))}
       </Panel>
 
-      <p className="text-[11.5px] text-dim">
+      <p className="text-[12.5px] text-dim">
         Showing {shown.length} of {gigs.length}. Forcing a status here skips the normal
         transition rules — deleting also removes applications, tags and the stored phone number.
       </p>

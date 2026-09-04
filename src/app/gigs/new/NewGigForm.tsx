@@ -60,7 +60,7 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
       <Panel className="space-y-5 p-6">
         <div>
           <h2 className="text-base font-semibold text-chalk">The work</h2>
-          <p className="mt-1 text-[13px] text-mist">
+          <p className="mt-1 text-[14px] text-mist">
             Write it the way you would explain it to a friend. Vague posts get vague applicants.
           </p>
         </div>
@@ -173,7 +173,7 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
       <Panel className="space-y-5 p-6">
         <div>
           <h2 className="text-base font-semibold text-chalk">Where</h2>
-          <p className="mt-1 text-[13px] text-mist">
+          <p className="mt-1 text-[14px] text-mist">
             Students filter hard on distance. A pin roughly doubles your applicants.
           </p>
         </div>
@@ -187,7 +187,7 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
             className="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-line bg-ink accent-cyan"
           />
           <span className="space-y-0.5">
-            <span className="flex items-center gap-1.5 text-[13px] font-medium text-chalk">
+            <span className="flex items-center gap-1.5 text-[14px] font-medium text-chalk">
               <IconWifi className="size-3.5" />
               This can be done remotely
             </span>
@@ -224,7 +224,7 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
       <Panel className="space-y-5 p-6">
         <div>
           <h2 className="text-base font-semibold text-chalk">Who you need</h2>
-          <p className="mt-1 text-[13px] text-mist">
+          <p className="mt-1 text-[14px] text-mist">
             Tags are how students find you. Pick the ones that are genuinely required — over-tagging
             brings the wrong people.
           </p>
@@ -244,7 +244,7 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
       <Panel className="space-y-5 p-6">
         <div>
           <h2 className="text-base font-semibold text-chalk">How they reach you</h2>
-          <p className="mt-1 inline-flex items-start gap-1.5 text-[13px] leading-relaxed text-mist">
+          <p className="mt-1 inline-flex items-start gap-1.5 text-[14px] leading-relaxed text-mist">
             <IconLock className="mt-0.5 size-3.5 shrink-0 text-cyan" />
             <span>
               Your number is stored in a separate, locked table. Nobody sees it until you accept an
@@ -295,7 +295,7 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
         <SubmitButton size="lg" pendingLabel="Posting…">
           Post gig{rewardNumber > 0 ? ` · ${compactRupees(rewardNumber)}` : ''}
         </SubmitButton>
-        <p className="text-[12px] text-dim">
+        <p className="text-[13px] text-dim">
           You can cancel or edit it any time from your dashboard.
         </p>
       </div>

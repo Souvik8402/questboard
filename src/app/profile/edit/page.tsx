@@ -28,7 +28,7 @@ export default async function EditProfilePage() {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-[13px] text-dim transition-colors hover:text-cyan"
+        className="inline-flex items-center gap-1.5 text-[14px] text-dim transition-colors hover:text-cyan"
       >
         <IconArrowLeft className="size-3.5" />
         Dashboard

@@ -51,7 +51,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, email or department…"
-            className="w-full rounded-xl border border-line bg-ink/70 py-2 pl-10 pr-3.5 text-[13px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60"
+            className="w-full rounded-xl border border-line bg-ink/70 py-2 pl-10 pr-3.5 text-[14px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -60,7 +60,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
               key={f.value}
               type="button"
               onClick={() => setFilter(f.value)}
-              className={`rounded-lg border px-2.5 py-1.5 text-[12px] font-medium transition-colors ${
+              className={`rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
                 filter === f.value
                   ? 'border-cyan/45 bg-cyan/15 text-cyan'
                   : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
@@ -78,7 +78,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
 
       <Panel className="divide-y divide-line/70 p-0">
         {shown.length === 0 && (
-          <p className="px-4 py-10 text-center text-[13px] text-dim">
+          <p className="px-4 py-10 text-center text-[14px] text-dim">
             No account matches that.
           </p>
         )}
@@ -91,7 +91,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/profile/${user.id}`}
-                  className="text-[13.5px] font-medium text-chalk hover:text-cyan"
+                  className="text-[14.5px] font-medium text-chalk hover:text-cyan"
                 >
                   {user.full_name ?? 'Unnamed'}
                 </Link>
@@ -101,11 +101,11 @@ export function UserTable({ users }: { users: AdminUser[] }) {
                 {user.is_banned && <Badge tone="rose">Suspended</Badge>}
                 {!user.onboarded_at && <Badge tone="amber">Not onboarded</Badge>}
               </div>
-              <p className="hud mt-1 truncate text-[11.5px] text-dim">
+              <p className="hud mt-1 truncate text-[12.5px] text-dim">
                 {user.email ?? 'email unavailable'}
               </p>
               {(user.department || user.year) && (
-                <p className="mt-0.5 text-[11.5px] text-dimmer">
+                <p className="mt-0.5 text-[12.5px] text-dimmer">
                   {user.department}
                   {user.department && user.year ? ' · ' : ''}
                   {user.year ? `Year ${user.year}` : ''}
@@ -113,7 +113,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
               )}
             </div>
 
-            <div className="hud flex shrink-0 gap-4 text-[11.5px] text-dim">
+            <div className="hud flex shrink-0 gap-4 text-[12.5px] text-dim">
               <span title="Gigs posted">
                 <span className="text-chalk">{user.gigs_posted}</span> posted
               </span>
@@ -128,7 +128,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
               </span>
             </div>
 
-            <div className="shrink-0 text-right text-[11px] text-dimmer">
+            <div className="shrink-0 text-right text-[12px] text-dimmer">
               <p>joined {relativeTime(user.created_at)}</p>
               {user.last_sign_in_at && <p>seen {relativeTime(user.last_sign_in_at)}</p>}
             </div>
@@ -155,7 +155,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
         ))}
       </Panel>
 
-      <p className="text-[11.5px] text-dim">
+      <p className="text-[12.5px] text-dim">
         Showing {shown.length} of {users.length}. Suspending keeps the account and its history —
         every write is refused while the flag is set.
       </p>

@@ -42,12 +42,12 @@ export function ApplicantList({
           </span>
         </h2>
         {!canDecide && applications.length > 0 && (
-          <span className="text-[11.5px] text-dim">Gig closed to new decisions</span>
+          <span className="text-[12.5px] text-dim">Gig closed to new decisions</span>
         )}
       </div>
 
       {applications.length === 0 ? (
-        <p className="mt-3 text-[13px] leading-relaxed text-mist">
+        <p className="mt-3 text-[14px] leading-relaxed text-mist">
           No applications yet. Gigs with a clear scope and an honest reward usually get their
           first one within a day.
         </p>
@@ -79,18 +79,18 @@ export function ApplicantList({
                   />
                   <div className="flex items-center gap-2">
                     <ApplicationPill status={application.status} />
-                    <span className="text-[11px] text-dimmer">
+                    <span className="text-[12px] text-dimmer">
                       {relativeTime(application.created_at)}
                     </span>
                   </div>
                 </div>
 
-                <p className="mt-3 whitespace-pre-line text-[13px] leading-relaxed text-mist">
+                <p className="mt-3 whitespace-pre-line text-[14px] leading-relaxed text-mist">
                   {application.cover_note}
                 </p>
 
                 {application.phone && (
-                  <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-lime/25 bg-lime/[0.07] px-2.5 py-1.5 text-[12.5px] text-lime">
+                  <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-lime/25 bg-lime/[0.07] px-2.5 py-1.5 text-[13.5px] text-lime">
                     <IconPhone className="size-3.5" />
                     <a href={`tel:${application.phone.replace(/\s/g, '')}`} className="hud">
                       {application.phone}
@@ -110,7 +110,7 @@ export function ApplicantList({
                       <IconX className="size-3.5" />
                       Decline
                     </SubmitButton>
-                    <span className="text-[11px] text-dimmer">
+                    <span className="text-[12px] text-dimmer">
                       Hiring auto-declines everyone else and reveals both phone numbers.
                     </span>
                   </form>

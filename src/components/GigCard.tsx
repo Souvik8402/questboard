@@ -40,20 +40,20 @@ export function GigCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="hud text-xl font-semibold text-chalk">{formatRupees(gig.reward_amount)}</p>
-          <p className="mt-0.5 text-[11px] text-dim">
+          <p className="mt-0.5 text-[12px] text-dim">
             {gig.estimated_hours ? `est. ${gig.estimated_hours}h` : 'scope negotiable'}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
           {gig.status === 'open' ? (
-            <span className="tier-ring rounded-full border px-2.5 py-1 text-[11px] font-medium leading-none">
+            <span className="tier-ring rounded-full border px-2.5 py-1 text-[12px] font-medium leading-none">
               {GIG_TYPE_LABEL[gig.gig_type]}
             </span>
           ) : (
             <StatusPill status={gig.status} />
           )}
           {gig.is_remote && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-teal">
+            <span className="inline-flex items-center gap-1 text-[12px] text-teal">
               <IconWifi className="size-3" />
               Remote
             </span>
@@ -63,11 +63,11 @@ export function GigCard({
 
       {/* The ask */}
       <div className="min-w-0 space-y-1.5">
-        <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-chalk transition-colors group-hover:text-cyan">
+        <h3 className="line-clamp-2 text-[16px] font-semibold leading-snug text-chalk transition-colors group-hover:text-cyan">
           {gig.title}
         </h3>
         {!compact && (
-          <p className="line-clamp-2 text-[13px] leading-relaxed text-mist">{gig.description}</p>
+          <p className="line-clamp-2 text-[14px] leading-relaxed text-mist">{gig.description}</p>
         )}
       </div>
 
@@ -78,7 +78,7 @@ export function GigCard({
             <SkillChip key={s.id} name={s.name} />
           ))}
           {hiddenSkills > 0 && (
-            <span className="inline-flex items-center px-1 text-[11.5px] text-dim">
+            <span className="inline-flex items-center px-1 text-[12.5px] text-dim">
               +{hiddenSkills}
             </span>
           )}
@@ -87,7 +87,7 @@ export function GigCard({
 
       {/* Meta strip */}
       <div className="mt-auto space-y-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11.5px] text-dim">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12.5px] text-dim">
           <span className="inline-flex items-center gap-1">
             <IconMapPin className="size-3.5" />
             <span className="max-w-[11rem] truncate">
@@ -114,17 +114,17 @@ export function GigCard({
           <span className="flex min-w-0 items-center gap-2">
             <Avatar name={gig.hirer?.full_name} src={gig.hirer?.avatar_url} size="sm" />
             <span className="min-w-0">
-              <span className="block truncate text-[12px] font-medium text-mist">
+              <span className="block truncate text-[13px] font-medium text-mist">
                 {gig.hirer?.full_name ?? 'A hirer'}
               </span>
               {gig.hirer && gig.hirer.rating_count > 0 && (
-                <span className="hud block text-[10.5px] text-dimmer">
+                <span className="hud block text-[11.5px] text-dimmer">
                   ★ {gig.hirer.rating.toFixed(1)} · {gig.hirer.rating_count}
                 </span>
               )}
             </span>
           </span>
-          <span className="shrink-0 text-[11px] text-dimmer">{relativeTime(gig.created_at)}</span>
+          <span className="shrink-0 text-[12px] text-dimmer">{relativeTime(gig.created_at)}</span>
         </div>
       </div>
     </Link>
@@ -145,7 +145,7 @@ export function GigRow({ gig }: { gig: GigWithRelations }) {
         <p className="truncate text-sm font-medium text-chalk transition-colors group-hover:text-cyan">
           {gig.title}
         </p>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-dim">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-dim">
           <span>{GIG_TYPE_LABEL[gig.gig_type]}</span>
           {applicants > 0 && (
             <span>

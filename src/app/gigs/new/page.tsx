@@ -24,7 +24,7 @@ export default async function NewGigPage() {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
         href="/gigs"
-        className="inline-flex items-center gap-1.5 text-[13px] text-dim transition-colors hover:text-cyan"
+        className="inline-flex items-center gap-1.5 text-[14px] text-dim transition-colors hover:text-cyan"
       >
         <IconArrowLeft className="size-3.5" />
         All gigs
@@ -36,7 +36,7 @@ export default async function NewGigPage() {
           <span className="text-chalk">Post a </span>
           <span className="gradient-text">gig</span>
         </h1>
-        <p className="max-w-xl text-[14.5px] leading-relaxed text-mist">
+        <p className="max-w-xl text-[15.5px] leading-relaxed text-mist">
           Anyone can post — you do not need an institute email. Only verified IIT BHU students can
           claim it.
         </p>
@@ -52,11 +52,11 @@ export default async function NewGigPage() {
             key={item.label}
             className="rounded-xl border border-line bg-white/[0.02] px-3.5 py-3"
           >
-            <p className="flex items-center gap-2 text-[12.5px] font-medium text-chalk">
+            <p className="flex items-center gap-2 text-[13.5px] font-medium text-chalk">
               <span className="text-cyan">{item.icon}</span>
               {item.label}
             </p>
-            <p className="mt-0.5 pl-6 text-[11.5px] text-dim">{item.hint}</p>
+            <p className="mt-0.5 pl-6 text-[12.5px] text-dim">{item.hint}</p>
           </div>
         ))}
       </div>
@@ -64,7 +64,7 @@ export default async function NewGigPage() {
       {needsAuth ? (
         <Panel className="mt-8 p-6">
           <h2 className="text-base font-semibold text-chalk">Sign in to post</h2>
-          <p className="mt-1.5 text-[13.5px] leading-relaxed text-mist">
+          <p className="mt-1.5 text-[14.5px] leading-relaxed text-mist">
             Any email works for posting — Google, or a password account. We ask for an account so
             students know who they are talking to, and so you can manage applicants.
           </p>

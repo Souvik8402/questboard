@@ -85,7 +85,7 @@ export default async function OnboardingPage({
           <span className="text-chalk">Tell us </span>
           <span className="gradient-text">which side you are on</span>
         </h1>
-        <p className="max-w-xl text-[15px] leading-relaxed text-mist">
+        <p className="max-w-xl text-[16px] leading-relaxed text-mist">
           This decides what the board does for you. Students see gigs matched to their skills;
           hirers get the posting tools. {INSTITUTE_SHORT} email holders can do both — post a gig
           and claim one.
