@@ -183,7 +183,7 @@ const SEEDS: GigSeed[] = [
     description:
       "We are a 30-seat café just outside the campus gate. Our current site is a single JPEG of the menu from 2019. We want a proper responsive page: menu with prices, photo gallery, a map, opening hours and a WhatsApp order button.\n\nThe design is already done in Figma — we just need someone to build it well and deploy it. No backend needed. You will get the Figma file, all photos and copy on day one.",
     gig_type: 'one_time',
-    reward: 6500,
+    reward: 200,
     hours: 14,
     deadlineDays: 12,
     place: ['Limbdi Corner, IIT BHU', 25.262, 82.988],
@@ -199,7 +199,7 @@ const SEEDS: GigSeed[] = [
     description:
       "Small 6-room homestay two lanes behind Assi Ghat. We want one vertical reel that makes someone scrolling at 1am book a room: sunrise on the ghat, the rooftop breakfast, the rooms, a bit of aarti at dusk.\n\nBring your own camera or a decent phone with a gimbal. We will handle permissions with the ghat committee. Two half-days of shooting, then edit with licensed music.",
     gig_type: 'one_time',
-    reward: 4000,
+    reward: 300,
     hours: 16,
     deadlineDays: 9,
     place: ['Assi Ghat, Varanasi', 25.2877, 83.006],
@@ -215,7 +215,7 @@ const SEEDS: GigSeed[] = [
     description:
       "She is preparing for JEE and is strong at maths but losing confidence in mechanics and rotational motion. Looking for someone patient who can start from concepts rather than formula drilling.\n\n6:30–8:00pm, Monday / Wednesday / Friday, at our home in Ravindrapuri. Paid monthly. If it goes well this continues through Class 12.",
     gig_type: 'weekly',
-    reward: 8000,
+    reward: 1500,
     hours: 18,
     deadlineDays: 6,
     place: ['Ravindrapuri, Varanasi', 25.295, 83.005],
@@ -247,7 +247,7 @@ const SEEDS: GigSeed[] = [
     description:
       "We weave and sell Banarasi silk and have just started selling online. We need someone to run the Instagram account properly for a month: 3 posts and 5 stories a week, basic reels from footage we provide, replying to DMs.\n\nYou do not need to be a photographer — we shoot the products. We need someone with taste and consistency. If the month works, we continue.",
     gig_type: 'monthly',
-    reward: 7000,
+    reward: 2500,
     hours: 25,
     deadlineDays: 5,
     place: ['Godowlia, Varanasi', 25.31, 83.01],
@@ -263,7 +263,7 @@ const SEEDS: GigSeed[] = [
     description:
       "We run 9 batches and track everything on paper. We want a simple app: teacher marks attendance on a phone, parents get an SMS if a student is absent, and the office sees who owes fees.\n\nAndroid only for now. We are flexible on stack — Flutter or React Native both fine. Part-time over 6 weeks, paid monthly. There is scope to keep maintaining it after launch.",
     gig_type: 'part_time',
-    reward: 18000,
+    reward: 750,
     hours: 60,
     deadlineDays: 20,
     place: ['Sigra, Varanasi', 25.32, 82.995],
@@ -311,7 +311,7 @@ const SEEDS: GigSeed[] = [
     description:
       "We are a 5-person agri-analytics team piloting yield prediction for wheat plots across eastern UP. You would work on the modelling side: cleaning satellite and weather features, trying gradient boosting and a small CNN baseline, and reporting honest error bars.\n\n3 months, roughly 20 hours a week, remote with two on-site visits. Stipend is monthly. Strong Python and a real project you can walk us through matter more than coursework.",
     gig_type: 'internship',
-    reward: 25000,
+    reward: 15000,
     hours: 240,
     deadlineDays: 18,
     remote: true,
@@ -391,7 +391,7 @@ const SEEDS: GigSeed[] = [
     description:
       "We have a hand-drawn plan from the mason and need proper drawings to submit for approval: floor plans for both levels, two elevations and one section, with dimensions and a title block.\n\nMeasurements are already taken and will be shared as photos of the sketch plus a measurement sheet. One site visit possible if you want to check anything.",
     gig_type: 'one_time',
-    reward: 9000,
+    reward: 7000,
     hours: 22,
     deadlineDays: 16,
     place: ['Sunderpur, Varanasi', 25.27, 82.98],
