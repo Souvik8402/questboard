@@ -102,7 +102,7 @@ export default async function GigMapPage({ searchParams }: { searchParams: Promi
               <li key={q.id}>
                 <Link
                   href={`/gigs/${q.id}`}
-                  className="block px-4 py-3 transition-colors hover:bg-white/[0.035]"
+                  className="block px-4 py-3 transition-colors hover:bg-black/[0.035]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <p className="line-clamp-2 text-[14px] font-medium leading-snug text-chalk">

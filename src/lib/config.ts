@@ -14,7 +14,7 @@
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
-function looksReal(value: string): boolean {
+export function looksReal(value: string): boolean {
   // The .env.local.example placeholders all shout in caps; treat them as unset
   // so a half-filled file degrades to demo mode instead of throwing.
   return value.length > 0 && !value.includes('YOUR-') && !value.includes('your-')

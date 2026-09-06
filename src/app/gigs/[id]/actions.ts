@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { isSupabaseConfigured } from '@/lib/config'
+import { DISPUTE_REASONS, DISPUTE_SLA_LABEL } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/server'
 import type { ActionResult, GigStatus } from '@/lib/types'
 import {
@@ -10,7 +11,6 @@ import {
   optionalText,
   requireEnum,
   requireInt,
-  requirePhone,
   requireText,
   runAction,
   text,
@@ -54,31 +54,27 @@ function refresh(id: string) {
   revalidatePath('/dashboard')
 }
 
-// ── Student: apply ──────────────────────────────────────────────────────────
+// ── Any signed-in user: apply ───────────────────────────────────────────────
+/*
+ * There is no role check here any more. Anyone with an account may apply — the
+ * institute mailbox now only decides whether the platform fee is waived. The
+ * INSERT policy in schema.sql asks the same single question: are you banned?
+ */
 
 export async function applyToGig(_prev: unknown, form: FormData): Promise<ActionResult> {
   return runAction(async () => {
     const { session, supabase } = await actor()
     const id = gigId(form)
 
-    if (session.profile!.role !== 'student') {
-      throw new FieldError(
-        'Only verified IIT BHU students can claim gigs. Your account is set up to post work instead.',
-      )
-    }
-
     const coverNote = requireText(form, 'cover_note', {
       label: 'Your pitch',
       min: 10,
       max: 1500,
     })
-    const phone = requirePhone(form, 'phone', 'Your phone number')
 
-    const { data: application, error } = await supabase
+    const { error } = await supabase
       .from('applications')
       .insert({ gig_id: id, student_id: session.userId, cover_note: coverNote })
-      .select('id')
-      .single<{ id: string }>()
 
     if (error) {
       if (error.code === '23505' || /duplicate key/i.test(error.message)) {
@@ -87,25 +83,12 @@ export async function applyToGig(_prev: unknown, form: FormData): Promise<Action
       throw new Error(error.message)
     }
 
-    // Phone goes into the side table, where RLS keeps it from the hirer until
-    // they accept. A failure here is not fatal — the application still stands.
-    const { error: contactError } = await supabase
-      .from('application_contacts')
-      .upsert({ application_id: application.id, phone })
-
     refresh(id)
 
-    if (contactError) {
-      return {
-        ok: true,
-        message:
-          'Application sent — but your phone number could not be saved. Add it from your dashboard.',
-      }
-    }
     return {
       ok: true,
       message:
-        'Application sent. Your number stays hidden until the hirer accepts you — then you both see each other.',
+        'Application sent. If you are hired, a private thread opens here — no phone numbers, no email addresses, either way.',
     }
   })
 }
@@ -146,7 +129,7 @@ export async function acceptApplicant(_prev: unknown, form: FormData): Promise<A
     refresh(id)
     return {
       ok: true,
-      message: 'Applicant hired. Phone numbers are now visible to both of you.',
+      message: 'Applicant hired. A private thread is now open in your inbox.',
     }
   })
 }
@@ -228,5 +211,75 @@ export async function submitReview(_prev: unknown, form: FormData): Promise<Acti
     refresh(id)
     revalidatePath(`/profile/${revieweeId}`)
     return { ok: true, message: 'Review posted. Thanks — reputation is what makes this work.' }
+  })
+}
+
+// ── The thread (item 5) ─────────────────────────────────────────────────────
+/*
+ * The only channel between a hirer and the person they hired. Authority is the
+ * `messages` INSERT policy: in_gig_thread() plus gig_is_assigned(), so a hirer
+ * cannot message hopeful applicants and a stranger cannot message either side.
+ */
+
+export async function sendMessage(_prev: unknown, form: FormData): Promise<ActionResult> {
+  return runAction(async () => {
+    const { session, supabase } = await actor()
+    const id = gigId(form)
+    const body = requireText(form, 'body', { label: 'Message', min: 1, max: 2000 })
+
+    const { error } = await supabase
+      .from('messages')
+      .insert({ gig_id: id, sender_id: session.userId, body })
+
+    if (error) {
+      // RLS refusing is the expected failure, not a bug — say what it means.
+      if (error.code === '42501') {
+        throw new FieldError('This thread is not open. It opens once someone is hired for the gig.')
+      }
+      throw new Error(error.message)
+    }
+
+    revalidatePath(`/inbox/${id}`)
+    revalidatePath('/inbox')
+    return { ok: true, message: 'Sent.' }
+  })
+}
+
+// ── Disputes (item 8) ───────────────────────────────────────────────────────
+
+const REASON_VALUES = DISPUTE_REASONS.map((r) => r.value)
+
+export async function raiseDispute(_prev: unknown, form: FormData): Promise<ActionResult> {
+  return runAction(async () => {
+    const { session, supabase } = await actor()
+    const id = gigId(form)
+    const reason = requireEnum(form, 'reason', REASON_VALUES, 'reason')
+    const detail = requireText(form, 'detail', {
+      label: 'What happened',
+      min: 20,
+      max: 1500,
+    })
+
+    const { error } = await supabase
+      .from('disputes')
+      .insert({ gig_id: id, raised_by: session.userId, reason, detail })
+
+    if (error) {
+      if (error.code === '23505' || /duplicate key/i.test(error.message)) {
+        throw new FieldError(
+          'You already have an open case on this gig. Reply in the thread and an admin will pick it up.',
+        )
+      }
+      if (error.code === '42501') {
+        throw new FieldError('Only the two people on a gig can raise a dispute about it.')
+      }
+      throw new Error(error.message)
+    }
+
+    refresh(id)
+    return {
+      ok: true,
+      message: `Dispute filed. An admin reads both sides and the thread — average resolution is ${DISPUTE_SLA_LABEL}.`,
+    }
   })
 }

@@ -98,12 +98,12 @@ export function TagPicker({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search skills — react, tabla, autocad, german…"
-          className="w-full rounded-xl border border-line bg-ink/70 py-2.5 pl-10 pr-3.5 text-sm text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60 focus:ring-2 focus:ring-cyan/15"
+          className="w-full rounded-xl border border-line bg-white/80 py-2.5 pl-10 pr-3.5 text-sm text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#bfb9b0] focus:border-cyan/60 focus:ring-2 focus:ring-cyan/15"
         />
       </div>
 
       {/* Catalogue */}
-      <div className="max-h-72 space-y-4 overflow-y-auto rounded-xl border border-line bg-ink/40 p-3.5">
+      <div className="max-h-72 space-y-4 overflow-y-auto rounded-xl border border-line bg-white/70 p-3.5">
         {grouped.length === 0 && (
           <p className="py-6 text-center text-[14px] text-dim">
             No skill matches “{query}”. Try a broader word.
@@ -125,7 +125,7 @@ export function TagPicker({
                       'rounded-lg border px-2 py-1 text-[12.5px] font-medium transition-colors',
                       on
                         ? 'border-cyan/45 bg-cyan/15 text-cyan'
-                        : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',
+                        : 'border-line bg-black/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',
                       !on && full && 'cursor-not-allowed opacity-40 hover:border-line hover:text-mist',
                     )}
                   >

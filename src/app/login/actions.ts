@@ -67,6 +67,14 @@ export async function signUpAction(
     const email = requireText(form, 'email', { label: 'Email', max: 255 }).toLowerCase()
     const password = requireText(form, 'password', { label: 'Password', min: 8, max: 128 })
     const next = safeNext(text(form, 'next'))
+    // Optional referral code from a shared link. Only letters/digits make it in —
+    // anything else falls to null, and the DB looks the code up so an unknown or
+    // self-referral is ignored rather than errored.
+    const ref = text(form, 'ref')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '')
+      .slice(0, 16)
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
       throw new FieldError('That does not look like a valid email address.', 'email')
@@ -84,7 +92,7 @@ export async function signUpAction(
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, ...(ref ? { ref } : {}) },
         emailRedirectTo: `${siteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     })

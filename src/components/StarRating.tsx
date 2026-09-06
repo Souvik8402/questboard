@@ -25,7 +25,7 @@ export function StarRating({
         role="img"
         aria-label={`${clamped.toFixed(1)} out of 5`}
       >
-        <span className="text-[#2b3347]">★★★★★</span>
+        <span className="text-[#d8d4cc]">★★★★★</span>
         <span
           className="absolute inset-0 overflow-hidden whitespace-nowrap text-amber"
           style={{ width: `${(clamped / 5) * 100}%` }}
@@ -62,7 +62,7 @@ export function StarPicker({ name = 'rating', defaultValue = 5 }: { name?: strin
         <label
           key={n}
           className={cn(
-            'group cursor-pointer text-2xl leading-none text-[#2b3347] transition-colors',
+            'group cursor-pointer text-2xl leading-none text-[#d8d4cc] transition-colors',
             'has-[:checked]:text-amber hover:text-amber/70',
             // Light up the stars below this one too: they are later siblings.
             '[&:has(:checked)~label]:text-amber [&:hover~label]:text-amber/70',

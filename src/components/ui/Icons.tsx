@@ -186,6 +186,69 @@ export const IconTrash = (p: P) => (
   </Svg>
 )
 
+export const IconChat = (p: P) => (
+  <Svg {...p}>
+    <path d="M20 12a7.5 7.5 0 0 1-7.5 7.5H9l-4 3v-3.9A7.5 7.5 0 0 1 12.5 4.5A7.5 7.5 0 0 1 20 12Z" />
+    <path d="M9 11h7M9 14.5h4.5" />
+  </Svg>
+)
+
+export const IconSend = (p: P) => (
+  <Svg {...p}>
+    <path d="M4.5 12 20 4.5 15 20l-4.5-5.5L4.5 12Z" />
+    <path d="m10.5 14.5 9.5-10" />
+  </Svg>
+)
+
+export const IconAward = (p: P) => (
+  <Svg {...p}>
+    <circle cx="12" cy="9" r="5.5" />
+    <path d="M8.5 13.8 7 21l5-2.5L17 21l-1.5-7.2" />
+  </Svg>
+)
+
+export const IconBolt = (p: P) => (
+  <Svg {...p}>
+    <path d="M13.5 2.5 5 13.5h5.5L9.5 21.5 19 10h-5.5l0-7.5Z" />
+  </Svg>
+)
+
+export const IconScale = (p: P) => (
+  <Svg {...p}>
+    <path d="M12 4v16M7 20h10M4 8h16l-3 5H7L4 8Z" />
+    <path d="M12 4 8.5 8M12 4l3.5 4" />
+  </Svg>
+)
+
+export const IconGift = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 10h16v10H4V10ZM3 7h18v3H3V7ZM12 7v13" />
+    <path d="M12 7S10.5 3.5 8.5 3.5A2 2 0 0 0 8.5 7M12 7s1.5-3.5 3.5-3.5A2 2 0 0 1 15.5 7" />
+  </Svg>
+)
+
+export const IconIdCard = (p: P) => (
+  <Svg {...p}>
+    <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+    <circle cx="8.5" cy="11" r="2" />
+    <path d="M5.5 16c.6-1.4 1.7-2 3-2s2.4.6 3 2M14.5 10h4M14.5 13.5h4" />
+  </Svg>
+)
+
+export const IconCopy = (p: P) => (
+  <Svg {...p}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M15 5.5A1.5 1.5 0 0 0 13.5 4H6a2 2 0 0 0-2 2v7.5A1.5 1.5 0 0 0 5.5 15" />
+  </Svg>
+)
+
+export const IconBook = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 5.5A2 2 0 0 1 6 3.5h4v15H6a2 2 0 0 0-2 2v-15Z" />
+    <path d="M20 5.5a2 2 0 0 0-2-2h-4v15h4a2 2 0 0 1 2 2v-15Z" />
+  </Svg>
+)
+
 export const IconGoogle = (p: P) => (
   <svg viewBox="0 0 24 24" aria-hidden className="size-4" {...p}>
     <path

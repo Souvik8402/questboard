@@ -8,12 +8,12 @@ import type { ActionResult, Skill } from '@/lib/types'
 import { Field, Input, InputWithPrefix, Select, Textarea } from '@/components/ui/Field'
 import { Notice, Panel } from '@/components/ui/Panel'
 import { SubmitButton } from '@/components/ui/SubmitButton'
-import { IconLock, IconPhone, IconWifi } from '@/components/ui/Icons'
+import { IconBolt, IconLock, IconWifi } from '@/components/ui/Icons'
 import { MapPicker } from '@/components/MapPicker'
 import { TagPicker } from '@/components/TagPicker'
 import { createGig } from './actions'
 
-/** Rewards students actually accept, by type — anchors the number for hirers. */
+/** Rewards people actually accept, by type — anchors the number for hirers. */
 const REWARD_HINTS: Record<string, string> = {
   one_time: 'Typical one-off: ₹500 – ₹8,000 depending on scope.',
   weekly: 'Typical weekly: ₹1,500 – ₹6,000 per week — quote the weekly figure.',
@@ -178,7 +178,7 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
           </p>
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white/[0.02] p-3.5 transition-colors hover:border-[#2c344a]">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-black/[0.02] p-3.5 transition-colors hover:border-[#bfb9b0]">
           <input
             type="checkbox"
             name="is_remote"
@@ -225,8 +225,8 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
         <div>
           <h2 className="text-base font-semibold text-chalk">Who you need</h2>
           <p className="mt-1 text-[14px] text-mist">
-            Tags are how students find you. Pick the ones that are genuinely required — over-tagging
-            brings the wrong people.
+            Tags are how people find you. Pick the ones that are genuinely required — over-tagging
+            brings the wrong applicants.
           </p>
         </div>
 
@@ -236,57 +236,53 @@ export function NewGigForm({ skills }: { skills: Skill[] }) {
           skills={skills}
           max={8}
           label="Skill tags (at least one)"
-          hint="Students can filter the board by any of these."
+          hint="Anyone browsing the board can filter by these."
         />
       </Panel>
 
-      {/* ── Contact ──────────────────────────────────────────────────────── */}
+      {/* ── How you decide (item 11) ─────────────────────────────────────── */}
       <Panel className="space-y-5 p-6">
         <div>
-          <h2 className="text-base font-semibold text-chalk">How they reach you</h2>
-          <p className="mt-1 inline-flex items-start gap-1.5 text-[14px] leading-relaxed text-mist">
-            <IconLock className="mt-0.5 size-3.5 shrink-0 text-cyan" />
-            <span>
-              Your number is stored in a separate, locked table. Nobody sees it until you accept an
-              applicant — not even people who have applied.
-            </span>
+          <h2 className="text-base font-semibold text-chalk">How you pick someone</h2>
+          <p className="mt-1 text-[14px] leading-relaxed text-mist">
+            By default you see everyone who applied and choose whenever you like. Tick the box below
+            if you need this done now.
           </p>
         </div>
 
-        <Field
-          label="Phone number"
-          htmlFor="phone"
-          required
-          error={fieldError('phone')}
-          hint="10–13 digits. WhatsApp-capable numbers get faster replies."
-        >
-          <div className="relative">
-            <IconPhone className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-dim" />
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              required
-              autoComplete="tel"
-              placeholder="+91 98765 43210"
-              className="pl-10"
-            />
-          </div>
-        </Field>
-
-        <Field
-          label="Alternate contact"
-          htmlFor="alt_contact"
-          error={fieldError('alt_contact')}
-          hint="Optional — an email, a shop name, “ask for Anand at the counter”."
-        >
-          <Input
-            id="alt_contact"
-            name="alt_contact"
-            maxLength={160}
-            placeholder="anand@example.com"
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-black/[0.02] p-3.5 transition-colors hover:border-[#bfb9b0]">
+          <input
+            type="checkbox"
+            name="is_urgent"
+            className="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-line bg-ink accent-cyan"
           />
-        </Field>
+          <span className="space-y-0.5">
+            <span className="flex items-center gap-1.5 text-[14px] font-medium text-chalk">
+              <IconBolt className="size-3.5" />
+              Urgent — first come, first served
+            </span>
+            <span className="block text-xs leading-relaxed text-dim">
+              Applicants queue in the order they arrive and you review the earliest one first. You
+              still approve every hire: pass on someone and the next in line appears straight away.
+              The gig also gets an Urgent badge on the board.
+            </span>
+          </span>
+        </label>
+      </Panel>
+
+      {/* ── How you talk (item 5) ────────────────────────────────────────── */}
+      <Panel className="space-y-3 p-6">
+        <h2 className="text-base font-semibold text-chalk">How they reach you</h2>
+        <p className="inline-flex items-start gap-1.5 text-[14px] leading-relaxed text-mist">
+          <IconLock className="mt-0.5 size-3.5 shrink-0 text-cyan" />
+          <span>
+            You do not enter a phone number or an email anywhere on GigNest, and neither does
+            anyone applying. The moment you hire someone, a{' '}
+            <span className="text-chalk">private thread</span> opens between the two of you in your
+            inbox. It cannot be edited or deleted, which is what makes it useful if a dispute is
+            ever raised.
+          </span>
+        </p>
       </Panel>
 
       {generalError && <Notice tone="error">{generalError}</Notice>}

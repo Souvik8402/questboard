@@ -226,10 +226,10 @@ function RoleCard({
       aria-pressed={active}
       className={cn(
         'relative rounded-xl border p-4 text-left transition-all',
-        active ? accent.ring : 'border-line bg-white/[0.02]',
+        active ? accent.ring : 'border-line bg-black/[0.02]',
         disabled
           ? 'cursor-not-allowed opacity-55'
-          : !active && 'hover:border-[#2f3852] hover:bg-white/[0.045]',
+          : !active && 'hover:border-[#c3beb5] hover:bg-black/[0.045]',
       )}
     >
       <div className="flex items-start gap-3">

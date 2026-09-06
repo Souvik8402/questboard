@@ -12,7 +12,7 @@ const GigMap = dynamic(() => import('@/components/GigMap'), {
   ssr: false,
   loading: () => (
     <div
-      className="grid w-full place-items-center rounded-[var(--radius-card)] border border-line bg-ink/60"
+      className="grid w-full place-items-center rounded-[var(--radius-card)] border border-line bg-white/80"
       style={{ height: 'min(70dvh, 620px)' }}
     >
       <div className="flex items-center gap-2.5 text-[14px] text-dim">

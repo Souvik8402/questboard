@@ -1,7 +1,23 @@
 import { hasServiceRole, isSupabaseConfigured } from './config'
-import { DEMO_PROFILES, DEMO_GIGS, DEMO_REVIEWS } from './demo-data'
+import {
+  DEMO_DISPUTES,
+  DEMO_GIGS,
+  DEMO_PROFILES,
+  DEMO_REVIEWS,
+  DEMO_VERIFICATIONS,
+  DEMO_WAIVERS,
+} from './demo-data'
 import { createAdminClient } from './supabase/admin'
-import type { PublicProfile, GigStatus, Review, UserRole } from './types'
+import type {
+  Dispute,
+  FeeWaiverStatus,
+  GigStatus,
+  GigWithRelations,
+  PublicProfile,
+  Review,
+  UserRole,
+  Verification,
+} from './types'
 
 /**
  * Admin-only reads.
@@ -70,6 +86,46 @@ export interface AdminStats {
   reviews: number
   reward_pool: number
   completed_value: number
+  /** Work sitting in a queue: pending waivers, pending IDs, open disputes. */
+  waivers_pending: number
+  ids_pending: number
+  disputes_open: number
+}
+
+/**
+ * A submitted ID plus who submitted it, and the email the account signed up with.
+ *
+ * The email is the whole reason this queue needs the service-role client: matching
+ * "ANAND KUMAR SETH" on a PAN to an account is guesswork without it, and no
+ * ordinary query can read `auth.users.email`.
+ *
+ * What is deliberately *not* here: the ID number. It was never stored — see
+ * src/lib/kyc.ts. An admin sees the name, the type, and four digits, which is
+ * enough to compare against a card held up on a video call and not enough to be
+ * worth stealing.
+ */
+export interface AdminVerification extends Verification {
+  profile: PublicProfile | null
+  email: string | null
+}
+
+/** One row of the fee-waiver queue (item 2). */
+export interface AdminWaiver {
+  profile: PublicProfile | null
+  /** Checked by eye against the institute domain — that is what the waiver is for. */
+  email: string | null
+  status: FeeWaiverStatus
+  /** The applicant's own words: course, year, roll number. */
+  request: string | null
+  /** The reviewer's reply, once there is one. */
+  note: string | null
+  requested_at: string | null
+  decided_at: string | null
+}
+
+export interface AdminDispute extends Dispute {
+  gig: GigWithRelations | null
+  raiser: PublicProfile | null
 }
 
 /** True when the admin panel can actually reach the database. */
@@ -139,6 +195,9 @@ function demoStats(): AdminStats {
     completed_value: gigs
       .filter((q) => q.status === 'completed')
       .reduce((n, q) => n + q.reward_amount, 0),
+    waivers_pending: DEMO_WAIVERS.filter((w) => w.status === 'pending').length,
+    ids_pending: DEMO_VERIFICATIONS.filter((v) => v.status === 'pending').length,
+    disputes_open: DEMO_DISPUTES.filter((d) => d.status === 'open').length,
   }
 }
 
@@ -149,11 +208,20 @@ export async function getAdminStats(): Promise<AdminStats> {
 
   const supabase = createAdminClient()
 
-  const [profiles, gigs, applications, reviews] = await Promise.all([
+  const [profiles, gigs, applications, reviews, waivers, ids, disputes] = await Promise.all([
     supabase.from('profiles').select('role, is_banned'),
     supabase.from('gigs').select('status, reward_amount'),
     supabase.from('applications').select('status'),
     supabase.from('reviews').select('id', { count: 'exact', head: true }),
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('fee_waiver_status', 'pending'),
+    supabase
+      .from('id_verifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+    supabase.from('disputes').select('id', { count: 'exact', head: true }).eq('status', 'open'),
   ])
 
   const p = (profiles.data ?? []) as { role: UserRole; is_banned: boolean }[]
@@ -176,6 +244,9 @@ export async function getAdminStats(): Promise<AdminStats> {
     completed_value: q
       .filter((x) => x.status === 'completed')
       .reduce((n, x) => n + x.reward_amount, 0),
+    waivers_pending: waivers.count ?? 0,
+    ids_pending: ids.count ?? 0,
+    disputes_open: disputes.count ?? 0,
   }
 }
 
@@ -278,10 +349,12 @@ export async function getAdminReviews(limit = 20): Promise<AdminReview[]> {
     .select(
       `id, gig_id, reviewer_id, reviewee_id, rating, comment, created_at,
        reviewer:profiles!reviews_reviewer_id_fkey (
-         id, full_name, avatar_url, role, rating, rating_count, department, year
+         id, full_name, avatar_url, role, rating, rating_count, department, year,
+         id_verified_at
        ),
        reviewee:profiles!reviews_reviewee_id_fkey (
-         id, full_name, avatar_url, role, rating, rating_count, department, year
+         id, full_name, avatar_url, role, rating, rating_count, department, year,
+         id_verified_at
        )`,
     )
     .order('created_at', { ascending: false })
@@ -299,4 +372,166 @@ export async function getAdminReviews(limit = 20): Promise<AdminReview[]> {
     reviewer: first(row.reviewer),
     reviewee: first(row.reviewee),
   }))
+}
+
+// ── Queues (items 2, 4, 8) ──────────────────────────────────────────────────
+/*
+ * Three lists of things waiting on a human. They share a shape on purpose: an
+ * account, some evidence, and two buttons. The mutations that act on them live in
+ * src/app/admin/actions.ts.
+ */
+
+/**
+ * `auth.users.email` for a set of profile ids.
+ *
+ * One `listUsers` page of 200 covers a prototype, and every caller tolerates a
+ * miss — a row with an unknown email still renders, it just shows an em dash. The
+ * alternative, a query per row, would be 20 round trips to save nothing.
+ */
+async function emailsFor(ids: string[]): Promise<Map<string, string | null>> {
+  const wanted = new Set(ids)
+  const supabase = createAdminClient()
+  const { data } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 })
+
+  const out = new Map<string, string | null>()
+  for (const u of (data?.users ?? []) as unknown as AuthUserRow[]) {
+    if (wanted.has(u.id)) out.set(u.id, u.email ?? null)
+  }
+  return out
+}
+
+export async function getAdminVerifications(limit = 40): Promise<AdminVerification[]> {
+  if (!adminDataAvailable) {
+    return DEMO_VERIFICATIONS.map((v) => ({
+      ...v,
+      email:
+        v.profile.role === 'student'
+          ? `${(v.profile.full_name ?? 'user').toLowerCase().replace(/[^a-z]+/g, '.')}@itbhu.ac.in`
+          : `${(v.profile.full_name ?? 'user').toLowerCase().replace(/[^a-z]+/g, '.')}@example.com`,
+    }))
+  }
+
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('id_verifications')
+    .select(
+      `id, profile_id, kind, name_on_id, last4, status, note, created_at, decided_at,
+       profile:profiles!id_verifications_profile_id_fkey (
+         id, full_name, avatar_url, role, rating, rating_count, department, year,
+         id_verified_at
+       )`,
+    )
+    // Pending first, then most recent — the queue is the point of the screen.
+    .order('status', { ascending: true })
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  type Row = Verification & { profile: PublicProfile | PublicProfile[] | null }
+  const rows = (data ?? []) as unknown as Row[]
+  const emails = await emailsFor(rows.map((r) => r.profile_id))
+
+  return rows
+    .map((row) => ({
+      ...row,
+      profile: Array.isArray(row.profile) ? (row.profile[0] ?? null) : row.profile,
+      email: emails.get(row.profile_id) ?? null,
+    }))
+    .sort((a, b) => rank(a.status) - rank(b.status))
+}
+
+/** Pending before decided, so the queue sorts itself however Postgres ordered it. */
+function rank(status: string): number {
+  return status === 'pending' || status === 'open' ? 0 : 1
+}
+
+export async function getAdminWaivers(limit = 40): Promise<AdminWaiver[]> {
+  if (!adminDataAvailable) {
+    return DEMO_WAIVERS.map((w) => ({
+      profile: w.profile,
+      email: w.email,
+      status: w.status,
+      request: 'B.Tech, third year. Happy to bring my ID card to the desk if that is easier.',
+      note: w.note,
+      requested_at: w.requested_at,
+      decided_at: w.status === 'pending' ? null : w.requested_at,
+    })).sort((a, b) => rank(a.status) - rank(b.status))
+  }
+
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select(
+      `id, full_name, avatar_url, role, rating, rating_count, department, year, id_verified_at,
+       fee_waiver_status, fee_waiver_request, fee_waiver_note, fee_waiver_decided_at, updated_at`,
+    )
+    .neq('fee_waiver_status', 'none')
+    .order('fee_waiver_decided_at', { ascending: false, nullsFirst: true })
+    .limit(limit)
+
+  type Row = PublicProfile & {
+    fee_waiver_status: FeeWaiverStatus
+    fee_waiver_request: string | null
+    fee_waiver_note: string | null
+    fee_waiver_decided_at: string | null
+    updated_at: string
+  }
+  const rows = (data ?? []) as unknown as Row[]
+  const emails = await emailsFor(rows.map((r) => r.id))
+
+  return rows
+    .map((row) => ({
+      profile: row,
+      email: emails.get(row.id) ?? null,
+      status: row.fee_waiver_status,
+      request: row.fee_waiver_request,
+      note: row.fee_waiver_note,
+      // There is no `fee_waiver_requested_at` column; `updated_at` is the closest
+      // honest answer and it is only ever used as a rough "how long has this sat
+      // here" hint.
+      requested_at: row.updated_at,
+      decided_at: row.fee_waiver_decided_at,
+    }))
+    .sort((a, b) => rank(a.status) - rank(b.status))
+}
+
+export async function getAdminDisputes(limit = 40): Promise<AdminDispute[]> {
+  if (!adminDataAvailable) {
+    return [...DEMO_DISPUTES].sort((a, b) => rank(a.status) - rank(b.status))
+  }
+
+  const supabase = createAdminClient()
+  const { data } = await supabase
+    .from('disputes')
+    .select(
+      `id, gig_id, raised_by, reason, detail, status, resolution, created_at, resolved_at,
+       gig:gigs!disputes_gig_id_fkey (
+         id, hirer_id, title, description, gig_type, status, reward_amount,
+         estimated_hours, deadline, is_remote, location_label, lat, lng,
+         assigned_to, views, is_flagged, is_urgent, created_at, updated_at
+       ),
+       raiser:profiles!disputes_raised_by_fkey (
+         id, full_name, avatar_url, role, rating, rating_count, department, year,
+         id_verified_at
+       )`,
+    )
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  type Row = Dispute & {
+    gig: Omit<GigWithRelations, 'hirer' | 'skills'> | Omit<GigWithRelations, 'hirer' | 'skills'>[] | null
+    raiser: PublicProfile | PublicProfile[] | null
+  }
+
+  return ((data ?? []) as unknown as Row[])
+    .map((row) => {
+      const gig = Array.isArray(row.gig) ? (row.gig[0] ?? null) : row.gig
+      return {
+        ...row,
+        // The admin list shows a title and a reward, not tags or the hirer card,
+        // so the embed skips both joins and they are filled in as empty here.
+        gig: gig ? { ...gig, hirer: null, skills: [] } : null,
+        raiser: Array.isArray(row.raiser) ? (row.raiser[0] ?? null) : row.raiser,
+      }
+    })
+    .sort((a, b) => rank(a.status) - rank(b.status))
 }

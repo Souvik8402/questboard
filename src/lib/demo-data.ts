@@ -1,12 +1,18 @@
 import type {
   Application,
   ApplicationWithRelations,
+  Dispute,
+  FeeWaiverStatus,
+  MessageWithSender,
   PlatformStats,
   PublicProfile,
   GigWithRelations,
   Review,
   Skill,
+  Thread,
+  Verification,
 } from './types'
+import type { ApplierStats } from './badges'
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -123,8 +129,15 @@ function tags(...slugs: string[]): Skill[] {
 const NOW = Date.now()
 const days = (n: number) => new Date(NOW + n * 86_400_000).toISOString()
 const hoursAgo = (n: number) => new Date(NOW - n * 3_600_000).toISOString()
+const minsAgo = (n: number) => new Date(NOW - n * 60_000).toISOString()
 
-// ── Hirers and students ─────────────────────────────────────────────────────
+// ── Hirers and appliers ─────────────────────────────────────────────────────
+/*
+ * "Applier" is the public word for whoever takes the work. Internally the role is
+ * still `student | hirer | admin`, but since anyone may apply, a `hirer` row here
+ * can perfectly well be an applier too — Rohit Verma below is exactly that, and
+ * he is in the dataset on purpose so every screen has to cope with him.
+ */
 function person(
   id: string,
   full_name: string,
@@ -133,28 +146,86 @@ function person(
   rating_count: number,
   department: string | null = null,
   year: number | null = null,
+  verifiedHoursAgo: number | null = null,
 ): PublicProfile {
-  return { id, full_name, avatar_url: null, role, rating, rating_count, department, year }
+  return {
+    id,
+    full_name,
+    avatar_url: null,
+    role,
+    rating,
+    rating_count,
+    department,
+    year,
+    id_verified_at: verifiedHoursAgo === null ? null : hoursAgo(verifiedHoursAgo),
+    // Every demo profile has a shareable code, so the referral card is testable
+    // on any of them once you're signed in as that person.
+    referral_code: demoReferralCode(id),
+  }
 }
 
 export const DEMO_PROFILES: PublicProfile[] = [
-  person('d0000000-0000-4000-8000-000000000001', 'Anand Café, Limbdi Corner', 'hirer', 4.8, 14),
-  person('d0000000-0000-4000-8000-000000000002', 'Kashi Ghat Homestay', 'hirer', 4.6, 9),
+  person('d0000000-0000-4000-8000-000000000001', 'Anand Café, Limbdi Corner', 'hirer', 4.8, 14, null, null, 400),
+  person('d0000000-0000-4000-8000-000000000002', 'Kashi Ghat Homestay', 'hirer', 4.6, 9, null, null, 620),
   person('d0000000-0000-4000-8000-000000000003', 'Dr. Meera Nair', 'hirer', 5.0, 6),
-  person('d0000000-0000-4000-8000-000000000004', 'Sunrise Coaching Centre', 'hirer', 4.2, 21),
+  person('d0000000-0000-4000-8000-000000000004', 'Sunrise Coaching Centre', 'hirer', 4.2, 21, null, null, 900),
   person('d0000000-0000-4000-8000-000000000005', 'Banarasi Threads', 'hirer', 4.4, 5),
-  person('d0000000-0000-4000-8000-000000000006', 'AgriSense Labs', 'hirer', 4.9, 11),
+  person('d0000000-0000-4000-8000-000000000006', 'AgriSense Labs', 'hirer', 4.9, 11, null, null, 300),
   // A student who posts work — students can hire too.
-  person('d0000000-0000-4000-8000-000000000007', 'Technex Organising Team', 'student', 4.7, 18, 'Mechanical Engineering', 3),
-  person('d0000000-0000-4000-8000-000000000008', 'Prof. R. Shukla', 'hirer', 4.9, 7),
+  person('d0000000-0000-4000-8000-000000000007', 'Technex Organising Team', 'student', 4.7, 18, 'Mechanical Engineering', 3, 210),
+  person('d0000000-0000-4000-8000-000000000008', 'Prof. R. Shukla', 'hirer', 4.9, 7, null, null, 150),
   person('d0000000-0000-4000-8000-000000000009', 'Sarnath Tours & Travels', 'hirer', 4.1, 12),
   person('d0000000-0000-4000-8000-00000000000a', 'Ravindrapuri Residents Assn.', 'hirer', 4.5, 4),
-  // Students, for the profile page
-  person('d0000000-0000-4000-8000-0000000000b1', 'Aditi Raghavan', 'student', 4.9, 8, 'Computer Science & Engineering', 3),
+  // Appliers. b1 is the demo persona; b4 is deliberately NOT a student, to prove
+  // the marketplace is open to anyone.
+  person('d0000000-0000-4000-8000-0000000000b1', 'Aditi Raghavan', 'student', 4.9, 8, 'Computer Science & Engineering', 3, 96),
   person('d0000000-0000-4000-8000-0000000000b2', 'Karthik Menon', 'student', 4.7, 5, 'Electronics Engineering', 2),
+  person('d0000000-0000-4000-8000-0000000000b3', 'Sneha Pillai', 'student', 4.8, 22, 'Architecture', 4, 480),
+  person('d0000000-0000-4000-8000-0000000000b4', 'Rohit Verma', 'hirer', 4.6, 9),
+  person('d0000000-0000-4000-8000-0000000000b5', 'Farhan Qureshi', 'student', 4.5, 3, 'Civil Engineering', 2),
+  person('d0000000-0000-4000-8000-0000000000b6', 'Ishita Bose', 'student', 5.0, 4, 'Chemical Engineering', 3, 60),
 ]
 
 const P = new Map(DEMO_PROFILES.map((p) => [p.id.slice(-2), p]))
+
+/** Look an applier up by the last two characters of their demo id. */
+function who(key: string): PublicProfile {
+  return P.get(key) ?? DEMO_PROFILES[0]
+}
+
+// ── Badge counts (item 6) ───────────────────────────────────────────────────
+/*
+ * With a real database these come from `count(gigs where assigned_to = id and
+ * status = 'completed')` and `profiles.mentorships`. Hard-coded here so the
+ * ladder is actually visible: one of each tier, plus Ishita who reached gold via
+ * two paid mentorships rather than 30 gigs.
+ */
+export const DEMO_APPLIER_STATS: Record<string, ApplierStats> = {
+  'd0000000-0000-4000-8000-0000000000b1': { completed: 12, mentorships: 0, referrals: 3 },
+  'd0000000-0000-4000-8000-0000000000b2': { completed: 5, mentorships: 0, referrals: 0 },
+  'd0000000-0000-4000-8000-0000000000b3': { completed: 31, mentorships: 1, referrals: 2 },
+  'd0000000-0000-4000-8000-0000000000b4': { completed: 7, mentorships: 0, referrals: 1 },
+  'd0000000-0000-4000-8000-0000000000b5': { completed: 4, mentorships: 0, referrals: 0 },
+  'd0000000-0000-4000-8000-0000000000b6': { completed: 3, mentorships: 2, referrals: 0 },
+  'd0000000-0000-4000-8000-000000000007': { completed: 9, mentorships: 0, referrals: 5 },
+}
+
+/** Skill tags per profile, so the "suggested appliers" match has something real
+ *  to work with (item 7) and profile pages differ from one another. */
+const PROFILE_SKILL_SLUGS: Record<string, string[]> = {
+  'd0000000-0000-4000-8000-0000000000b1': ['web-development', 'frontend', 'ui-ux', 'figma', 'photography'],
+  'd0000000-0000-4000-8000-0000000000b2': ['embedded', 'python', 'matlab', 'data-entry'],
+  'd0000000-0000-4000-8000-0000000000b3': ['graphic-design', 'poster-design', 'figma', 'autocad', 'cad'],
+  'd0000000-0000-4000-8000-0000000000b4': ['videography', 'video-editing', 'photography', 'delivery-pickup'],
+  'd0000000-0000-4000-8000-0000000000b5': ['data-entry', 'excel', 'hindi', 'errands', 'event-setup'],
+  'd0000000-0000-4000-8000-0000000000b6': ['chemistry-tutoring', 'jee-coaching', 'content-writing'],
+  'd0000000-0000-4000-8000-000000000007': ['event-management', 'event-setup', 'social-media', 'anchoring'],
+}
+
+export function demoProfileSkills(profileId: string): Skill[] {
+  const slugs = PROFILE_SKILL_SLUGS[profileId] ?? ['web-development', 'frontend', 'photography', 'figma']
+  return tags(...slugs)
+}
 
 // ── Gigs ──────────────────────────────────────────────────────────────────
 interface GigSeed {
@@ -173,6 +244,10 @@ interface GigSeed {
   postedHoursAgo: number
   views: number
   applications: number
+  /** First-come-first-served review queue (item 11). */
+  urgent?: boolean
+  /** Two-character key into DEMO_PROFILES for an assigned/completed gig. */
+  assignee?: string
 }
 
 const SEEDS: GigSeed[] = [
@@ -283,6 +358,7 @@ const SEEDS: GigSeed[] = [
     hours: 8,
     deadlineDays: 2,
     remote: true,
+    urgent: true,
     skills: ['proofreading', 'latex', 'technical-writing'],
     postedHoursAgo: 5,
     views: 61,
@@ -391,6 +467,8 @@ const SEEDS: GigSeed[] = [
     description:
       "We have a hand-drawn plan from the mason and need proper drawings to submit for approval: floor plans for both levels, two elevations and one section, with dimensions and a title block.\n\nMeasurements are already taken and will be shared as photos of the sketch plus a measurement sheet. One site visit possible if you want to check anything.",
     gig_type: 'one_time',
+    status: 'in_progress',
+    assignee: 'b1',
     reward: 7000,
     hours: 22,
     deadlineDays: 16,
@@ -408,6 +486,7 @@ const SEEDS: GigSeed[] = [
       "Every Saturday we host a small classical music evening for guests on the rooftop — usually a sitar or vocal performer who needs accompaniment. Audience of 20 to 30, informal.\n\nTeen taal and jhaptaal comfortably, ability to follow an unfamiliar performer. Paid per evening, ongoing. Instrument available on site if you prefer not to carry yours.",
     gig_type: 'weekly',
     status: 'assigned',
+    assignee: 'b2',
     reward: 3000,
     hours: 4,
     deadlineDays: 3,
@@ -425,6 +504,7 @@ const SEEDS: GigSeed[] = [
       "Class 12 organic chemistry, one concept per video, 4 to 6 minutes each. You explain on a tablet or whiteboard; we handle the editing and thumbnails.\n\nScript outline provided. Recorded in our Sigra studio, flexible slots. Paid on delivery in batches of ten.",
     gig_type: 'part_time',
     status: 'completed',
+    assignee: 'b1',
     reward: 12000,
     hours: 45,
     deadlineDays: -6,
@@ -434,10 +514,47 @@ const SEEDS: GigSeed[] = [
     views: 289,
     applications: 12,
   },
+  // ── Posted by the demo persona, so /dashboard has a hirer side too ─────────
+  {
+    id: 'a1000000-0000-4000-8000-000000000011',
+    hirer: 'b1',
+    title: 'Fix a broken deploy on my portfolio site — needed today',
+    description:
+      "My portfolio has been returning a 500 on the live URL since I merged a branch this morning, and I have an interview tomorrow where they will click it. Next.js on Vercel, the build passes locally.\n\nI will share the repo and the Vercel logs. If you can find it in an hour, great — if it turns out to be bigger than that, tell me and we will talk. Marked urgent, so the first person who applies gets reviewed first.",
+    gig_type: 'one_time',
+    reward: 1500,
+    hours: 3,
+    deadlineDays: 1,
+    remote: true,
+    urgent: true,
+    skills: ['web-development', 'devops', 'frontend'],
+    postedHoursAgo: 2,
+    views: 47,
+    applications: 4,
+  },
+  {
+    id: 'a1000000-0000-4000-8000-000000000012',
+    hirer: 'b1',
+    title: 'Shoot a two-minute walkthrough video of my final-year project',
+    description:
+      "I have built a working prototype and need a clean two-minute video for my project submission and my portfolio: a few angles of the hardware, screen recordings cut in, and my voiceover on top.\n\nI will write and record the script. I need someone who can shoot it properly and edit it so it does not look like a phone video. Half a day in the department lab.",
+    gig_type: 'one_time',
+    status: 'assigned',
+    assignee: 'b4',
+    reward: 2200,
+    hours: 6,
+    deadlineDays: 5,
+    place: ['IIT BHU Dept. of CSE', 25.2669, 82.9906],
+    skills: ['videography', 'video-editing'],
+    postedHoursAgo: 58,
+    views: 39,
+    applications: 5,
+  },
 ]
 
 export const DEMO_GIGS: GigWithRelations[] = SEEDS.map((s) => {
   const hirer = P.get(s.hirer) ?? DEMO_PROFILES[0]
+  const isTaken = s.status === 'assigned' || s.status === 'in_progress' || s.status === 'completed'
   return {
     id: s.id,
     hirer_id: hirer.id,
@@ -452,11 +569,14 @@ export const DEMO_GIGS: GigWithRelations[] = SEEDS.map((s) => {
     location_label: s.place?.[0] ?? null,
     lat: s.place?.[1] ?? null,
     lng: s.place?.[2] ?? null,
-    assigned_to: s.status === 'assigned' || s.status === 'completed' ? DEMO_PROFILES[10].id : null,
+    assigned_to: isTaken ? who(s.assignee ?? 'b1').id : null,
     views: s.views,
     is_flagged: false,
+    is_urgent: s.urgent ?? false,
     created_at: hoursAgo(s.postedHoursAgo),
-    updated_at: hoursAgo(s.postedHoursAgo),
+    // An assigned or completed gig moved recently; an open one has not moved
+    // since it was posted. The dispute window reads this, so it matters.
+    updated_at: isTaken ? hoursAgo(Math.min(s.postedHoursAgo, 14)) : hoursAgo(s.postedHoursAgo),
     hirer,
     skills: tags(...s.skills),
     application_count: s.applications,
@@ -549,19 +669,19 @@ const APPLICATION_SEEDS: [gigIndex: number, status: Application['status'], hours
       'I rebuilt the Technex registration site last year — same stack, and I handled the deploy myself. I can show you a staging link before you commit to anything.',
     ],
     [
-      2,
+      9,
       'pending',
       20,
-      'I shoot on a Fuji X-T30 and edit in Lightroom. Happy to do a short unpaid test shoot of two dishes so you can judge the look first.',
+      'I work in Figma and can keep the eight slides on one grid so they read as a set. Happy to do the first one and let you judge before I carry on with the rest.',
     ],
     [
-      4,
+      13,
       'accepted',
       54,
-      'I have done three of these before and I am comfortable working to a fixed brief. Available from Thursday onwards.',
+      'I have drawn two extensions like this for approval submissions and know what the office asks for. Available from Thursday onwards.',
     ],
     [
-      6,
+      5,
       'rejected',
       96,
       'Interested, though I should say up front that my Tuesdays are blocked until 4pm this term.',
@@ -579,8 +699,393 @@ export function demoApplicationsFor(userId: string): ApplicationWithRelations[] 
       status,
       created_at: hoursAgo(ago),
       student: DEMO_ME,
-      phone: null,
       gig,
     }
   })
 }
+
+// ── Applicants on the hirer's side ──────────────────────────────────────────
+/*
+ * `getGigApplications` used to return [] in demo mode, which left the hirer view
+ * empty — and item 11's first-come-first-served queue is entirely a hirer view.
+ * These are the people waiting, oldest first, which is the order the queue
+ * depends on.
+ */
+const INBOUND: Record<string, [applier: string, hoursAgo: number, note: string][]> = {
+  // The urgent one. Four people waiting; the hirer sees only Sneha until she is
+  // approved or passed over.
+  'a1000000-0000-4000-8000-000000000011': [
+    [
+      'b3',
+      1.6,
+      'I have hit this exact 500 before — it is almost always an env var that exists locally but was never added in Vercel, or a route that reads something at build time. Send me the build log and I will tell you which within ten minutes.',
+    ],
+    [
+      'b5',
+      1.2,
+      'Free right now and can start immediately. I am better at the deployment side than the React side, so if it is a config problem I am your person.',
+    ],
+    [
+      'b2',
+      0.7,
+      'Happy to take a look. I would want to reproduce the failing build first rather than guess, so give me half an hour before I commit to a fix.',
+    ],
+    [
+      'b4',
+      0.3,
+      'I do this for two small businesses here. Not a student, but I have shipped plenty of Next apps — I can screen-share while I work if you want to watch.',
+    ],
+  ],
+  // A normal, non-urgent gig: all three are shown side by side and the hirer
+  // picks whoever they like.
+  'a1000000-0000-4000-8000-000000000007': [
+    [
+      'b6',
+      4,
+      'I typeset my own department report in LaTeX and fixed a bibliography that had 60 broken keys. I will send you a compiled PDF of the first ten pages before you pay anything.',
+    ],
+    [
+      'b3',
+      2.5,
+      'Comfortable in LaTeX and fast at this. One caveat: I can start only after 8pm tonight, which still leaves a full day before your deadline.',
+    ],
+    [
+      'b1',
+      1.1,
+      'I have proofread two theses in this department and know the formatting the office insists on. Overleaf is fine for me.',
+    ],
+  ],
+}
+
+export function demoApplicantsFor(gigId: string): ApplicationWithRelations[] {
+  const rows = INBOUND[gigId] ?? []
+  return rows.map(([key, ago, note], i) => {
+    const applier = who(key)
+    return {
+      id: `c2000000-0000-4000-8000-${gigId.slice(-4)}${String(i + 1).padStart(2, '0')}`,
+      gig_id: gigId,
+      student_id: applier.id,
+      cover_note: note,
+      status: 'pending' as Application['status'],
+      created_at: hoursAgo(ago),
+      student: applier,
+      student_skills: demoProfileSkills(applier.id),
+    }
+  })
+}
+
+// ── Threads (item 5) ────────────────────────────────────────────────────────
+/*
+ * A thread exists per gig and only once someone is hired, which is exactly what
+ * the RLS policy on `messages` enforces. All three below involve the demo
+ * persona: one where she is the hirer, two where she was hired.
+ */
+const THREAD_SEEDS: [gigId: string, lines: [sender: string, minsAgo: number, body: string][]][] = [
+  [
+    // Aditi is the hirer here, Rohit Verma the person she hired.
+    'a1000000-0000-4000-8000-000000000012',
+    [
+      ['b1', 2760, 'Hi Rohit — thanks for taking this on. Are you free Thursday afternoon? The lab is quiet after 3.'],
+      ['b4', 2700, 'Thursday after 3 works. Is there a window in the room, or will I need to bring a light?'],
+      ['b1', 2660, 'Two windows but they face north, so it is dim by 5. Bring the light to be safe.'],
+      ['b4', 1500, 'Noted. I will bring one panel and a reflector. Send me the script whenever it is ready so I can plan the cuts.'],
+      ['b1', 1440, 'Script is written, I will record the voiceover tonight and share both.'],
+      ['b4', 95, 'Got the script — it is clear. One thought: the bit about the sensor would land better as a close-up than a wide shot. Shall I plan for that?'],
+    ],
+  ],
+  [
+    // Aditi was hired. In progress, so the dispute disclosure shows here too.
+    'a1000000-0000-4000-8000-00000000000e',
+    [
+      ['0a', 3400, 'Sending the measurement sheet photos now. Let us know if any dimension is unreadable.'],
+      ['b1', 3300, 'Received. Two of them are cut off at the edge — the bedroom width on sheet 2 and the staircase rise. Could you re-shoot those?'],
+      ['0a', 3200, 'Re-shot and uploaded. Sorry about that.'],
+      ['b1', 900, 'Both floor plans are done. Starting the elevations tomorrow — I should have everything with you two days before your deadline.'],
+      ['0a', 700, 'Perfect, no rush. The approval office is closed till Monday anyway.'],
+    ],
+  ],
+  [
+    // Completed, kept as the record of a finished job.
+    'a1000000-0000-4000-8000-000000000010',
+    [
+      ['04', 20000, 'Studio is free every weekday 4–7pm. Batch of ten first, then we pay and you carry on.'],
+      ['b1', 19800, 'Works for me. I will do the first ten this week — aldehydes and ketones, in the order on your outline.'],
+      ['04', 9000, 'First ten watched and approved. Payment sent. The audio on video 7 clips slightly at the start.'],
+      ['b1', 8900, 'Re-recorded 7 and uploaded it. Nothing else should have that problem — I moved the mic.'],
+      ['04', 400, 'All 40 in. Thank you, genuinely — the students are already using them. Leaving you a review now.'],
+    ],
+  ],
+]
+
+function threadMessages(gigId: string): MessageWithSender[] {
+  const seed = THREAD_SEEDS.find(([id]) => id === gigId)
+  if (!seed) return []
+  return seed[1].map(([key, ago, body], i) => {
+    const sender = who(key)
+    return {
+      id: `e1000000-0000-4000-8000-${gigId.slice(-4)}${String(i + 1).padStart(2, '0')}`,
+      gig_id: gigId,
+      sender_id: sender.id,
+      body,
+      created_at: minsAgo(ago),
+      // Only the newest message from the other side is left unread, so the inbox
+      // has exactly one dot rather than a wall of them.
+      read_at: null,
+      sender,
+    }
+  })
+}
+
+/** Every message in a gig's thread, oldest first. */
+export function demoThreadMessages(gigId: string, viewerId: string): MessageWithSender[] {
+  const all = threadMessages(gigId)
+  return all.map((m, i) => ({
+    ...m,
+    read_at:
+      m.sender_id === viewerId || i < all.length - 1 ? minsAgo(5) : null,
+  }))
+}
+
+/** The inbox list: one row per gig the viewer is party to, newest activity first. */
+export function demoThreads(viewerId: string): Thread[] {
+  const rows: Thread[] = []
+  for (const [gigId] of THREAD_SEEDS) {
+    const gig = demoGigById(gigId)
+    if (!gig) continue
+    if (gig.hirer_id !== viewerId && gig.assigned_to !== viewerId) continue
+
+    const messages = demoThreadMessages(gigId, viewerId)
+    const other = gig.hirer_id === viewerId ? gig.assigned_to : gig.hirer_id
+    rows.push({
+      gig,
+      counterparty: DEMO_PROFILES.find((p) => p.id === other) ?? null,
+      last_message: messages[messages.length - 1] ?? null,
+      unread: messages.filter((m) => m.sender_id !== viewerId && !m.read_at).length,
+    })
+  }
+  return rows.sort((a, b) =>
+    (b.last_message?.created_at ?? '').localeCompare(a.last_message?.created_at ?? ''),
+  )
+}
+
+// ── Admin queues (items 2, 4, 8) ────────────────────────────────────────────
+
+export interface DemoWaiver {
+  profile: PublicProfile
+  email: string
+  status: FeeWaiverStatus
+  requested_at: string
+  note: string | null
+}
+
+/** The fee-waiver queue. Only an institute mailbox can reach 'pending' at all —
+ *  the trigger in schema.sql refuses role='student' otherwise. */
+export const DEMO_WAIVERS: DemoWaiver[] = [
+  {
+    profile: who('b5'),
+    email: 'farhan.qureshi.civ23@itbhu.ac.in',
+    status: 'pending',
+    requested_at: hoursAgo(5),
+    note: null,
+  },
+  {
+    profile: who('b6'),
+    email: 'ishita.bose.che22@itbhu.ac.in',
+    status: 'pending',
+    requested_at: hoursAgo(19),
+    note: null,
+  },
+  {
+    profile: who('b2'),
+    email: 'karthik.menon.ece24@itbhu.ac.in',
+    status: 'pending',
+    requested_at: hoursAgo(44),
+    note: null,
+  },
+  {
+    profile: who('b1'),
+    email: DEMO_ME_EMAIL,
+    status: 'approved',
+    requested_at: hoursAgo(110),
+    note: 'ID card photo matched the name on the account. Waiver applied.',
+  },
+  {
+    profile: who('b3'),
+    email: 'sneha.pillai.arc21@itbhu.ac.in',
+    status: 'approved',
+    requested_at: hoursAgo(300),
+    note: 'Verified in person at the desk.',
+  },
+]
+
+export interface DemoVerification extends Verification {
+  profile: PublicProfile
+}
+
+/*
+ * The ID review queue. `last4` is all that is stored of the number — see
+ * src/lib/kyc.ts. The four-digit tails below are made up; no real PAN or Aadhaar
+ * appears anywhere in this repository.
+ */
+export const DEMO_VERIFICATIONS: DemoVerification[] = [
+  {
+    id: 'f1000000-0000-4000-8000-000000000001',
+    profile_id: who('03').id,
+    profile: who('03'),
+    kind: 'pan',
+    name_on_id: 'MEERA NAIR',
+    last4: '7412',
+    status: 'pending',
+    note: null,
+    created_at: hoursAgo(3),
+    decided_at: null,
+  },
+  {
+    id: 'f1000000-0000-4000-8000-000000000002',
+    profile_id: who('05').id,
+    profile: who('05'),
+    kind: 'aadhaar',
+    name_on_id: 'Sushila Devi Weaves (proprietor: Sushila Devi)',
+    last4: '2038',
+    status: 'pending',
+    note: null,
+    created_at: hoursAgo(26),
+    decided_at: null,
+  },
+  {
+    id: 'f1000000-0000-4000-8000-000000000003',
+    profile_id: who('09').id,
+    profile: who('09'),
+    kind: 'pan',
+    name_on_id: 'SARNATH TOURS AND TRAVELS',
+    last4: '5591',
+    status: 'rejected',
+    note: 'Name on the PAN is a firm, but the account was opened as an individual. Re-submit as the firm or send the proprietor’s own PAN.',
+    created_at: hoursAgo(70),
+    decided_at: hoursAgo(66),
+  },
+  {
+    id: 'f1000000-0000-4000-8000-000000000004',
+    profile_id: who('01').id,
+    profile: who('01'),
+    kind: 'pan',
+    name_on_id: 'ANAND KUMAR SETH',
+    last4: '9046',
+    status: 'approved',
+    note: null,
+    created_at: hoursAgo(410),
+    decided_at: hoursAgo(400),
+  },
+]
+
+export interface DemoDispute extends Dispute {
+  gig: GigWithRelations | null
+  raiser: PublicProfile | null
+}
+
+export const DEMO_DISPUTES: DemoDispute[] = [
+  {
+    id: '01000000-0000-4000-8000-000000000001',
+    gig_id: 'a1000000-0000-4000-8000-00000000000f',
+    gig: demoGigById('a1000000-0000-4000-8000-00000000000f'),
+    raised_by: who('b2').id,
+    raiser: who('b2'),
+    reason: 'not_paid',
+    detail:
+      'I played the last two Saturdays as agreed and have not been paid for either. The host says the payment was sent but I have nothing in my account, and I would rather not keep turning up without sorting this out.',
+    status: 'open',
+    resolution: null,
+    created_at: minsAgo(38),
+    resolved_at: null,
+  },
+  {
+    id: '01000000-0000-4000-8000-000000000002',
+    gig_id: 'a1000000-0000-4000-8000-000000000010',
+    gig: demoGigById('a1000000-0000-4000-8000-000000000010'),
+    raised_by: who('04').id,
+    raiser: who('04'),
+    reason: 'scope_changed',
+    detail:
+      'We agreed 40 videos of 4 to 6 minutes. Eleven of them came in under three minutes and skip the worked example, which is the part our students actually need.',
+    status: 'resolved',
+    resolution:
+      'Both sides agreed on 11 re-records at no extra cost, with the deadline pushed by a week. Payment for the delivered batches released.',
+    created_at: hoursAgo(300),
+    resolved_at: hoursAgo(298),
+  },
+]
+
+export function demoDisputesFor(gigId: string): Dispute[] {
+  return DEMO_DISPUTES.filter((d) => d.gig_id === gigId)
+}
+
+/** The signed-in persona's own ID submissions, for /verify. */
+export function demoVerificationsFor(userId: string): Verification[] {
+  const mine = DEMO_VERIFICATIONS.filter((v) => v.profile_id === userId).map(
+    ({ profile: _profile, ...v }) => v,
+  )
+  if (mine.length > 0) return mine
+
+  // Aditi has one approved PAN on file, so /verify shows the settled state.
+  return [
+    {
+      id: 'f1000000-0000-4000-8000-0000000000ff',
+      profile_id: userId,
+      kind: 'pan',
+      name_on_id: 'ADITI RAGHAVAN',
+      last4: '4471',
+      status: 'approved',
+      note: null,
+      created_at: hoursAgo(200),
+      decided_at: hoursAgo(196),
+    },
+  ]
+}
+
+// ── Badges (item 6) ─────────────────────────────────────────────────────────
+
+/** Falls back to a modest record so every profile page has something to show. */
+export function demoApplierStats(userId: string): ApplierStats {
+  return DEMO_APPLIER_STATS[userId] ?? { completed: 2, mentorships: 0, referrals: 0 }
+}
+
+// ── Suggested appliers (item 7) ─────────────────────────────────────────────
+
+/**
+ * Same match as the live query: collect the tags this hirer keeps posting about,
+ * then rank everyone who shares them by overlap and rating.
+ */
+export function demoSuggestedAppliers(
+  hirerId: string,
+  limit = 4,
+): { profile: PublicProfile; shared: Skill[] }[] {
+  const wanted = new Set(
+    DEMO_GIGS.filter((g) => g.hirer_id === hirerId).flatMap((g) => g.skills.map((s) => s.id)),
+  )
+  if (wanted.size === 0) return []
+
+  return Object.keys(PROFILE_SKILL_SLUGS)
+    .filter((id) => id !== hirerId)
+    .map((id) => ({
+      profile: demoProfileById(id) ?? who(id.slice(-2)),
+      shared: demoProfileSkills(id).filter((s) => wanted.has(s.id)),
+    }))
+    .filter((row) => row.shared.length > 0)
+    .sort((a, b) => b.shared.length - a.shared.length || b.profile.rating - a.profile.rating)
+    .slice(0, limit)
+}
+
+// ── Referrals (item 9) ──────────────────────────────────────────────────────
+
+/** How many people signed up on this account's referral link. */
+export function demoReferralCount(userId: string): number {
+  return DEMO_APPLIER_STATS[userId]?.referrals ?? 0
+}
+
+/** Short, readable, and derived from the id the same way handle_new_user() does. */
+export function demoReferralCode(userId: string): string {
+  return userId.replace(/-/g, '').slice(0, 8).toUpperCase()
+}
+
+/** The token behind /verify/<token>. Fixed in demo mode so the link is testable. */
+export const DEMO_VERIFY_TOKEN = '7f3c1d90-2b64-4a15-9e88-5c0a1b2d3e4f'

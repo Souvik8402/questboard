@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { isSupabaseConfigured } from './config'
 import { isInstituteEmail } from './constants'
-import { DEMO_ME, DEMO_ME_EMAIL } from './demo-data'
+import { DEMO_ME, DEMO_ME_EMAIL, DEMO_VERIFY_TOKEN, demoReferralCode } from './demo-data'
+import { PROFILE_ALL_FIELDS } from './queries'
 import { createClient } from './supabase/server'
 import type { Profile } from './types'
 
@@ -29,7 +30,7 @@ export async function getSession(): Promise<SessionInfo | null> {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('*')
+      .select(PROFILE_ALL_FIELDS)
       .eq('id', user.id)
       .maybeSingle<Profile>()
 
@@ -63,15 +64,21 @@ export async function requireProfile(
 }
 
 /**
- * Guard for anything that claims work. The database enforces this too — see
- * `is_active_student()` and the applications INSERT policy — this only exists
- * so the user gets a page instead of a Postgres error.
+ * Guard for anything that claims work.
+ *
+ * This used to be `requireStudent()` and used to bounce anyone whose email was
+ * not an institute one. It no longer does: **anyone with an account may apply for
+ * a gig**, which is the marketplace. All that is left is "be onboarded and not
+ * banned", matching the applications INSERT policy in schema.sql.
+ *
+ * The institute check did not disappear — it moved to the fee waiver, where it
+ * costs nobody a job. See `qualifiesForWaiver()` below.
  */
-export async function requireStudent(
+export async function requireApplier(
   returnTo?: string,
 ): Promise<SessionInfo & { profile: Profile }> {
   const session = await requireProfile(returnTo)
-  if (session.profile.role !== 'student') redirect('/onboarding?reason=student-only')
+  if (session.profile.is_banned) redirect('/gigs?reason=banned')
   return session
 }
 
@@ -79,14 +86,28 @@ export function isStudent(profile: Profile | null | undefined): boolean {
   return profile?.role === 'student'
 }
 
+/** Does this account pay ₹0 platform fee? Only an approved waiver counts. */
+export function hasFeeWaiver(profile: Profile | null | undefined): boolean {
+  return profile?.fee_waiver_status === 'approved'
+}
+
 /**
- * A signed-in student, for demo mode only.
+ * Can this account even ask for the waiver? The trigger in schema.sql will only
+ * let an institute mailbox hold role='student', so that role is the marker.
+ */
+export function qualifiesForWaiver(session: SessionInfo | null | undefined): boolean {
+  if (!session) return false
+  return session.isStudentEligible || session.profile?.role === 'student'
+}
+
+/**
+ * A signed-in applier, for demo mode only.
  *
- * `getSession()` deliberately still returns null without Supabase — signed-out
- * is the honest default for public pages, and it keeps the "@itbhu.ac.in only"
- * pitch visible on the gig board. But `/dashboard` and `/profile/edit` have
- * nothing to show a signed-out visitor except a redirect, and those are exactly
- * the pages you want to demo. So they opt into this persona instead.
+ * `getSession()` deliberately still returns null without Supabase — signed-out is
+ * the honest default for public pages. But `/dashboard`, `/inbox`, `/verify` and
+ * `/profile/edit` have nothing to show a signed-out visitor except a redirect,
+ * and those are exactly the pages you want to demo. So they opt into this
+ * persona instead.
  *
  * Safe by construction: every Server Action checks `isSupabaseConfigured`
  * before touching the database, so nothing this session "does" can be written.
@@ -103,6 +124,14 @@ export function demoSession(): SessionInfo & { profile: Profile } {
       bio: 'Third-year CSE. Built the Technex registration site, shoot film photos on weekends, and I answer messages within a couple of hours.',
       is_banned: false,
       onboarded_at: now,
+      // An approved waiver, so the ₹0-fee state is the one you see on screen.
+      fee_waiver_status: 'approved',
+      fee_waiver_note: 'ID card photo matched the name on the account. Waiver applied.',
+      fee_waiver_decided_at: now,
+      mentorships: 0,
+      referral_code: demoReferralCode(DEMO_ME.id),
+      referred_by: null,
+      verify_token: DEMO_VERIFY_TOKEN,
       created_at: now,
       updated_at: now,
     },
@@ -112,10 +141,10 @@ export function demoSession(): SessionInfo & { profile: Profile } {
 /**
  * A half-finished signup, for demo mode only.
  *
- * /onboarding is where the whole exclusivity story is visible — the student
- * option locks itself unless the signed-in address is an institute one — so it
- * is worth being able to show without a database. `outsider: true` swaps in a
- * Gmail address, which is the version that demonstrates the lock.
+ * /onboarding is where the fee-waiver story is visible — the student option locks
+ * itself unless the signed-in address is an institute one, and the copy explains
+ * that this only affects the fee, never the right to apply. `outsider: true` swaps
+ * in a Gmail address, which is the version that demonstrates the lock.
  */
 export function demoOnboardingSession(outsider: boolean): SessionInfo & { profile: Profile } {
   const session = demoSession()
@@ -132,6 +161,9 @@ export function demoOnboardingSession(outsider: boolean): SessionInfo & { profil
       year: null,
       bio: null,
       onboarded_at: null,
+      fee_waiver_status: 'none',
+      fee_waiver_note: null,
+      fee_waiver_decided_at: null,
     },
   }
 }

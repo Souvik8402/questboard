@@ -11,7 +11,7 @@ import { NewGigForm } from './NewGigForm'
 export const metadata: Metadata = {
   title: 'Post a gig',
   description:
-    'Post paid work for IIT (BHU) Varanasi students — one-off tasks, weekly help, part-time roles or internships.',
+    'Post paid work around Varanasi — one-off tasks, weekly help, part-time roles or internships. Anyone can post, anyone can apply.',
 }
 
 export default async function NewGigPage() {
@@ -37,20 +37,20 @@ export default async function NewGigPage() {
           <span className="gradient-text">gig</span>
         </h1>
         <p className="max-w-xl text-[15.5px] leading-relaxed text-mist">
-          Anyone can post — you do not need an institute email. Only verified IIT BHU students can
-          claim it.
+          Anyone can post and anyone can apply — no institute email needed on either side. Students
+          who verify theirs simply pay no platform fee.
         </p>
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {[
           { icon: <IconCoins className="size-4" />, label: 'Free to post', hint: 'No listing fee, no cut' },
-          { icon: <IconUsers className="size-4" />, label: 'Verified students only', hint: '@itbhu.ac.in, via Google' },
-          { icon: <IconShield className="size-4" />, label: 'Your number stays private', hint: 'Until you accept someone' },
+          { icon: <IconUsers className="size-4" />, label: 'Open to everyone', hint: 'Students verify for ₹0 fee' },
+          { icon: <IconShield className="size-4" />, label: 'No contact details', hint: 'A private thread on hire' },
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-xl border border-line bg-white/[0.02] px-3.5 py-3"
+            className="rounded-xl border border-line bg-black/[0.02] px-3.5 py-3"
           >
             <p className="flex items-center gap-2 text-[13.5px] font-medium text-chalk">
               <span className="text-cyan">{item.icon}</span>
@@ -66,7 +66,7 @@ export default async function NewGigPage() {
           <h2 className="text-base font-semibold text-chalk">Sign in to post</h2>
           <p className="mt-1.5 text-[14.5px] leading-relaxed text-mist">
             Any email works for posting — Google, or a password account. We ask for an account so
-            students know who they are talking to, and so you can manage applicants.
+            applicants know who they are talking to, and so you can manage who applies.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <ButtonLink href="/login?next=/gigs/new">Sign in or sign up</ButtonLink>

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getPlatformStats, getGigs, getSkillsByCategory } from '@/lib/queries'
-import { INSTITUTE_NAME, INSTITUTE_SHORT, GIG_TYPES } from '@/lib/constants'
+import { INSTITUTE_SHORT, GIG_TYPES } from '@/lib/constants'
 import { cn } from '@/lib/cn'
 import { compactRupees } from '@/lib/format'
 import { GigCard } from '@/components/GigCard'
@@ -13,6 +13,7 @@ import {
   IconCheck,
   IconCoins,
   IconLayers,
+  IconMail,
   IconMapPin,
   IconSearch,
   IconShield,
@@ -54,9 +55,42 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
   return (
     <section className="grid-field relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24 lg:px-8">
+        {/* Top strip: About + socials, so visitors never have to hunt for it. */}
+        <div className="mx-auto mb-12 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[13px] text-dim">
+          <span className="inline-flex items-center gap-1.5">
+            <IconSparkles className="size-3.5 text-cyan" />
+            <Link href="/about" className="transition-colors hover:text-cyan">
+              About Us
+            </Link>
+          </span>
+          <span className="hidden h-3 w-px bg-line sm:block" />
+          <span className="inline-flex items-center gap-1.5">
+            <IconMail className="size-3.5 text-cyan" />
+            <a href="mailto:hello@gignest.in" className="transition-colors hover:text-cyan">
+              hello@gignest.in
+            </a>
+          </span>
+          <span className="hidden h-3 w-px bg-line sm:block" />
+          <span className="inline-flex items-center gap-1.5">
+            <IconMapPin className="size-3.5 text-cyan" />
+            <Link href="/gigs/map" className="transition-colors hover:text-cyan">
+              Find us on the map
+            </Link>
+          </span>
+          <span className="hidden h-3 w-px bg-line sm:block" />
+          <span className="flex items-center gap-2">
+            <a href="https://instagram.com" aria-label="GigNest on Instagram" className="transition-colors hover:text-cyan">
+              Instagram
+            </a>
+            <a href="https://linkedin.com" aria-label="GigNest on LinkedIn" className="transition-colors hover:text-cyan">
+              LinkedIn
+            </a>
+          </span>
+        </div>
+
         <div className="mx-auto max-w-3xl text-center">
           <div
-            className="reveal inline-flex items-center gap-2 rounded-full border border-line bg-white/[0.03] px-3 py-1.5 backdrop-blur"
+            className="reveal inline-flex items-center gap-2 rounded-full border border-line bg-black/[0.03] px-3 py-1.5 backdrop-blur"
             style={{ '--i': 0 } as React.CSSProperties}
           >
             <span className="live-dot size-1.5 rounded-full bg-lime" />
@@ -73,10 +107,8 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
             className="reveal mt-7 text-balance text-4xl font-semibold leading-[1.08] tracking-tight sm:text-6xl"
             style={{ '--i': 1 } as React.CSSProperties}
           >
-            <span className="sheen">Work worth doing,</span>
-            <br />
-            <span className="text-chalk">claimed by </span>
-            <span className="gradient-text">{INSTITUTE_SHORT} students</span>
+            <span className="sheen">Need it,</span>{' '}
+            <span className="gradient-text">gig it.</span>
           </h1>
 
           <p
@@ -84,28 +116,52 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
             style={{ '--i': 2 } as React.CSSProperties}
           >
             Anyone can post a paid gig — a café that needs a website, a shop that needs reels, a
-            parent who needs a tutor. Only verified{' '}
-            <span className="hud text-chalk">@itbhu.ac.in</span> students can claim one.
+            parent who needs a tutor. And anyone can claim one.
+            <span className="hud text-chalk"> Verified {INSTITUTE_SHORT} students pay no fee.</span>
           </p>
 
-          <div
-            className="reveal mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+          <form
+            action="/gigs"
+            method="get"
+            className="reveal mx-auto mt-9 max-w-xl"
             style={{ '--i': 3 } as React.CSSProperties}
           >
-            <ButtonLink href="/gigs" size="lg" className="w-full sm:w-auto">
+            <div className="relative">
+              <IconSearch className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-dim" />
+              <input
+                type="search"
+                name="q"
+                placeholder="Search for work — “website”, “rap song”, “tuition”…"
+                aria-label="Search gigs"
+                className="w-full rounded-2xl border border-line bg-white/85 py-3.5 pl-11 pr-28 text-[15px] text-chalk shadow-[inset_0_1px_2px_rgba(122,116,106,0.08)] outline-none transition-colors placeholder:text-dimmer hover:border-[#bfb9b0] focus:border-cyan/60 focus:bg-white focus:ring-2 focus:ring-cyan/15"
+              />
+              <button
+                type="submit"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-xl bg-linear-to-r from-cyan to-teal px-4 py-2 text-[13.5px] font-semibold text-white shadow-[0_6px_18px_-8px_rgba(36,95,115,0.5)] transition hover:brightness-110"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+
+          <div
+            className="reveal mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            style={{ '--i': 4 } as React.CSSProperties}
+          >
+            <ButtonLink href="/gigs" variant="outline" size="lg" className="w-full sm:w-auto">
               Browse the gig board
               <IconArrowRight className="size-4" />
             </ButtonLink>
-            <ButtonLink href="/gigs/new" variant="outline" size="lg" className="w-full sm:w-auto">
+            <ButtonLink href="/gigs/new" variant="ghost" size="lg" className="w-full sm:w-auto">
               Post a gig — free
             </ButtonLink>
           </div>
 
           <p
             className="reveal mt-4 text-[13px] text-dimmer"
-            style={{ '--i': 4 } as React.CSSProperties}
+            style={{ '--i': 5 } as React.CSSProperties}
           >
-            No listing fee · No commission · Payment settled directly between you
+            Free to post and apply · Verified students pay 0% platform fee
           </p>
         </div>
 
@@ -127,7 +183,7 @@ function Hero({ stats }: { stats: Awaited<ReturnType<typeof getPlatformStats>> }
           <StatTile
             value={stats.students}
             label="Verified students"
-            hint={`${INSTITUTE_SHORT} email confirmed`}
+            hint="Fee waiver unlocked"
             accent="violet"
             index={7}
           />
@@ -156,20 +212,20 @@ const STEPS = [
   {
     icon: <IconSearch className="size-5" />,
     eyebrow: 'Step 02',
-    title: 'Students find it',
-    body: 'Your gig surfaces to students filtering by the exact skills you tagged. They apply with a short pitch.',
+    title: 'Anyone finds it',
+    body: 'Your gig surfaces to anyone filtering by the exact skills you tagged — a student, a designer, a neighbor. They apply with a short pitch.',
   },
   {
     icon: <IconCheck className="size-5" />,
     eyebrow: 'Step 03',
-    title: 'Accept and connect',
-    body: 'Pick your applicant. Phone numbers unlock for both sides the moment you accept — not before.',
+    title: 'Assign and chat',
+    body: 'Pick your applicant. The moment you assign them, a built-in chat opens for both sides. No phone numbers or emails are ever shared.',
   },
   {
     icon: <IconSparkles className="size-5" />,
     eyebrow: 'Step 04',
     title: 'Pay and review',
-    body: 'Settle up however you like. Leave a rating so good hirers and reliable students get easier to spot.',
+    body: 'Settle up however you like. Leave a rating so good hirers and reliable workers get easier to spot.',
   },
 ]
 
@@ -179,7 +235,7 @@ function HowItWorks() {
       <SectionHeading
         eyebrow="How it works"
         title="From posting to paid, in four steps"
-        blurb="Built to be fast enough that hiring a student feels easier than asking around."
+        blurb="Built to be fast enough that finding the right person feels easier than asking around."
         align="center"
       />
       <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -288,16 +344,17 @@ function TwoSides() {
               <IconUsers className="size-5" />
             </span>
             <div>
-              <p className="eyebrow">For students</p>
+              <p className="eyebrow">For appliers</p>
               <h3 className="text-lg font-semibold text-chalk">Earn with what you already know</h3>
             </div>
           </div>
           <ul className="space-y-2.5">
             {[
-              'Sign in with your @itbhu.ac.in Google account — verification is instant',
+              'Anyone can apply — sign in with any Google account, no institute email needed',
+              'Verified IIT (BHU) students confirm their email once and get the platform fee waived',
               'Filter gigs by skill, reward, type and how far they are from campus',
               'Apply with a short pitch; the hirer sees your rating and past reviews',
-              'Take one-off errands between classes or a month-long internship',
+              'Take a one-off errand between classes or a month-long project',
             ].map((line) => (
               <li key={line} className="flex gap-2.5 text-[14.5px] leading-relaxed text-mist">
                 <IconCheck className="mt-0.5 size-4 shrink-0 text-lime" />
@@ -307,7 +364,7 @@ function TwoSides() {
           </ul>
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
             <ButtonLink href="/login" size="sm">
-              Verify with institute email
+              Start applying
             </ButtonLink>
             <ButtonLink href="/gigs" variant="ghost" size="sm">
               Browse first
@@ -328,9 +385,10 @@ function TwoSides() {
           <ul className="space-y-2.5">
             {[
               'Anyone can post — shopkeepers, startups, professors, parents, alumni',
-              'No institute email needed to hire; you just cannot claim gigs',
-              'Set your own reward. No commission, no listing fee, no middleman',
-              'Applicants are verified students, so you know who you are talking to',
+              'No account or verification needed to start posting a gig',
+              'Set your own reward. A small platform fee applies only when you hire',
+              'See every applicant\'s rating and reviews before you pick',
+              'No phone numbers or emails — built-in chat starts the moment you assign',
             ].map((line) => (
               <li key={line} className="flex gap-2.5 text-[14.5px] leading-relaxed text-mist">
                 <IconCheck className="mt-0.5 size-4 shrink-0 text-cyan" />
@@ -350,7 +408,7 @@ function TwoSides() {
         {GIG_TYPES.map((t, i) => (
           <div
             key={t.value}
-            className="reveal rounded-xl border border-line bg-white/[0.02] p-4"
+            className="reveal rounded-xl border border-line bg-black/[0.02] p-4"
             style={{ '--i': i } as React.CSSProperties}
           >
             <p className="text-[14px] font-semibold text-chalk">{t.label}</p>
@@ -478,7 +536,7 @@ function GrowthLoop() {
                         'rounded-full border px-2 py-0.5 text-[11.5px] font-medium tracking-wide',
                         stage.live
                           ? 'border-lime/25 bg-lime/[0.08] text-lime'
-                          : 'border-line bg-white/[0.03] text-dim',
+                          : 'border-line bg-black/[0.03] text-dim',
                       )}
                     >
                       {stage.live ? 'Live now' : 'Next build'}
@@ -501,13 +559,13 @@ function GrowthLoop() {
 const TRUST = [
   {
     icon: <IconShield className="size-5" />,
-    title: 'Verification in the database, not the UI',
-    body: `Only an @itbhu.ac.in Google sign-in can hold the student role. The rule is enforced by a Postgres trigger and row-level security, so a tampered browser still cannot claim a gig.`,
+    title: 'Verification, not a wall',
+    body: 'Anyone can post and apply. A confirmed student email is a real marker — and it unlocks the fee waiver. The check lives in the database, not the UI, so a tampered browser still cannot fake it.',
   },
   {
     icon: <IconMapPin className="size-5" />,
-    title: 'Contacts stay private until you accept',
-    body: 'Phone numbers live in separate, access-controlled tables. The hirer sees the student’s number and the student sees the hirer’s only after an application is accepted.',
+    title: 'Contacts stay private, always',
+    body: 'No phone numbers or emails are ever shown to either side. A built-in chat opens on assignment, and it stays on the platform. Addresses, IDs and payments never enter your profile.',
   },
   {
     icon: <IconSparkles className="size-5" />,
@@ -521,8 +579,8 @@ function TrustBand() {
     <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
       <SectionHeading
         eyebrow="Trust"
-        title="Exclusive means enforced"
-        blurb={`Being ${INSTITUTE_NAME}-only is the whole product. It is built to hold up under someone trying to get around it.`}
+        title="Open to anyone, trusted by everyone"
+        blurb="Being open does not mean being unguarded — the platform keeps its gatekeepers on the database side, not the welcome mat."
         align="center"
       />
       <div className="mt-12 grid gap-4 md:grid-cols-3">
@@ -532,7 +590,7 @@ function TrustBand() {
             className="reveal space-y-3 p-6"
             style={{ '--i': i } as React.CSSProperties}
           >
-            <span className="grid size-10 place-items-center rounded-xl border border-line bg-white/[0.04] text-cyan">
+            <span className="grid size-10 place-items-center rounded-xl border border-line bg-black/[0.04] text-cyan">
               {t.icon}
             </span>
             <h3 className="text-[15.5px] font-semibold text-chalk">{t.title}</h3>
@@ -555,11 +613,11 @@ function FinalCta() {
           <span className="gradient-text">Go claim it.</span>
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-balance text-[16px] leading-relaxed text-mist">
-          Free to post, free to apply. Sign in with your institute email and the board opens up.
+          Free to post, free to apply. Sign in with a Google account and the board opens up.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <ButtonLink href="/login" size="lg" className="w-full sm:w-auto">
-            Sign in as a student
+            Sign in to apply
             <IconArrowRight className="size-4" />
           </ButtonLink>
           <ButtonLink href="/gigs/new" variant="outline" size="lg" className="w-full sm:w-auto">

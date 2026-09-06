@@ -1,22 +1,28 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { demoSession, requireProfile } from '@/lib/auth'
-import { isSupabaseConfigured } from '@/lib/config'
+import { earnedBadge, hasLoyaltyBadge, nextBadge } from '@/lib/badges'
+import { isSupabaseConfigured, siteUrl } from '@/lib/config'
 import { GIG_STATUS_LABEL, ROLE_LABEL } from '@/lib/constants'
 import { formatRupees, relativeTime } from '@/lib/format'
 import {
+  getApplierStats,
   getMyApplications,
   getProfileSkills,
   getGigs,
   getGigsAssignedTo,
   getGigsPostedBy,
+  getReferralCount,
+  getSuggestedAppliers,
 } from '@/lib/queries'
-import { ApplicationPill, Badge, StatusPill } from '@/components/ui/Badge'
+import { AchievementBadge, ApplicationPill, Badge, LoyaltyBadge, StatusPill } from '@/components/ui/Badge'
 import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState, Notice, Panel } from '@/components/ui/Panel'
-import { IconBriefcase, IconLayers, IconPlus, IconSearch, IconSparkles } from '@/components/ui/Icons'
+import { IconAward, IconBriefcase, IconLayers, IconPlus, IconSearch, IconSparkles } from '@/components/ui/Icons'
 import { Avatar } from '@/components/Avatar'
 import { GigCard, GigRow } from '@/components/GigCard'
+import { ReferralPanel } from '@/components/ReferralPanel'
+import { SuggestedAppliers } from '@/components/SuggestedAppliers'
 import { StarRating } from '@/components/StarRating'
 import type { GigStatus, GigWithRelations } from '@/lib/types'
 
@@ -33,12 +39,26 @@ export default async function DashboardPage() {
     : demoSession()
   const isStudent = profile.role === 'student'
 
-  const [posted, assigned, applications, mySkills] = await Promise.all([
+  const [posted, assigned, applications, mySkills, stats, suggestions, referrals] = await Promise.all([
     getGigsPostedBy(userId),
     isStudent ? getGigsAssignedTo(userId) : Promise.resolve([]),
     isStudent ? getMyApplications(userId) : Promise.resolve([]),
     isStudent ? getProfileSkills(userId) : Promise.resolve([]),
+    // Item 6's inputs. A hirer who delivers work has earned badges for it too,
+    // so this is not gated on role — only the suggestions below are.
+    getApplierStats(userId),
+    // Item 7: matches against *your own postings*, so it is a hirer's block.
+    isStudent ? Promise.resolve([]) : getSuggestedAppliers(userId),
+    // Item 9: how many people joined via this account's share link.
+    getReferralCount(userId),
   ])
+
+  const tier = earnedBadge(stats)
+  const next = nextBadge(stats)
+  const referralCode = profile.referral_code ?? null
+  const referralShareUrl = referralCode
+    ? `${siteUrl()}/login?ref=${encodeURIComponent(referralCode)}`
+    : `${siteUrl()}/login`
 
   // Gigs matching the student's own tags, minus anything they already touched.
   const recommended = isStudent && mySkills.length
@@ -209,8 +229,58 @@ export default async function DashboardPage() {
 
         {/* ── Right: applications / matches ──────────────────────────────── */}
         <section className="min-w-0 space-y-4">
+          {/* Item 9 — goes to both roles. The link works for a student (who refers
+              other students through their group chat) or a hirer (who refers a
+              neighbour). The badge appears once anyone joins. */}
+          <ReferralPanel
+            code={referralCode}
+            referralCount={referrals}
+            shareUrl={referralShareUrl}
+            showBadgeOnProfile
+          />
+
           {isStudent ? (
             <>
+              {/* Item 6's dashboard payoff: the tier you hold and the distance
+                  to the next one. Reads the same earned/next math as /profile. */}
+              {(tier || next) && (
+                <Panel className="p-5">
+                  <p className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-chalk">
+                    <IconAward className="size-4 text-amber" />
+                    Badges
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                    {tier ? (
+                      <AchievementBadge tier={tier} />
+                    ) : (
+                      <span className="text-[13px] text-dim">None yet.</span>
+                    )}
+                    {hasLoyaltyBadge(stats) && <LoyaltyBadge />}
+                    <span className="ml-auto hud text-[12px] text-dimmer">
+                      {stats.completed} delivered
+                    </span>
+                  </div>
+                  {next && (
+                    <>
+                      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+                        <div
+                          className="h-full rounded-full bg-amber/70"
+                          style={{
+                            width: `${Math.min(100, (stats.completed / next.target) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                      <p className="mt-2 text-[12.5px] leading-relaxed text-dim">
+                        {next.remaining} more {next.remaining === 1 ? 'gig' : 'gigs'} to{' '}
+                        {next.label} — {stats.completed} of {next.target} delivered.
+                        {stats.mentorships > 0 &&
+                          ` · ${stats.mentorships} paid mentorship${stats.mentorships === 1 ? '' : 's'} bought.`}
+                      </p>
+                    </>
+                  )}
+                </Panel>
+              )}
+
               <SectionTitle
                 icon={<IconLayers className="size-4" />}
                 title="Your applications"
@@ -275,6 +345,13 @@ export default async function DashboardPage() {
             </>
           ) : (
             <>
+              {/* Item 7 — the shortest path to someone who can do what you post.
+                  Above the generic tips on purpose: it is about real people, and
+                  it changes with every gig you post. */}
+              {suggestions.length > 0 && (
+                <SuggestedAppliers suggestions={suggestions} own className="mb-1" />
+              )}
+
               <SectionTitle
                 icon={<IconSparkles className="size-4" />}
                 title="Getting good applicants"
@@ -293,8 +370,8 @@ export default async function DashboardPage() {
                   website&rdquo; is a wish.
                 </Tip>
                 <Tip n={4} title="Reply within a day">
-                  Accepting an applicant unlocks both phone numbers at once. Until then neither side
-                  can contact the other, so silence stalls everything.
+                  Hiring someone opens a private thread with them in your inbox. Until then neither
+                  side can contact the other at all, so silence stalls everything.
                 </Tip>
               </Panel>
 
@@ -308,7 +385,7 @@ export default async function DashboardPage() {
                         <li key={q.id}>
                           <Link
                             href={`/gigs/${q.id}`}
-                            className="flex items-center justify-between gap-3 rounded-lg border border-line bg-white/[0.02] px-3 py-2.5 transition-colors hover:border-cyan/35"
+                            className="flex items-center justify-between gap-3 rounded-lg border border-line bg-black/[0.02] px-3 py-2.5 transition-colors hover:border-cyan/35"
                           >
                             <span className="truncate text-[14px] text-chalk">{q.title}</span>
                             <Badge tone="amber">
@@ -398,7 +475,7 @@ function PostedList({ gigs }: { gigs: GigWithRelations[] }) {
         <Link
           key={gig.id}
           href={`/gigs/${gig.id}`}
-          className="block p-4 transition-colors hover:bg-white/[0.035]"
+          className="block p-4 transition-colors hover:bg-black/[0.035]"
         >
           <div className="flex items-start justify-between gap-3">
             <p className="line-clamp-2 text-[14.5px] font-medium leading-snug text-chalk">

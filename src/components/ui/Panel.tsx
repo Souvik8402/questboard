@@ -64,7 +64,7 @@ export function EmptyState({
   return (
     <div className="glass flex flex-col items-center gap-4 px-6 py-16 text-center">
       {icon && (
-        <div className="grid size-12 place-items-center rounded-xl border border-line bg-white/[0.03] text-mist">
+        <div className="grid size-12 place-items-center rounded-xl border border-line bg-black/[0.03] text-mist">
           {icon}
         </div>
       )}

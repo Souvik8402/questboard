@@ -45,7 +45,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search title, hirer or place…"
-            className="w-full rounded-xl border border-line bg-ink/70 py-2 pl-10 pr-3.5 text-[14px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60"
+            className="w-full rounded-xl border border-line bg-white/80 py-2 pl-10 pr-3.5 text-[14px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#bfb9b0] focus:border-cyan/60"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -57,7 +57,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
               className={`rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
                 status === value
                   ? 'border-cyan/45 bg-cyan/15 text-cyan'
-                  : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
+                  : 'border-line bg-black/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
               }`}
             >
               {value === 'all' ? 'All' : GIG_STATUS_LABEL[value]}
@@ -108,7 +108,7 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
                   <select
                     name="status"
                     defaultValue={gig.status}
-                    className="rounded-lg border border-line bg-ink/70 px-2 py-1.5 text-[13px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
+                    className="rounded-lg border border-line bg-white/80 px-2 py-1.5 text-[13px] text-chalk outline-none transition-colors hover:border-[#bfb9b0] focus:border-cyan/60"
                   >
                     {GIG_STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -155,7 +155,8 @@ export function GigTable({ gigs }: { gigs: AdminGig[] }) {
 
       <p className="text-[12.5px] text-dim">
         Showing {shown.length} of {gigs.length}. Forcing a status here skips the normal
-        transition rules — deleting also removes applications, tags and the stored phone number.
+        transition rules — deleting also removes applications, tags and the gig&rsquo;s message
+        thread.
       </p>
     </div>
   )

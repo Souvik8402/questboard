@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { demoOnboardingSession, requireSession } from '@/lib/auth'
 import { isSupabaseConfigured } from '@/lib/config'
 import { INSTITUTE_SHORT } from '@/lib/constants'
-import { getSkills } from '@/lib/queries'
+import { getSkills, PROFILE_ALL_FIELDS } from '@/lib/queries'
 import { createClient } from '@/lib/supabase/server'
 import type { Profile } from '@/lib/types'
 import { Notice, Panel } from '@/components/ui/Panel'
@@ -15,11 +15,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+/*
+ * `student-only` used to live here — the notice you got when a non-institute
+ * account tried to claim a gig. That rule is gone: anyone may apply for anything.
+ * What is left is the fee waiver, which /verify sends people here for, because
+ * asking for it needs a finished profile.
+ */
 const REASONS: Record<string, { tone: 'warn' | 'info'; title: string; body: string }> = {
-  'student-only': {
-    tone: 'warn',
-    title: 'That page is for students',
-    body: 'Claiming gigs needs a verified student account. If you signed in with an institute address, pick "Take on gigs" below.',
+  'fee-waiver': {
+    tone: 'info',
+    title: 'Finish your profile first',
+    body: 'The student fee waiver is tied to your profile, so pick a side and save it — then ask for the waiver on the verification page. It only affects the platform fee; you can apply for gigs either way.',
   },
 }
 
@@ -54,7 +60,7 @@ export default async function OnboardingPage({
     const supabase = await createClient()
     const { data } = await supabase
       .from('profiles')
-      .select('*')
+      .select(PROFILE_ALL_FIELDS)
       .eq('id', session.userId)
       .maybeSingle<Profile>()
     profile = data ?? null
@@ -86,9 +92,10 @@ export default async function OnboardingPage({
           <span className="gradient-text">which side you are on</span>
         </h1>
         <p className="max-w-xl text-[16px] leading-relaxed text-mist">
-          This decides what the board does for you. Students see gigs matched to their skills;
-          hirers get the posting tools. {INSTITUTE_SHORT} email holders can do both — post a gig
-          and claim one.
+          This decides what the board does for you: appliers see gigs matched to their skills,
+          hirers get the posting tools, and everyone can switch later. Either side can apply for
+          any gig — the {INSTITUTE_SHORT} option only decides whether you can ask for the platform
+          fee to be waived.
         </p>
       </div>
 

@@ -1,20 +1,34 @@
 import { GIGS_PER_PAGE } from './constants'
 import { isSupabaseConfigured } from './config'
+import type { ApplierStats } from './badges'
 import {
   DEMO_GIGS,
+  DEMO_ME,
   DEMO_REVIEWS,
   DEMO_SKILLS,
   DEMO_STATS,
+  DEMO_VERIFY_TOKEN,
+  demoApplicantsFor,
   demoApplicationsFor,
+  demoApplierStats,
+  demoDisputesFor,
   demoProfileById,
   demoGigById,
   demoGigsAssignedTo,
   demoGigsPostedBy,
+  demoReferralCount,
+  demoSuggestedAppliers,
+  demoThreadMessages,
+  demoThreads,
+  demoVerificationsFor,
 } from './demo-data'
 import { createClient } from './supabase/server'
 import type {
   Application,
   ApplicationWithRelations,
+  Dispute,
+  Message,
+  MessageWithSender,
   PlatformStats,
   PublicProfile,
   Gig,
@@ -22,6 +36,8 @@ import type {
   GigWithRelations,
   Review,
   Skill,
+  Thread,
+  Verification,
 } from './types'
 
 /**
@@ -34,9 +50,11 @@ import type {
 const GIG_SELECT = `
   id, hirer_id, title, description, gig_type, status, reward_amount,
   estimated_hours, deadline, is_remote, location_label, lat, lng,
-  assigned_to, views, is_flagged, application_count, created_at, updated_at,
+  assigned_to, views, is_flagged, is_urgent, application_count,
+  created_at, updated_at,
   hirer:profiles!gigs_hirer_id_fkey (
-    id, full_name, avatar_url, role, rating, rating_count, department, year
+    id, full_name, avatar_url, role, rating, rating_count, department, year,
+    id_verified_at
   ),
   gig_skills ( skill:skills ( id, slug, name, category ) )
 `
@@ -155,6 +173,7 @@ export async function getGigs(filters: GigFilters = {}): Promise<GigPage> {
   if (filters.minReward !== undefined) query = query.gte('reward_amount', filters.minReward)
   if (filters.maxReward !== undefined) query = query.lte('reward_amount', filters.maxReward)
   if (filters.remoteOnly) query = query.eq('is_remote', true)
+  if (filters.urgentOnly) query = query.eq('is_urgent', true)
 
   switch (filters.sort) {
     case 'reward_high':
@@ -216,6 +235,7 @@ function demoGigPage(filters: GigFilters, page: number): GigPage {
     list = list.filter((q) => q.reward_amount <= filters.maxReward!)
   }
   if (filters.remoteOnly) list = list.filter((q) => q.is_remote)
+  if (filters.urgentOnly) list = list.filter((q) => q.is_urgent)
 
   const sorted = [...list]
   switch (filters.sort) {
@@ -265,67 +285,74 @@ export async function getGig(id: string): Promise<GigWithRelations | null> {
   return normalizeGig(data as unknown as RawGig)
 }
 
-export interface GigContact {
-  phone: string
-  alt_contact: string | null
-}
-
-/**
- * Returns null when RLS declined to hand the row over — i.e. the viewer is
- * neither the hirer nor an accepted applicant. That "null" IS the feature.
- */
-export async function getGigContact(gigId: string): Promise<GigContact | null> {
-  if (!isSupabaseConfigured) return null
-
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('gig_contacts')
-    .select('phone, alt_contact')
-    .eq('gig_id', gigId)
-    .maybeSingle()
-
-  return (data as GigContact | null) ?? null
-}
-
 // ── Applications ────────────────────────────────────────────────────────────
+/*
+ * `getGigContact()` used to live here, handing a phone number to the hirer and
+ * the person they hired. It is gone: nobody sees a phone number or an email on
+ * this platform any more, either side. The two sides talk in `messages`, which
+ * opens on assignment — see getThread() below.
+ */
 
 const APPLICATION_SELECT = `
   id, gig_id, student_id, cover_note, status, created_at,
   student:profiles!applications_student_id_fkey (
-    id, full_name, avatar_url, role, rating, rating_count, department, year
-  ),
-  application_contacts ( phone )
+    id, full_name, avatar_url, role, rating, rating_count, department, year,
+    id_verified_at
+  )
 `
 
 interface RawApplication extends Application {
   student: PublicProfile | PublicProfile[] | null
-  application_contacts: { phone: string }[] | { phone: string } | null
 }
 
 function normalizeApplication(row: RawApplication): ApplicationWithRelations {
-  const { student, application_contacts, ...application } = row
-  return {
-    ...application,
-    student: one(student),
-    phone: one(application_contacts)?.phone ?? null,
-  }
+  const { student, ...application } = row
+  return { ...application, student: one(student) }
 }
 
-/** Applicants for a gig. RLS means only the gig owner gets rows back. */
+/**
+ * Applicants for a gig. RLS means only the gig owner gets rows back.
+ *
+ * Ordered oldest-first, which is what the urgent first-come-first-served queue
+ * in ApplicantList needs; the ordinary list reverses it for display.
+ */
 export async function getGigApplications(
   gigId: string,
 ): Promise<ApplicationWithRelations[]> {
-  if (!isSupabaseConfigured) return []
+  if (!isSupabaseConfigured) return demoApplicantsFor(gigId)
 
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('applications')
     .select(APPLICATION_SELECT)
     .eq('gig_id', gigId)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: true })
 
   if (error || !data) return []
-  return (data as unknown as RawApplication[]).map(normalizeApplication)
+
+  const rows = (data as unknown as RawApplication[]).map(normalizeApplication)
+
+  // Attach each applicant's skills so the hirer can judge fit without a click.
+  const ids = rows.map((r) => r.student_id)
+  if (ids.length === 0) return rows
+
+  const { data: tags } = await supabase
+    .from('profile_skills')
+    .select('profile_id, skill:skills ( id, slug, name, category )')
+    .in('profile_id', ids)
+
+  const byProfile = new Map<string, Skill[]>()
+  for (const row of (tags ?? []) as unknown as {
+    profile_id: string
+    skill: Skill | null
+  }[]) {
+    if (!row.skill) continue
+    const list = byProfile.get(row.profile_id) ?? []
+    list.push(row.skill)
+    byProfile.set(row.profile_id, list)
+  }
+
+  return rows.map((r) => ({ ...r, student_skills: byProfile.get(r.student_id) ?? [] }))
 }
 
 export async function getMyApplicationFor(
@@ -369,7 +396,6 @@ export async function getMyApplications(userId: string): Promise<ApplicationWith
       return {
         ...application,
         student: null,
-        phone: null,
         gig: raw ? normalizeGig(raw) : undefined,
       }
     },
@@ -414,7 +440,7 @@ export async function getPublicProfile(id: string): Promise<PublicProfile | null
   const supabase = await createClient()
   const { data } = await supabase
     .from('profiles')
-    .select('id, full_name, avatar_url, role, rating, rating_count, department, year')
+    .select('id, full_name, avatar_url, role, rating, rating_count, department, year, id_verified_at')
     .eq('id', id)
     .maybeSingle()
 
@@ -464,7 +490,8 @@ export async function getReviewsFor(profileId: string): Promise<Review[]> {
     .select(
       `id, gig_id, reviewer_id, reviewee_id, rating, comment, created_at,
        reviewer:profiles!reviews_reviewer_id_fkey (
-         id, full_name, avatar_url, role, rating, rating_count, department, year
+         id, full_name, avatar_url, role, rating, rating_count, department, year,
+         id_verified_at
        )`,
     )
     .eq('reviewee_id', profileId)
@@ -490,4 +517,267 @@ export async function hasReviewed(gigId: string, reviewerId: string): Promise<bo
     .maybeSingle()
 
   return Boolean(data)
+}
+
+// ── Threads (item 5) ────────────────────────────────────────────────────────
+/*
+ * The replacement for the old phone-number reveal. Every read here is guarded
+ * by the `messages` SELECT policy (in_gig_thread), so a stranger asking for a
+ * gig id they are not part of gets an empty array rather than an error.
+ */
+
+const PROFILE_FIELDS =
+  'id, full_name, avatar_url, role, rating, rating_count, department, year, id_verified_at'
+
+/**
+ * Every column of `profiles` a client is allowed to read — which is all of them
+ * except `verify_token`.
+ *
+ * That one is revoked at the column level in schema.sql, because `profiles` is
+ * publicly readable and a token anyone can fetch is not a token. Use this list
+ * instead of `select('*')`: `*` expands to the revoked column too and the whole
+ * query fails with a permission error.
+ */
+export const PROFILE_ALL_FIELDS =
+  'id, full_name, avatar_url, role, department, year, bio, rating, rating_count, ' +
+  'is_banned, onboarded_at, fee_waiver_status, fee_waiver_note, fee_waiver_decided_at, ' +
+  'id_verified_at, mentorships, referral_code, referred_by, created_at, updated_at'
+
+/** Every message on a gig, oldest first. */
+export async function getThreadMessages(
+  gigId: string,
+  viewerId: string,
+): Promise<MessageWithSender[]> {
+  if (!isSupabaseConfigured) return demoThreadMessages(gigId, viewerId)
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('messages')
+    .select(
+      `id, gig_id, sender_id, body, created_at, read_at,
+       sender:profiles!messages_sender_id_fkey ( ${PROFILE_FIELDS} )`,
+    )
+    .eq('gig_id', gigId)
+    .order('created_at', { ascending: true })
+    .limit(200)
+
+  if (error || !data) return []
+  return (
+    data as unknown as (Message & { sender: PublicProfile | PublicProfile[] | null })[]
+  ).map((row) => ({ ...row, sender: one(row.sender) }))
+}
+
+/** The viewer's threads — one per gig they hired for or were hired on. */
+export async function getThreads(viewerId: string): Promise<Thread[]> {
+  if (!isSupabaseConfigured) return demoThreads(viewerId)
+
+  const supabase = await createClient()
+
+  // A thread exists per assigned gig the viewer is on either side of.
+  const { data: gigRows } = await supabase
+    .from('gigs')
+    .select(GIG_SELECT)
+    .or(`hirer_id.eq.${viewerId},assigned_to.eq.${viewerId}`)
+    .not('assigned_to', 'is', null)
+    .order('updated_at', { ascending: false })
+
+  const gigs = ((gigRows ?? []) as unknown as RawGig[]).map(normalizeGig)
+  if (gigs.length === 0) return []
+
+  const { data: msgRows } = await supabase
+    .from('messages')
+    .select('id, gig_id, sender_id, body, created_at, read_at')
+    .in(
+      'gig_id',
+      gigs.map((g) => g.id),
+    )
+    .order('created_at', { ascending: true })
+
+  const messages = (msgRows ?? []) as Message[]
+
+  const threads = await Promise.all(
+    gigs.map(async (gig) => {
+      const mine = messages.filter((m) => m.gig_id === gig.id)
+      const otherId = gig.hirer_id === viewerId ? gig.assigned_to : gig.hirer_id
+      const counterparty =
+        gig.hirer_id === viewerId && otherId ? await getPublicProfile(otherId) : gig.hirer
+
+      return {
+        gig,
+        counterparty,
+        last_message: mine[mine.length - 1] ?? null,
+        unread: mine.filter((m) => m.sender_id !== viewerId && !m.read_at).length,
+      }
+    }),
+  )
+
+  return threads.sort((a, b) =>
+    (b.last_message?.created_at ?? b.gig.updated_at).localeCompare(
+      a.last_message?.created_at ?? a.gig.updated_at,
+    ),
+  )
+}
+
+// ── Badges (item 6) ─────────────────────────────────────────────────────────
+
+/** Completed gigs, paid mentorships and referrals — the three badge inputs. */
+export async function getApplierStats(userId: string): Promise<ApplierStats> {
+  if (!isSupabaseConfigured) return demoApplierStats(userId)
+
+  const supabase = await createClient()
+
+  const [{ count }, { data: profile }, { count: referrals }] = await Promise.all([
+    supabase
+      .from('gigs')
+      .select('id', { count: 'exact', head: true })
+      .eq('assigned_to', userId)
+      .eq('status', 'completed'),
+    supabase.from('profiles').select('mentorships').eq('id', userId).maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('referred_by', userId),
+  ])
+
+  return {
+    completed: count ?? 0,
+    mentorships: (profile?.mentorships as number | undefined) ?? 0,
+    referrals: referrals ?? 0,
+  }
+}
+
+// ── Suggested appliers (item 7) ─────────────────────────────────────────────
+
+/**
+ * People whose skills overlap what this hirer keeps posting about, ranked by
+ * how many tags they share and then by rating. Same shape of match as the
+ * "recommended for you" block on /dashboard, pointed the other way.
+ */
+export async function getSuggestedAppliers(
+  hirerId: string,
+  limit = 4,
+): Promise<{ profile: PublicProfile; shared: Skill[] }[]> {
+  if (!isSupabaseConfigured) return demoSuggestedAppliers(hirerId, limit)
+
+  const supabase = await createClient()
+
+  const { data: myGigs } = await supabase.from('gigs').select('id').eq('hirer_id', hirerId)
+  const gigIds = (myGigs ?? []).map((g) => g.id as string)
+  if (gigIds.length === 0) return []
+
+  const { data: tagRows } = await supabase
+    .from('gig_skills')
+    .select('skill_id')
+    .in('gig_id', gigIds)
+
+  const wanted = [...new Set((tagRows ?? []).map((r) => r.skill_id as number))]
+  if (wanted.length === 0) return []
+
+  const { data: matches } = await supabase
+    .from('profile_skills')
+    .select(`profile_id, skill:skills ( id, slug, name, category )`)
+    .in('skill_id', wanted)
+    .limit(400)
+
+  const shared = new Map<string, Skill[]>()
+  for (const row of (matches ?? []) as unknown as {
+    profile_id: string
+    skill: Skill | null
+  }[]) {
+    if (!row.skill || row.profile_id === hirerId) continue
+    const list = shared.get(row.profile_id) ?? []
+    list.push(row.skill)
+    shared.set(row.profile_id, list)
+  }
+  if (shared.size === 0) return []
+
+  const { data: people } = await supabase
+    .from('profiles')
+    .select(PROFILE_FIELDS)
+    .in('id', [...shared.keys()])
+    .eq('is_banned', false)
+
+  return ((people ?? []) as unknown as PublicProfile[])
+    .map((profile) => ({ profile, shared: shared.get(profile.id) ?? [] }))
+    .sort((a, b) => b.shared.length - a.shared.length || b.profile.rating - a.profile.rating)
+    .slice(0, limit)
+}
+
+// ── Disputes (item 8) ───────────────────────────────────────────────────────
+
+export async function getDisputesFor(gigId: string): Promise<Dispute[]> {
+  if (!isSupabaseConfigured) return demoDisputesFor(gigId)
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('disputes')
+    .select('id, gig_id, raised_by, reason, detail, status, resolution, created_at, resolved_at')
+    .eq('gig_id', gigId)
+    .order('created_at', { ascending: false })
+
+  return (data as Dispute[] | null) ?? []
+}
+
+// ── Verification (item 4) ───────────────────────────────────────────────────
+
+/** The viewer's own submitted IDs. Never returns anyone else's — RLS. */
+export async function getMyVerifications(userId: string): Promise<Verification[]> {
+  if (!isSupabaseConfigured) return demoVerificationsFor(userId)
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('id_verifications')
+    .select('id, profile_id, kind, name_on_id, last4, status, note, created_at, decided_at')
+    .eq('profile_id', userId)
+    .order('created_at', { ascending: false })
+
+  return (data as Verification[] | null) ?? []
+}
+
+/**
+ * Resolve a `/verify/[token]` link to the account it belongs to.
+ *
+ * Goes through an RPC rather than a `where verify_token = …` filter, because the
+ * column is revoked from `anon` and `authenticated` — see PROFILE_ALL_FIELDS.
+ * The token is the whole credential (it gets pasted into WhatsApp), so it reveals
+ * nothing beyond a public profile, and regenerating it on /verify kills the old
+ * URL immediately.
+ */
+export async function getProfileByVerifyToken(token: string): Promise<PublicProfile | null> {
+  if (!isSupabaseConfigured) {
+    return token === DEMO_VERIFY_TOKEN ? DEMO_ME : null
+  }
+
+  const supabase = await createClient()
+  const { data } = await supabase.rpc('profile_by_verify_token', { p_token: token })
+
+  const row = Array.isArray(data) ? data[0] : data
+  return (row as PublicProfile | undefined) ?? null
+}
+
+/**
+ * The signed-in user's own share-link token.
+ *
+ * Takes no argument on purpose: the RPC reads `auth.uid()` itself, so there is no
+ * parameter an attacker could point at somebody else's row.
+ */
+export async function getMyVerifyToken(): Promise<string | null> {
+  if (!isSupabaseConfigured) return DEMO_VERIFY_TOKEN
+
+  const supabase = await createClient()
+  const { data } = await supabase.rpc('my_verify_token')
+  return (data as string | null) ?? null
+}
+
+/** How many people signed up with this account's referral code. */
+export async function getReferralCount(userId: string): Promise<number> {
+  if (!isSupabaseConfigured) return demoReferralCount(userId)
+
+  const supabase = await createClient()
+  const { count } = await supabase
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq('referred_by', userId)
+
+  return count ?? 0
 }

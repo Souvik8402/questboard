@@ -12,15 +12,16 @@ const BASE =
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'text-void bg-linear-to-r from-cyan to-teal shadow-[0_6px_24px_-8px_rgba(34,211,238,0.6)] ' +
-    'hover:shadow-[0_8px_30px_-6px_rgba(34,211,238,0.75)] hover:brightness-110 font-semibold',
-  secondary: 'text-chalk bg-raise border border-line hover:bg-[#1c2233] hover:border-[#2f3852]',
-  ghost: 'text-mist hover:text-chalk hover:bg-white/5',
+    'text-white bg-linear-to-r from-cyan to-teal shadow-[0_6px_24px_-10px_rgba(36,95,115,0.55)] ' +
+    'hover:shadow-[0_8px_30px_-6px_rgba(36,95,115,0.5)] hover:brightness-110 font-semibold',
+  secondary:
+    'text-chalk bg-raise border border-line hover:bg-panel hover:border-cyan/30 hover:shadow-[0_10px_24px_-16px_rgba(36,95,115,0.35)]',
+  ghost: 'text-mist hover:text-chalk hover:bg-black/5',
   outline:
-    'text-chalk border border-line bg-white/[0.02] hover:bg-white/[0.06] ' +
-    'hover:border-cyan/40',
+    'text-chalk border border-line bg-white/[0.5] hover:bg-white hover:border-cyan/40 ' +
+    'hover:shadow-[0_8px_22px_-14px_rgba(36,95,115,0.4)]',
   danger:
-    'text-rose border border-rose/30 bg-rose/10 hover:bg-rose/20 hover:border-rose/50',
+    'text-rose border border-rose/30 bg-rose/10 hover:bg-rose/15 hover:border-rose/50',
 }
 
 const SIZES: Record<ButtonSize, string> = {
@@ -94,7 +95,7 @@ export function IconButton({
       title={label}
       className={cn(
         'inline-grid size-9 place-items-center rounded-lg text-mist transition-colors',
-        'hover:bg-white/5 hover:text-chalk',
+        'hover:bg-black/5 hover:text-chalk',
         className,
       )}
       {...rest}

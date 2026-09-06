@@ -172,3 +172,182 @@ export async function adminDeleteReview(
     return { ok: true, message: 'Review deleted and the rating recalculated.' }
   })
 }
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  The three queues: IDs (item 4), fee waivers (item 2), disputes (item 8)
+ *
+ *  All three write columns that RLS makes service-role-only, which is why they
+ *  live here rather than in the route that displays them. `guard_profile_changes()`
+ *  in schema.sql refuses `fee_waiver_status = 'approved'` and any write to
+ *  `id_verified_at` from a normal session, so an admin decision cannot be forged
+ *  by the person it is about.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+const DECISIONS = ['approved', 'rejected'] as const
+type Decision = (typeof DECISIONS)[number]
+
+/**
+ * Approve or reject a submitted ID.
+ *
+ * Approving also stamps `profiles.id_verified_at`, which is what the Verified
+ * badge on a profile and on every gig card reads. Rejecting clears it again: an
+ * ID that turned out to be somebody else's should not leave a badge behind.
+ */
+export async function decideVerification(
+  _prev: ActionResult | null,
+  form: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    if (!adminDataAvailable) throw new FieldError(DEMO_MESSAGE)
+
+    const id = text(form, 'verification_id')
+    const profileId = text(form, 'profile_id')
+    if (!id || !profileId) throw new FieldError('Missing submission.')
+
+    const decision = requireEnum(form, 'decision', DECISIONS as readonly Decision[], 'decision')
+    const note = text(form, 'note').slice(0, 400)
+
+    if (decision === 'rejected' && note.length < 5) {
+      throw new FieldError(
+        'Say why in a line or two — the person sees this note and needs to know what to fix.',
+        'note',
+      )
+    }
+
+    const now = new Date().toISOString()
+    const supabase = createAdminClient()
+
+    const { error } = await supabase
+      .from('id_verifications')
+      .update({ status: decision, note: note || null, decided_at: now })
+      .eq('id', id)
+
+    if (error) throw new FieldError(error.message)
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        id_verified_at: decision === 'approved' ? now : null,
+        updated_at: now,
+      })
+      .eq('id', profileId)
+
+    if (profileError) throw new FieldError(profileError.message)
+
+    revalidatePath('/admin')
+    revalidatePath('/verify')
+    revalidatePath(`/profile/${profileId}`)
+    revalidatePath('/gigs')
+
+    return {
+      ok: true,
+      message:
+        decision === 'approved'
+          ? 'Approved. The Verified badge is live on their profile and on every gig they post.'
+          : 'Rejected, and your note is on their verification page. Any badge they had is gone.',
+    }
+  })
+}
+
+/** Decide a fee-waiver request (item 2). Approving is what makes the fee ₹0. */
+export async function decideWaiver(
+  _prev: ActionResult | null,
+  form: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    if (!adminDataAvailable) throw new FieldError(DEMO_MESSAGE)
+
+    const profileId = text(form, 'profile_id')
+    if (!profileId) throw new FieldError('Missing account.')
+
+    const decision = requireEnum(form, 'decision', DECISIONS as readonly Decision[], 'decision')
+    const note = text(form, 'note').slice(0, 400)
+
+    if (decision === 'rejected' && note.length < 5) {
+      throw new FieldError('Say why — they can ask again, and they need to know what was missing.', 'note')
+    }
+
+    const now = new Date().toISOString()
+    const supabase = createAdminClient()
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        fee_waiver_status: decision,
+        fee_waiver_note: note || null,
+        fee_waiver_decided_at: now,
+        updated_at: now,
+      })
+      .eq('id', profileId)
+
+    if (error) throw new FieldError(error.message)
+
+    revalidatePath('/admin')
+    revalidatePath('/verify')
+    revalidatePath('/dashboard')
+
+    return {
+      ok: true,
+      message:
+        decision === 'approved'
+          ? 'Waiver approved — they now keep the full reward on every gig.'
+          : 'Waiver refused, with your note attached. They can ask again.',
+    }
+  })
+}
+
+/**
+ * Close a dispute (item 8).
+ *
+ * `resolved` and `rejected` both end it; the difference is whether anything was
+ * done. Either way the resolution text is required, because "we looked at it" with
+ * no explanation is worse than no reply — and the published promise is a response
+ * within about two hours, which is a promise about this button.
+ */
+export async function resolveDispute(
+  _prev: ActionResult | null,
+  form: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    if (!adminDataAvailable) throw new FieldError(DEMO_MESSAGE)
+
+    const id = text(form, 'dispute_id')
+    if (!id) throw new FieldError('Missing dispute.')
+
+    const outcome = requireEnum(form, 'outcome', ['resolved', 'rejected'] as const, 'outcome')
+    const resolution = text(form, 'resolution')
+    if (resolution.length < 10) {
+      throw new FieldError(
+        'Write the outcome in a sentence or two — both sides read this, and it is the only record of what was decided.',
+        'resolution',
+      )
+    }
+
+    const supabase = createAdminClient()
+    const { data, error } = await supabase
+      .from('disputes')
+      .update({
+        status: outcome,
+        resolution: resolution.slice(0, 1000),
+        resolved_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select('gig_id')
+      .maybeSingle<{ gig_id: string }>()
+
+    if (error) throw new FieldError(error.message)
+
+    revalidatePath('/admin')
+    if (data?.gig_id) revalidatePath(`/gigs/${data.gig_id}`)
+
+    return {
+      ok: true,
+      message:
+        outcome === 'resolved'
+          ? 'Closed as resolved. Both sides can read the outcome on the gig page.'
+          : 'Closed with no action, and your reasoning is on the gig page.',
+    }
+  })
+}

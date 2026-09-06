@@ -11,7 +11,15 @@ import { Notice } from '@/components/ui/Panel'
  * Email + password, for hirers. Two modes on one component so switching between
  * sign-in and sign-up doesn't cost a page load.
  */
-export function PasswordForm({ mode, next }: { mode: 'signin' | 'signup'; next: string }) {
+export function PasswordForm({
+  mode,
+  next,
+  ref,
+}: {
+  mode: 'signin' | 'signup'
+  next: string
+  ref?: string
+}) {
   const action = mode === 'signup' ? signUpAction : signInAction
   const [state, submit, pending] = useActionState<ActionResult | null, FormData>(action, null)
 
@@ -22,6 +30,7 @@ export function PasswordForm({ mode, next }: { mode: 'signin' | 'signup'; next: 
   return (
     <form action={submit} className="space-y-4">
       <input type="hidden" name="next" value={next} />
+      {mode === 'signup' && ref && <input type="hidden" name="ref" value={ref} />}
 
       {state?.ok && state.message && <Notice tone="success">{state.message}</Notice>}
       {generalError && <Notice tone="error">{generalError}</Notice>}

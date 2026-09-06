@@ -51,7 +51,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, email or department…"
-            className="w-full rounded-xl border border-line bg-ink/70 py-2 pl-10 pr-3.5 text-[14px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60"
+            className="w-full rounded-xl border border-line bg-white/80 py-2 pl-10 pr-3.5 text-[14px] text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#bfb9b0] focus:border-cyan/60"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -63,7 +63,7 @@ export function UserTable({ users }: { users: AdminUser[] }) {
               className={`rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
                 filter === f.value
                   ? 'border-cyan/45 bg-cyan/15 text-cyan'
-                  : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
+                  : 'border-line bg-black/[0.03] text-mist hover:border-cyan/30 hover:text-chalk'
               }`}
             >
               {f.label}

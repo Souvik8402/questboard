@@ -112,32 +112,12 @@ export function requireEnum<T extends string>(
   return value as T
 }
 
-/** Collapse whitespace so "98765  43210" and "98765 43210" store identically. */
-export function normalizePhone(raw: string): string {
-  return raw.trim().replace(/\s+/g, ' ')
-}
-
-/**
- * Matches the CHECK constraint on gig_contacts.phone, plus a digit-count
- * sanity check so "+++++++++" is rejected.
+/*
+ * `normalizePhone()` and `requirePhone()` used to live here. Both are gone:
+ * GigNest no longer collects a phone number from anyone, on either side of a
+ * gig, so there is nothing left to validate. The two sides talk in the gig
+ * thread (`messages`), which opens when someone is hired.
  */
-export function requirePhone(form: FormData, key: string, label = 'Phone number'): string {
-  const value = normalizePhone(text(form, key))
-  if (!value) throw new FieldError(`${label} is required.`, key)
-
-  if (!/^[0-9+][0-9 ()+-]{7,19}$/.test(value)) {
-    throw new FieldError(
-      `${label} looks off. Use digits, spaces, +, - or brackets — e.g. +91 98765 43210.`,
-      key,
-    )
-  }
-
-  const digits = value.replace(/\D/g, '')
-  if (digits.length < 10 || digits.length > 13) {
-    throw new FieldError(`${label} should have 10 to 13 digits (found ${digits.length}).`, key)
-  }
-  return value
-}
 
 /** Multi-value field from a checkbox group, coerced to positive ints. */
 export function intList(form: FormData, key: string, max = 50): number[] {

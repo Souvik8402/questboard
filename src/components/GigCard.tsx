@@ -5,7 +5,7 @@ import { deadlineInfo, formatRupees, pluralize, relativeTime } from '@/lib/forma
 import type { GigWithRelations } from '@/lib/types'
 import { Avatar } from '@/components/Avatar'
 import { SkillChip, StatusPill } from '@/components/ui/Badge'
-import { IconClock, IconMapPin, IconUsers, IconWifi } from '@/components/ui/Icons'
+import { IconBolt, IconClock, IconMapPin, IconShield, IconUsers, IconWifi } from '@/components/ui/Icons'
 
 /**
  * A gig, styled as an entry on a job board: reward first (it's what everyone
@@ -51,6 +51,17 @@ export function GigCard({
             </span>
           ) : (
             <StatusPill status={gig.status} />
+          )}
+          {/* Urgent means the applicant queue is reviewed in arrival order, so it
+              changes whether it is worth applying late — it belongs on the card. */}
+          {gig.is_urgent && gig.status === 'open' && (
+            <span
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-rose"
+              title="First-come-first-served: the hirer reviews applicants in the order they arrive"
+            >
+              <IconBolt className="size-3" />
+              Urgent
+            </span>
           )}
           {gig.is_remote && (
             <span className="inline-flex items-center gap-1 text-[12px] text-teal">
@@ -114,8 +125,22 @@ export function GigCard({
           <span className="flex min-w-0 items-center gap-2">
             <Avatar name={gig.hirer?.full_name} src={gig.hirer?.avatar_url} size="sm" />
             <span className="min-w-0">
-              <span className="block truncate text-[13px] font-medium text-mist">
-                {gig.hirer?.full_name ?? 'A hirer'}
+              <span className="flex items-center gap-1">
+                <span className="truncate text-[13px] font-medium text-mist">
+                  {gig.hirer?.full_name ?? 'A hirer'}
+                </span>
+                {/* Item 4's payoff on the browse grid: whether the person asking for
+                    work has put a government ID in front of an admin. A bare icon
+                    rather than a pill — a card this dense cannot carry another one. */}
+                {gig.hirer?.id_verified_at && (
+                  <span
+                    className="inline-flex shrink-0 items-center text-teal"
+                    title="A government ID was reviewed and accepted by an admin"
+                  >
+                    <IconShield className="size-3.5" />
+                    <span className="sr-only">ID verified</span>
+                  </span>
+                )}
               </span>
               {gig.hirer && gig.hirer.rating_count > 0 && (
                 <span className="hud block text-[11.5px] text-dimmer">
@@ -139,7 +164,7 @@ export function GigRow({ gig }: { gig: GigWithRelations }) {
   return (
     <Link
       href={`/gigs/${gig.id}`}
-      className="group flex items-center gap-4 rounded-xl border border-line bg-white/[0.02] px-4 py-3.5 transition-colors hover:border-cyan/30 hover:bg-white/[0.045]"
+      className="group flex items-center gap-4 rounded-xl border border-line bg-black/[0.02] px-4 py-3.5 transition-colors hover:border-cyan/30 hover:bg-black/[0.045]"
     >
       <div className="min-w-0 flex-1 space-y-1">
         <p className="truncate text-sm font-medium text-chalk transition-colors group-hover:text-cyan">
@@ -147,6 +172,12 @@ export function GigRow({ gig }: { gig: GigWithRelations }) {
         </p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-dim">
           <span>{GIG_TYPE_LABEL[gig.gig_type]}</span>
+          {gig.is_urgent && gig.status === 'open' && (
+            <span className="inline-flex items-center gap-1 font-medium text-rose">
+              <IconBolt className="size-3" />
+              Urgent
+            </span>
+          )}
           {applicants > 0 && (
             <span>
               {applicants} {pluralize(applicants, 'applicant')}
@@ -173,17 +204,17 @@ export function GigCardSkeleton({ index = 0 }: { index?: number }) {
       style={{ '--i': index } as React.CSSProperties}
       aria-hidden
     >
-      <div className="h-6 w-24 rounded bg-white/[0.06]" />
+      <div className="h-6 w-24 rounded bg-black/[0.06]" />
       <div className="space-y-2">
-        <div className="h-4 w-full rounded bg-white/[0.06]" />
-        <div className="h-4 w-2/3 rounded bg-white/[0.04]" />
+        <div className="h-4 w-full rounded bg-black/[0.06]" />
+        <div className="h-4 w-2/3 rounded bg-black/[0.04]" />
       </div>
       <div className="flex gap-1.5">
-        <div className="h-6 w-16 rounded-lg bg-white/[0.04]" />
-        <div className="h-6 w-20 rounded-lg bg-white/[0.04]" />
+        <div className="h-6 w-16 rounded-lg bg-black/[0.04]" />
+        <div className="h-6 w-20 rounded-lg bg-black/[0.04]" />
       </div>
       <div className="hairline" />
-      <div className="h-7 w-32 rounded bg-white/[0.04]" />
+      <div className="h-7 w-32 rounded bg-black/[0.04]" />
     </div>
   )
 }

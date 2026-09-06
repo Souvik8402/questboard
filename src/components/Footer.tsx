@@ -3,11 +3,12 @@ import { INSTITUTE_NAME } from '@/lib/constants'
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
-    title: 'For students',
+    title: 'For appliers',
     links: [
       { href: '/gigs', label: 'Browse gigs' },
       { href: '/gigs/map', label: 'Gigs near me' },
-      { href: '/login', label: 'Verify with institute email' },
+      { href: '/learn', label: 'Free skill coach' },
+      { href: '/verify', label: 'Get the student fee waiver' },
       { href: '/dashboard', label: 'My applications' },
     ],
   },
@@ -15,7 +16,7 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
     title: 'For hirers',
     links: [
       { href: '/gigs/new', label: 'Post a gig' },
-      { href: '/login', label: 'Create an account' },
+      { href: '/verify', label: 'Verify your identity' },
       { href: '/dashboard', label: 'Manage postings' },
     ],
   },
@@ -29,7 +30,7 @@ export function Footer() {
           <div className="space-y-3">
             <Link href="/" className="flex items-center gap-2.5">
               <span className="grid size-8 place-items-center rounded-lg bg-linear-to-br from-cyan to-violet">
-                <svg viewBox="0 0 24 24" fill="none" className="size-4.5 text-void">
+                <svg viewBox="0 0 24 24" fill="none" className="size-4.5 text-white">
                   <path
                     d="M12 3.2l2.3 4.9 5.4.7-3.9 3.8.9 5.4-4.7-2.6-4.7 2.6.9-5.4-3.9-3.8 5.4-.7L12 3.2Z"
                     fill="currentColor"
@@ -41,8 +42,8 @@ export function Footer() {
               </span>
             </Link>
             <p className="max-w-xs text-[14px] leading-relaxed text-dim">
-              Paid work around Varanasi, claimed by verified {INSTITUTE_NAME} students. Post in a
-              minute, hire the same day.
+              Paid work around Varanasi. Anyone can post, anyone can apply, and {INSTITUTE_NAME}{' '}
+              students who verify pay no platform fee.
             </p>
           </div>
 

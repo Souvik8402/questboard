@@ -1,4 +1,4 @@
-import type { GigSort, GigStatus, GigType, UserRole } from './types'
+import type { DisputeStatus, FeeWaiverStatus, GigSort, GigStatus, GigType, IdKind, UserRole } from './types'
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -13,6 +13,85 @@ export const INSTITUTE_DOMAINS = ['itbhu.ac.in'] as const
 
 export const INSTITUTE_NAME = 'IIT (BHU) Varanasi'
 export const INSTITUTE_SHORT = 'IIT BHU'
+
+/** The pitch — used as the site tagline and in the hero. */
+export const TAGLINE = 'Need It, Gig It'
+
+/**
+ * Paying for a gig on GigNest carries a platform fee, kept at a fixed small
+ * percentage so the marketplace can pay for itself. Verified students
+ * (institute email confirmed by an admin) have it waived to ₹0.
+ */
+export const PLATFORM_FEE_PERCENT = 6
+
+/** Formatted for display, e.g. "6%". */
+export const PLATFORM_FEE_LABEL = `${PLATFORM_FEE_PERCENT}%`
+
+/** How the fee waiver reads on screen. */
+export const FEE_WAIVER_LABEL: Record<FeeWaiverStatus, string> = {
+  none: 'Not requested',
+  pending: 'Waiting on an admin',
+  approved: 'Fee waived',
+  rejected: 'Not approved',
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  Disputes
+ *
+ *  Either side can raise one for a window after the last status change. The
+ *  promise we make is the response time, not the outcome.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export const DISPUTE_WINDOW_HOURS = 72
+
+/** The published turnaround. Quoted on the gig page, /about and the footer. */
+export const DISPUTE_SLA_LABEL = 'about 2 hours'
+
+export const DISPUTE_REASONS = [
+  { value: 'not_paid', label: 'I was not paid' },
+  { value: 'not_delivered', label: 'The work was not delivered' },
+  { value: 'scope_changed', label: 'The work changed after we agreed' },
+  { value: 'no_response', label: 'The other side stopped replying' },
+  { value: 'conduct', label: 'Behaviour or safety concern' },
+  { value: 'other', label: 'Something else' },
+] as const
+
+export const DISPUTE_REASON_LABEL: Record<string, string> = Object.fromEntries(
+  DISPUTE_REASONS.map((r) => [r.value, r.label]),
+)
+
+export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
+  open: 'Open',
+  resolved: 'Resolved',
+  rejected: 'Closed, no action',
+}
+
+export const ID_KIND_LABEL: Record<IdKind, string> = {
+  pan: 'PAN card',
+  aadhaar: 'Aadhaar',
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ *  Browse categories — the row under the nav bar
+ *
+ *  Deliberately static rather than read from the `skills` table: the nav renders
+ *  in the root layout on every route, and a query per page view to build a menu
+ *  is a bad trade. Each one runs the same free-text search a visitor could type,
+ *  so it works identically in demo mode and against Postgres.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+export const BROWSE_CATEGORIES: { label: string; q: string }[] = [
+  { label: 'Design', q: 'design' },
+  { label: 'Web & app', q: 'website' },
+  { label: 'Writing', q: 'writing' },
+  { label: 'Tutoring', q: 'tutor' },
+  { label: 'Photo & video', q: 'photography' },
+  { label: 'Data & research', q: 'data' },
+  { label: 'Events', q: 'event' },
+  { label: 'Errands', q: 'delivery' },
+]
 
 /**
  * Mirrors the SQL: exact domain match, or any subdomain of it.

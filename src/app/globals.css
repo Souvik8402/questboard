@@ -8,26 +8,30 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  /* Surfaces, darkest to lightest */
-  --color-void: #05060a;
-  --color-ink: #0a0d15;
-  --color-panel: #10141f;
-  --color-raise: #161b29;
-  --color-line: #222a3d;
+  /* Yacht-club light scale. Surfaces are named darkest-to-lightest as before,
+     but the darkness now maps to warmth: base canvas, input wells, cards,
+     raised surfaces, then hairlines. */
+  --color-void: #f2f0ef;
+  --color-ink: #e9e6e1;
+  --color-panel: #ffffff;
+  --color-raise: #fbfaf8;
+  --color-line: #d3cec6;
 
-  /* Text */
-  --color-chalk: #e9edf7;
-  --color-mist: #8e97ad;
-  --color-dim: #5d6674;
-  --color-dimmer: #454d5e;
+  /* Text — on a light canvas, the "chalk" token is the primary ink, and the
+     lower tokens step down toward hairline grey. */
+  --color-chalk: #1a2a30;
+  --color-mist: #4a5a5f;
+  --color-dim: #6a7378;
+  --color-dimmer: #98a0a3;
 
-  /* Accents */
-  --color-cyan: #22d3ee;
-  --color-violet: #a78bfa;
-  --color-lime: #a3e635;
-  --color-amber: #fbbf24;
-  --color-rose: #fb7185;
-  --color-teal: #2dd4bf;
+  /* Accents — the deep teal and rust given in the brief, with supporting tones
+     tuned for contrast on a light background. */
+  --color-cyan: #245f73;
+  --color-violet: #6b5b8f;
+  --color-lime: #4c9b51;
+  --color-amber: #a97a1c;
+  --color-rose: #b15a4e;
+  --color-teal: #3f8a86;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
@@ -63,8 +67,8 @@ body {
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--color-cyan) 30%, transparent);
-  color: #fff;
+  background: color-mix(in oklab, var(--color-cyan) 18%, transparent);
+  color: var(--color-chalk);
 }
 
 :focus-visible {
@@ -73,7 +77,7 @@ body {
   border-radius: 4px;
 }
 
-/* Slim dark scrollbars, so the chrome doesn't break the mood */
+/* Slim light scrollbars, so the chrome stays out of the way. */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-line) transparent;
@@ -91,7 +95,7 @@ body {
   border: 2px solid var(--color-void);
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #2f3a52;
+  background: #b7b1a8;
 }
 
 /* Numbers should read like instrumentation, not prose. */
@@ -102,7 +106,7 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Ambient background — aurora blobs behind a masked grid
+   Ambient background — a soft warm wash behind a masked grid
    ══════════════════════════════════════════════════════════════════════════ */
 
 .aurora {
@@ -111,55 +115,10 @@ body {
   z-index: -2;
   overflow: hidden;
   pointer-events: none;
-}
-
-.aurora span {
-  position: absolute;
-  display: block;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.22;
-  will-change: transform;
-  animation: drift 28s ease-in-out infinite alternate;
-}
-
-.aurora span:nth-child(1) {
-  width: 42rem;
-  height: 42rem;
-  top: -14rem;
-  left: -10rem;
-  background: radial-gradient(circle, var(--color-violet), transparent 68%);
-}
-.aurora span:nth-child(2) {
-  width: 38rem;
-  height: 38rem;
-  top: -8rem;
-  right: -12rem;
-  background: radial-gradient(circle, var(--color-cyan), transparent 68%);
-  animation-delay: -9s;
-  animation-duration: 34s;
-}
-.aurora span:nth-child(3) {
-  width: 34rem;
-  height: 34rem;
-  bottom: -16rem;
-  left: 30%;
-  background: radial-gradient(circle, var(--color-teal), transparent 70%);
-  animation-delay: -18s;
-  animation-duration: 40s;
-  opacity: 0.14;
-}
-
-@keyframes drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(4rem, 3rem, 0) scale(1.12);
-  }
-  100% {
-    transform: translate3d(-3rem, 2rem, 0) scale(0.95);
-  }
+  background:
+    radial-gradient(52rem 36rem at 12% -8%, rgba(36, 95, 115, 0.10), transparent 62%),
+    radial-gradient(46rem 32rem at 94% -6%, rgba(115, 91, 143, 0.08), transparent 60%),
+    linear-gradient(180deg, #f6f4f2 0%, var(--color-void) 46%, #efece9 100%);
 }
 
 /* Faint engineering grid, faded out toward the bottom of its container. */
@@ -173,8 +132,8 @@ body {
   inset: 0;
   z-index: -1;
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+    linear-gradient(to right, rgba(122, 116, 106, 0.10) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(122, 116, 106, 0.10) 1px, transparent 1px);
   background-size: 58px 58px;
   mask-image: radial-gradient(ellipse 75% 70% at 50% 0%, #000 35%, transparent 100%);
   -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 0%, #000 35%, transparent 100%);
@@ -186,7 +145,7 @@ body {
    ══════════════════════════════════════════════════════════════════════════ */
 
 .glass {
-  background: linear-gradient(158deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.014));
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(253, 252, 250, 0.72));
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
   backdrop-filter: blur(14px);
@@ -230,7 +189,8 @@ body {
 }
 .glow-card:hover {
   transform: translateY(-3px);
-  border-color: color-mix(in oklab, var(--color-cyan) 22%, var(--color-line));
+  border-color: color-mix(in oklab, var(--color-cyan) 30%, var(--color-line));
+  box-shadow: 0 14px 34px -18px rgba(36, 95, 115, 0.28);
 }
 .glow-card:hover::before {
   opacity: 1;
@@ -253,7 +213,7 @@ body {
    ══════════════════════════════════════════════════════════════════════════ */
 
 .gradient-text {
-  background: linear-gradient(100deg, var(--color-chalk) 10%, var(--color-cyan) 55%, var(--color-violet) 95%);
+  background: linear-gradient(100deg, var(--color-chalk) 8%, var(--color-cyan) 48%, var(--color-violet) 96%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -264,7 +224,7 @@ body {
   background: linear-gradient(
     100deg,
     var(--color-chalk) 20%,
-    #fff 40%,
+    #33525e 40%,
     var(--color-cyan) 55%,
     var(--color-chalk) 75%
   );
@@ -331,14 +291,18 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   Reward tiers — the ring colour on a gig card, at a glance
+   Tiers — the reward ring on a gig card, and the badge on an applier
+
+   These are text colours on a near-white canvas, so they are darkened well past
+   the usual "bronze / silver / gold" swatches. The pretty pale silver reads at
+   about 1.9:1 against white, which is illegible.
    ══════════════════════════════════════════════════════════════════════════ */
 
 .tier-bronze {
-  --tier: #c88b52;
+  --tier: #a06a33;
 }
 .tier-silver {
-  --tier: #b6c2d9;
+  --tier: #6f7d94;
 }
 .tier-gold {
   --tier: var(--color-amber);
@@ -364,13 +328,13 @@ body {
   z-index: 0;
 }
 
-/* OSM tiles are bright; dim and cool them so they sit in the dark theme. */
+/* OSM tiles are already light — leave them natural so the map reads as a map. */
 .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(185deg) brightness(0.92) contrast(0.87) saturate(0.7);
+  filter: saturate(0.72) contrast(0.9) brightness(1.03);
 }
 
 .leaflet-control-attribution {
-  background: rgba(5, 6, 10, 0.82) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
   color: var(--color-dim) !important;
   font-size: 10px !important;
   border-radius: 6px 0 0 0;
@@ -381,12 +345,12 @@ body {
 
 .leaflet-bar,
 .leaflet-control-zoom a {
-  background: var(--color-panel) !important;
+  background: var(--color-raise) !important;
   color: var(--color-chalk) !important;
   border-color: var(--color-line) !important;
 }
 .leaflet-control-zoom a:hover {
-  background: var(--color-raise) !important;
+  background: var(--color-panel) !important;
 }
 
 .leaflet-popup-content-wrapper,
@@ -394,7 +358,7 @@ body {
   background: var(--color-panel) !important;
   color: var(--color-chalk) !important;
   border: 1px solid var(--color-line);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55) !important;
+  box-shadow: 0 18px 40px rgba(60, 52, 44, 0.28) !important;
 }
 .leaflet-popup-content {
   margin: 0.75rem 0.9rem !important;
@@ -465,8 +429,5 @@ input[type='date']::-webkit-calendar-picker-indicator {
   }
   .glow-card:hover {
     transform: none;
-  }
-  .aurora span {
-    animation: none;
   }
 }

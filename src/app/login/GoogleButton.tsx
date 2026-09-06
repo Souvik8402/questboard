@@ -11,10 +11,12 @@ import { IconGoogle } from '@/components/ui/Icons'
  */
 export function GoogleButton({
   next,
+  ref,
   label = 'Continue with Google',
   disabled,
 }: {
   next?: string
+  ref?: string
   label?: string
   disabled?: boolean
 }) {
@@ -33,7 +35,15 @@ export function GoogleButton({
         provider: 'google',
         options: {
           redirectTo: callback.toString(),
-          queryParams: { prompt: 'select_account' },
+          // GoTrue's /authorize endpoint persists a top-level `data` query param
+          // into raw_user_meta_data, which handle_new_user() reads for the
+          // referral code. The JS client's OAuth options have no typed `data`
+          // field (see SignInWithOAuthCredentials), so it rides the queryParams.
+          // Needs the project's "oauth.allow_oauth_params" setting to forward it.
+          queryParams: {
+            prompt: 'select_account',
+            ...(ref ? { data: JSON.stringify({ ref }) } : {}),
+          },
         },
       })
       if (error) throw error

@@ -7,9 +7,9 @@ import { cn } from '@/lib/cn'
  */
 
 const CONTROL =
-  'w-full rounded-xl border border-line bg-ink/70 px-3.5 py-2.5 text-sm text-chalk ' +
-  'placeholder:text-dimmer transition-colors outline-none ' +
-  'hover:border-[#2c344a] focus:border-cyan/60 focus:bg-ink ' +
+  'w-full rounded-xl border border-line bg-white/80 px-3.5 py-2.5 text-sm text-chalk ' +
+  'placeholder:text-dimmer transition-colors shadow-[inset_0_1px_2px_rgba(122,116,106,0.08)] outline-none ' +
+  'hover:border-[#bfb9b0] focus:border-cyan/60 focus:bg-white ' +
   'focus:ring-2 focus:ring-cyan/15 disabled:opacity-50'
 
 export function Field({
@@ -75,7 +75,7 @@ export function Select({ className, children, ...rest }: ComponentProps<'select'
   )
 }
 
-/** Prefixed input — used for ₹ amounts and phone numbers. */
+/** Prefixed input — used for ₹ amounts. */
 export function InputWithPrefix({
   prefix,
   className,
@@ -100,8 +100,8 @@ export function Checkbox({
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white/[0.02] p-3.5',
-        'transition-colors hover:border-[#2c344a] hover:bg-white/[0.04]',
+        'flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-black/[0.02] p-3.5',
+        'transition-colors hover:border-[#bfb9b0] hover:bg-black/[0.04]',
         className,
       )}
     >
@@ -130,6 +130,7 @@ export function RadioCard({
   icon,
   defaultChecked,
   disabled,
+  onChange,
 }: {
   name: string
   value: string
@@ -138,6 +139,13 @@ export function RadioCard({
   icon?: ReactNode
   defaultChecked?: boolean
   disabled?: boolean
+  /**
+   * Optional, and the input stays uncontrolled either way — `peer-checked` does
+   * the highlighting on its own. This exists for the one case where a *sibling*
+   * needs to follow the selection: /verify swaps its ID field's label, keyboard
+   * and validator when you switch between PAN and Aadhaar.
+   */
+  onChange?: () => void
 }) {
   return (
     <label className={cn('group relative block', disabled && 'cursor-not-allowed opacity-50')}>
@@ -147,14 +155,15 @@ export function RadioCard({
         value={value}
         defaultChecked={defaultChecked}
         disabled={disabled}
+        onChange={onChange}
         className="peer sr-only"
       />
       <div
         className={cn(
-          'h-full rounded-xl border border-line bg-white/[0.02] p-4 transition-all',
+          'h-full rounded-xl border border-line bg-black/[0.02] p-4 transition-all',
           'peer-checked:border-cyan/55 peer-checked:bg-cyan/[0.07]',
-          'peer-checked:shadow-[0_0_0_1px_rgba(34,211,238,0.25)]',
-          !disabled && 'group-hover:border-[#2f3852] group-hover:bg-white/[0.045] cursor-pointer',
+          'peer-checked:shadow-[0_0_0_1px_rgba(36,95,115,0.3)]',
+          !disabled && 'group-hover:border-[#c3beb5] group-hover:bg-black/[0.045] cursor-pointer',
         )}
       >
         <div className="flex items-start gap-3">

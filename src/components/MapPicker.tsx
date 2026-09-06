@@ -8,7 +8,7 @@ import { IconMapPin, IconX } from '@/components/ui/Icons'
 const MapPickerInner = dynamic(() => import('./MapPickerInner'), {
   ssr: false,
   loading: () => (
-    <div className="grid h-64 w-full place-items-center rounded-xl border border-line bg-ink/60 text-[14px] text-dim">
+    <div className="grid h-64 w-full place-items-center rounded-xl border border-line bg-white/80 text-[14px] text-dim">
       Loading map…
     </div>
   ),
@@ -84,7 +84,7 @@ export function MapPicker({
           type="button"
           onClick={useMyLocation}
           disabled={locating}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white/[0.03] px-2.5 py-1.5 text-[13px] font-medium text-mist transition-colors hover:border-cyan/35 hover:text-chalk disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-black/[0.03] px-2.5 py-1.5 text-[13px] font-medium text-mist transition-colors hover:border-cyan/35 hover:text-chalk disabled:opacity-50"
         >
           {locating ? (
             <span className="size-3 animate-spin rounded-full border-2 border-cyan/30 border-t-cyan" />

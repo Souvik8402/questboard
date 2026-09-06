@@ -8,7 +8,7 @@ import { GIG_TYPES, SORT_OPTIONS } from '@/lib/constants'
 import { compactRupees } from '@/lib/format'
 import type { GigFilters, Skill } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
-import { IconLayers, IconSearch, IconWifi, IconX } from '@/components/ui/Icons'
+import { IconBolt, IconLayers, IconSearch, IconWifi, IconX } from '@/components/ui/Icons'
 
 const REWARD_PRESETS = [
   { label: 'Any', min: undefined, max: undefined },
@@ -43,6 +43,7 @@ export function FilterBar({
   const [selectedSkills, setSelectedSkills] = useState<number[]>(filters.skills ?? [])
   const [types, setTypes] = useState<string[]>(filters.types ?? [])
   const [remote, setRemote] = useState(Boolean(filters.remoteOnly))
+  const [urgent, setUrgent] = useState(Boolean(filters.urgentOnly))
   const [reward, setReward] = useState<{ min?: number; max?: number }>({
     min: filters.minReward,
     max: filters.maxReward,
@@ -56,11 +57,12 @@ export function FilterBar({
     setSelectedSkills(filters.skills ?? [])
     setTypes(filters.types ?? [])
     setRemote(Boolean(filters.remoteOnly))
+    setUrgent(Boolean(filters.urgentOnly))
     setReward({ min: filters.minReward, max: filters.maxReward })
   }, [filters])
 
   const activeCount =
-    (q ? 1 : 0) + selectedSkills.length + types.length + (remote ? 1 : 0) + (reward.min || reward.max ? 1 : 0)
+    (q ? 1 : 0) + selectedSkills.length + types.length + (remote ? 1 : 0) + (urgent ? 1 : 0) + (reward.min || reward.max ? 1 : 0)
 
   const byId = useMemo(() => new Map(skills.map((s) => [s.id, s])), [skills])
 
@@ -78,6 +80,7 @@ export function FilterBar({
     skills?: number[]
     types?: string[]
     remote?: boolean
+    urgent?: boolean
     min?: number
     max?: number
     sort?: string
@@ -87,6 +90,7 @@ export function FilterBar({
     const s = next?.skills ?? selectedSkills
     const t = next?.types ?? types
     const r = next?.remote ?? remote
+    const u = next?.urgent ?? urgent
     const mn = next && 'min' in next ? next.min : reward.min
     const mx = next && 'max' in next ? next.max : reward.max
     const sort = next?.sort ?? searchParams.get('sort') ?? ''
@@ -95,6 +99,7 @@ export function FilterBar({
     if (s.length) sp.set('skills', s.join(','))
     if (t.length) sp.set('types', t.join(','))
     if (r) sp.set('remote', '1')
+    if (u) sp.set('urgent', '1')
     if (mn) sp.set('min', String(mn))
     if (mx) sp.set('max', String(mx))
     if (sort && sort !== 'recent') sp.set('sort', sort)
@@ -138,6 +143,7 @@ export function FilterBar({
         {selectedSkills.length > 0 && <input type="hidden" name="skills" value={selectedSkills.join(',')} />}
         {types.length > 0 && <input type="hidden" name="types" value={types.join(',')} />}
         {remote && <input type="hidden" name="remote" value="1" />}
+        {urgent && <input type="hidden" name="urgent" value="1" />}
         {reward.min ? <input type="hidden" name="min" value={reward.min} /> : null}
         {reward.max ? <input type="hidden" name="max" value={reward.max} /> : null}
         {currentSort !== 'recent' && <input type="hidden" name="sort" value={currentSort} />}
@@ -151,7 +157,7 @@ export function FilterBar({
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search gigs — “website”, “tuition ravindrapuri”, “reels”…"
             aria-label="Search gigs"
-            className="w-full rounded-xl border border-line bg-ink/70 py-3 pl-11 pr-4 text-sm text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#2c344a] focus:border-cyan/60 focus:ring-2 focus:ring-cyan/15"
+            className="w-full rounded-xl border border-line bg-white/80 py-3 pl-11 pr-4 text-sm text-chalk outline-none transition-colors placeholder:text-dimmer hover:border-[#bfb9b0] focus:border-cyan/60 focus:ring-2 focus:ring-cyan/15"
           />
         </div>
 
@@ -160,7 +166,7 @@ export function FilterBar({
             value={currentSort}
             onChange={(e) => apply({ sort: e.target.value })}
             aria-label="Sort gigs"
-            className="rounded-xl border border-line bg-ink/70 px-3.5 py-3 text-[14px] text-chalk outline-none transition-colors hover:border-[#2c344a] focus:border-cyan/60"
+            className="rounded-xl border border-line bg-white/80 px-3.5 py-3 text-[14px] text-chalk outline-none transition-colors hover:border-[#bfb9b0] focus:border-cyan/60"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -175,7 +181,7 @@ export function FilterBar({
 
           <Link
             href={otherViewQuery ? `${otherView}?${otherViewQuery}` : otherView}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-white/[0.02] px-3.5 text-[14px] font-medium text-chalk transition-colors hover:border-cyan/40 hover:bg-white/[0.06]"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-black/[0.02] px-3.5 text-[14px] font-medium text-chalk transition-colors hover:border-cyan/40 hover:bg-black/[0.06]"
           >
             <IconLayers className="size-4" />
             <span className="hidden sm:inline">{otherViewLabel}</span>
@@ -193,7 +199,7 @@ export function FilterBar({
             'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
             activeCount > 0
               ? 'border-cyan/40 bg-cyan/10 text-cyan'
-              : 'border-line bg-white/[0.03] text-mist hover:text-chalk',
+              : 'border-line bg-black/[0.03] text-mist hover:text-chalk',
           )}
         >
           Filters
@@ -218,7 +224,7 @@ export function FilterBar({
               'rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
               types.includes(t.value)
                 ? 'border-violet/45 bg-violet/12 text-violet'
-                : 'border-line bg-white/[0.03] text-mist hover:border-violet/30 hover:text-chalk',
+                : 'border-line bg-black/[0.03] text-mist hover:border-violet/30 hover:text-chalk',
             )}
           >
             {t.label}
@@ -236,11 +242,29 @@ export function FilterBar({
             'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
             remote
               ? 'border-teal/45 bg-teal/12 text-teal'
-              : 'border-line bg-white/[0.03] text-mist hover:border-teal/30 hover:text-chalk',
+              : 'border-line bg-black/[0.03] text-mist hover:border-teal/30 hover:text-chalk',
           )}
         >
           <IconWifi className="size-3.5" />
           Remote
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            const next = !urgent
+            setUrgent(next)
+            apply({ urgent: next })
+          }}
+          className={cn(
+            'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
+            urgent
+              ? 'border-rose/45 bg-rose/12 text-rose'
+              : 'border-line bg-black/[0.03] text-mist hover:border-rose/30 hover:text-chalk',
+          )}
+        >
+          <IconBolt className="size-3.5" />
+          Urgent
         </button>
 
         <span className="ml-auto hud text-[12.5px] text-dim">
@@ -278,7 +302,7 @@ export function FilterBar({
 
       {/* Expanded panel: skill search + reward band */}
       {open && (
-        <div className="grid gap-5 rounded-xl border border-line bg-ink/50 p-4 sm:grid-cols-2">
+        <div className="grid gap-5 rounded-xl border border-line bg-white/70 p-4 sm:grid-cols-2">
           <div className="space-y-2.5">
             <p className="eyebrow">Filter by skill</p>
             <div className="relative">
@@ -288,7 +312,7 @@ export function FilterBar({
                 value={skillQuery}
                 onChange={(e) => setSkillQuery(e.target.value)}
                 placeholder="Type a skill — react, tabla, autocad…"
-                className="w-full rounded-lg border border-line bg-ink/70 py-2 pl-9 pr-3 text-[14px] text-chalk outline-none placeholder:text-dimmer focus:border-cyan/60"
+                className="w-full rounded-lg border border-line bg-white/80 py-2 pl-9 pr-3 text-[14px] text-chalk outline-none placeholder:text-dimmer focus:border-cyan/60"
               />
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -301,7 +325,7 @@ export function FilterBar({
                     'rounded-lg border px-2 py-1 text-[12.5px] font-medium transition-colors',
                     selectedSkills.includes(s.id)
                       ? 'border-cyan/45 bg-cyan/15 text-cyan'
-                      : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',
+                      : 'border-line bg-black/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',
                   )}
                 >
                   {s.name}
@@ -335,7 +359,7 @@ export function FilterBar({
                       'rounded-lg border px-2.5 py-1.5 text-[13px] font-medium transition-colors',
                       active
                         ? 'border-amber/45 bg-amber/12 text-amber'
-                        : 'border-line bg-white/[0.03] text-mist hover:border-amber/30 hover:text-chalk',
+                        : 'border-line bg-black/[0.03] text-mist hover:border-amber/30 hover:text-chalk',
                     )}
                   >
                     {p.label}

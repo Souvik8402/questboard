@@ -39,7 +39,7 @@ function popupHtml(gig: GigWithRelations): string {
     .slice(0, 3)
     .map(
       (s) =>
-        `<span style="border:1px solid #222a3d;border-radius:5px;padding:1px 5px;font-size:10px;color:#8e97ad">${escape(
+        `<span style="border:1px solid #d3cec6;border-radius:5px;padding:1px 5px;font-size:10px;color:#4a5a5f">${escape(
           s.name,
         )}</span>`,
     )
@@ -47,14 +47,14 @@ function popupHtml(gig: GigWithRelations): string {
 
   return `
     <div style="min-width:190px;max-width:230px">
-      <div style="font-family:ui-monospace,monospace;font-size:14px;font-weight:600;color:#e9edf7">
+      <div style="font-family:ui-monospace,monospace;font-size:14px;font-weight:600;color:#1a2a30">
         ${escape(formatRupees(gig.reward_amount))}
       </div>
       <a href="/gigs/${gig.id}"
-         style="display:block;margin-top:3px;font-size:12.5px;font-weight:600;color:#22d3ee;text-decoration:none;line-height:1.35">
+         style="display:block;margin-top:3px;font-size:12.5px;font-weight:600;color:#245f73;text-decoration:none;line-height:1.35">
         ${escape(gig.title)}
       </a>
-      <div style="margin-top:4px;font-size:11px;color:#5d6674">
+      <div style="margin-top:4px;font-size:11px;color:#6a7378">
         ${escape(gig.location_label ?? 'Location on request')}
       </div>
       ${skills ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">${skills}</div>` : ''}

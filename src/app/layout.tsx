@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
-import { INSTITUTE_NAME, INSTITUTE_SHORT } from '@/lib/constants'
+import { INSTITUTE_SHORT, TAGLINE } from '@/lib/constants'
 import { siteUrl } from '@/lib/config'
 import { DemoBanner } from '@/components/DemoBanner'
 import { Footer } from '@/components/Footer'
@@ -20,8 +20,8 @@ const jetbrains = JetBrains_Mono({
   weight: ['400', '500', '600'],
 })
 
-const title = `GigNest — part-time work for ${INSTITUTE_SHORT} students`
-const description = `Post paid work around Varanasi and get it claimed by verified ${INSTITUTE_NAME} students. One-off errands to month-long internships, searchable by skill.`
+const title = `GigNest — ${TAGLINE}`
+const description = `Post paid work around Varanasi and get it done — anyone can apply. Verified ${INSTITUTE_SHORT} students pay no fee. One-off errands to month-long projects, searchable by skill.`
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#05060a',
-  colorScheme: 'dark',
+  themeColor: '#f2f0ef',
+  colorScheme: 'light',
   width: 'device-width',
   initialScale: 1,
 }
@@ -57,16 +57,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
       <body>
-        {/* Ambient background, fixed behind everything */}
-        <div className="aurora" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </div>
+        {/* Ambient light wash, fixed behind everything */}
+        <div className="aurora" aria-hidden />
 
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-lg focus:bg-cyan focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-void"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-lg focus:bg-cyan focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
         >
           Skip to content
         </a>

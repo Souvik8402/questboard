@@ -96,7 +96,7 @@ function Pagination({
       {page > 1 && (
         <Link
           href={href(page - 1)}
-          className="rounded-lg border border-line bg-white/[0.02] px-3 py-2 text-[14px] text-mist transition-colors hover:border-cyan/40 hover:text-chalk"
+          className="rounded-lg border border-line bg-black/[0.02] px-3 py-2 text-[14px] text-mist transition-colors hover:border-cyan/40 hover:text-chalk"
         >
           Previous
         </Link>
@@ -110,7 +110,7 @@ function Pagination({
             'hud min-w-9 rounded-lg border px-3 py-2 text-center text-[14px] transition-colors',
             n === page
               ? 'border-cyan/50 bg-cyan/12 text-cyan'
-              : 'border-line bg-white/[0.02] text-mist hover:border-cyan/30 hover:text-chalk',
+              : 'border-line bg-black/[0.02] text-mist hover:border-cyan/30 hover:text-chalk',
           )}
         >
           {n}
@@ -119,7 +119,7 @@ function Pagination({
       {page < pageCount && (
         <Link
           href={href(page + 1)}
-          className="rounded-lg border border-line bg-white/[0.02] px-3 py-2 text-[14px] text-mist transition-colors hover:border-cyan/40 hover:text-chalk"
+          className="rounded-lg border border-line bg-black/[0.02] px-3 py-2 text-[14px] text-mist transition-colors hover:border-cyan/40 hover:text-chalk"
         >
           Next
         </Link>

@@ -39,6 +39,9 @@ export default async function LoginPage({
   const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
   const mode = one('mode') === 'signup' ? 'signup' : 'signin'
   const oauthError = one('error')
+  // Referral code carried by a shared link. Stored on signup (password or Google)
+  // so the DB writes referred_by when the account is created.
+  const ref = (one('ref') ?? '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, '').slice(0, 16)
 
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:py-20 lg:px-8">
@@ -124,6 +127,7 @@ export default async function LoginPage({
         <div className="mt-6 space-y-5">
           <GoogleButton
             next={next}
+            ref={ref || undefined}
             disabled={!isSupabaseConfigured}
             label={mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'}
           />
@@ -134,7 +138,7 @@ export default async function LoginPage({
             <div className="hairline flex-1" />
           </div>
 
-          <PasswordForm mode={mode} next={next} />
+          <PasswordForm mode={mode} next={next} ref={ref || undefined} />
 
           <p className="text-center text-[14px] text-mist">
             {mode === 'signup' ? (

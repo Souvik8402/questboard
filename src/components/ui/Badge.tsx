@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { LOYALTY_BADGE, badgeMeta, type BadgeTier } from '@/lib/badges'
 import { GIG_STATUS_LABEL } from '@/lib/constants'
-import type { GigStatus, ApplicationStatus } from '@/lib/types'
+import type { GigStatus, ApplicationStatus, VerificationStatus } from '@/lib/types'
+import { IconAward, IconGift, IconShield } from './Icons'
 
 export type BadgeTone =
   | 'neutral'
@@ -13,7 +15,7 @@ export type BadgeTone =
   | 'teal'
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: 'border-line bg-white/[0.04] text-mist',
+  neutral: 'border-line bg-black/[0.04] text-mist',
   cyan: 'border-cyan/30 bg-cyan/10 text-cyan',
   violet: 'border-violet/30 bg-violet/10 text-violet',
   lime: 'border-lime/30 bg-lime/10 text-lime',
@@ -25,14 +27,17 @@ const TONES: Record<BadgeTone, string> = {
 export function Badge({
   tone = 'neutral',
   className,
+  title,
   children,
 }: {
   tone?: BadgeTone
   className?: string
+  title?: string
   children: ReactNode
 }) {
   return (
     <span
+      title={title}
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1',
         'text-[12px] font-medium leading-none tracking-wide',
@@ -82,6 +87,82 @@ export function ApplicationPill({ status }: { status: ApplicationStatus }) {
   return <Badge tone={APPLICATION_TONE[status]}>{APPLICATION_LABEL[status]}</Badge>
 }
 
+const VERIFICATION_TONE: Record<VerificationStatus, BadgeTone> = {
+  pending: 'amber',
+  approved: 'teal',
+  rejected: 'rose',
+}
+
+const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
+  pending: 'Under review',
+  approved: 'Verified',
+  rejected: 'Rejected',
+}
+
+/** Where a submitted ID stands. Used on /verify and in the admin queue. */
+export function VerificationPill({ status }: { status: VerificationStatus }) {
+  return <Badge tone={VERIFICATION_TONE[status]}>{VERIFICATION_LABEL[status]}</Badge>
+}
+
+/**
+ * An earned badge. The tier colours come from the `.tier-*` custom properties
+ * already defined in globals.css for reward rings, so bronze/silver/gold read
+ * consistently wherever they appear.
+ */
+export function AchievementBadge({
+  tier,
+  label,
+  title,
+  className,
+}: {
+  tier: BadgeTier
+  label?: string
+  title?: string
+  className?: string
+}) {
+  const meta = badgeMeta(tier)
+  return (
+    <span
+      title={title ?? meta.blurb}
+      className={cn(
+        'tier-ring inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1',
+        'text-[12px] font-semibold leading-none tracking-wide',
+        `tier-${tier}`,
+        className,
+      )}
+    >
+      <IconAward className="size-3.5" />
+      {label ?? meta.label}
+    </span>
+  )
+}
+
+/** The referral badge — off the tier ladder, so it gets its own colour. */
+export function LoyaltyBadge({ className }: { className?: string }) {
+  return (
+    <Badge tone="violet" title={LOYALTY_BADGE.blurb} className={className}>
+      <IconGift className="size-3.5" />
+      {LOYALTY_BADGE.label}
+    </Badge>
+  )
+}
+
+/** Shown once an admin has reviewed a government ID. */
+export function VerifiedBadge({
+  label = 'ID verified',
+  className,
+}: {
+  label?: string
+  className?: string
+}) {
+  return (
+    <Badge tone="teal" title="A government ID was reviewed and accepted by an admin" className={className}>
+      <IconShield className="size-3.5" />
+      {label}
+    </Badge>
+  )
+}
+
 /** A skill tag. Renders as a link when `href` is given, so tags are clickable. */
 export function SkillChip({
   name,
@@ -101,7 +182,7 @@ export function SkillChip({
         'text-[12.5px] font-medium transition-colors',
         active
           ? 'border-cyan/45 bg-cyan/15 text-cyan'
-          : 'border-line bg-white/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',
+          : 'border-line bg-black/[0.03] text-mist hover:border-cyan/30 hover:text-chalk',
       )}
     >
       {name}

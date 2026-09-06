@@ -45,7 +45,7 @@ export default async function AdminPanelLayout({ children }: { children: React.R
           <form action={adminLogout}>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white/[0.03] px-3 py-1.5 text-[13.5px] text-mist transition-colors hover:border-rose/35 hover:text-rose"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-black/[0.03] px-3 py-1.5 text-[13.5px] text-mist transition-colors hover:border-rose/35 hover:text-rose"
             >
               <IconLogout className="size-3.5" />
               Lock panel

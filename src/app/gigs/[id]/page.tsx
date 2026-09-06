@@ -2,27 +2,41 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSession } from '@/lib/auth'
+import type { ApplierStats } from '@/lib/badges'
 import { isSupabaseConfigured } from '@/lib/config'
-import { GIG_TYPE_LABEL, rewardTier } from '@/lib/constants'
-import { deadlineInfo, formatDate, formatRupees, relativeTime } from '@/lib/format'
 import {
+  DISPUTE_SLA_LABEL,
+  DISPUTE_WINDOW_HOURS,
+  GIG_TYPE_LABEL,
+  PLATFORM_FEE_LABEL,
+  rewardTier,
+} from '@/lib/constants'
+import {
+  deadlineInfo,
+  disputeWindow,
+  formatDate,
+  formatRupees,
+  relativeTime,
+} from '@/lib/format'
+import {
+  getApplierStats,
+  getDisputesFor,
   getMyApplicationFor,
   getGig,
   getGigApplications,
-  getGigContact,
   hasReviewed,
 } from '@/lib/queries'
 import { createClient } from '@/lib/supabase/server'
-import { Badge, SkillChip, StatusPill } from '@/components/ui/Badge'
+import { Badge, SkillChip, StatusPill, VerifiedBadge } from '@/components/ui/Badge'
 import { ButtonLink } from '@/components/ui/Button'
 import { Notice, Panel } from '@/components/ui/Panel'
 import {
   IconArrowLeft,
+  IconBolt,
+  IconChat,
   IconClock,
   IconEye,
-  IconLock,
   IconMapPin,
-  IconPhone,
   IconShield,
   IconUsers,
   IconWifi,
@@ -32,6 +46,7 @@ import { MapLoader } from '@/components/MapLoader'
 import { StarRating } from '@/components/StarRating'
 import { ApplicantList } from './_components/ApplicantList'
 import { ApplyForm } from './_components/ApplyForm'
+import { DisputePanel } from './_components/DisputePanel'
 import { ReviewForm } from './_components/ReviewForm'
 import { StatusControls } from './_components/StatusControls'
 
@@ -60,20 +75,27 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
 
   const isOwner = session?.userId === gig.hirer_id
   const isAssignee = Boolean(session && gig.assigned_to === session.userId)
-  const role = session?.profile?.role
 
   // Fetches that only make sense for one side. RLS would return nothing to
   // anyone else anyway; skipping the round trip just saves time.
-  const [applications, myApplication, contact, alreadyReviewed] = await Promise.all([
+  const [applications, myApplication, disputes, alreadyReviewed] = await Promise.all([
     isOwner ? getGigApplications(gig.id) : Promise.resolve([]),
-    session && role === 'student' && !isOwner
-      ? getMyApplicationFor(gig.id, session.userId)
-      : Promise.resolve(null),
-    isOwner || isAssignee ? getGigContact(gig.id) : Promise.resolve(null),
+    session && !isOwner ? getMyApplicationFor(gig.id, session.userId) : Promise.resolve(null),
+    isOwner || isAssignee ? getDisputesFor(gig.id) : Promise.resolve([]),
     session && gig.status === 'completed' && (isOwner || isAssignee)
       ? hasReviewed(gig.id, session.userId)
       : Promise.resolve(true),
   ])
+
+  // Badge counts for everyone in the applicant list, fetched in one pass so the
+  // hirer can weigh experience without opening each profile.
+  const applicantStats: Record<string, ApplierStats> = Object.fromEntries(
+    await Promise.all(
+      applications.map(
+        async (a) => [a.student_id, await getApplierStats(a.student_id)] as const,
+      ),
+    ),
+  )
 
   // Fire-and-forget view counter. Owners viewing their own posting don't count.
   if (isSupabaseConfigured && !isOwner) {
@@ -84,7 +106,18 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
   const deadline = deadlineInfo(gig.deadline)
   const tier = rewardTier(gig.reward_amount)
   const hasPin = gig.lat !== null && gig.lng !== null
-  const acceptedApplication = applications.find((a) => a.status === 'accepted') ?? null
+  const acceptedApplication =
+    applications.find((a: (typeof applications)[number]) => a.status === 'accepted') ?? null
+
+  // The dispute clock runs from the last status change, not from posting.
+  const window = disputeWindow(gig.updated_at, DISPUTE_WINDOW_HOURS)
+  const threadOpen = Boolean(gig.assigned_to) && (isOwner || isAssignee)
+
+  // Where this applier sits in an urgent gig's first-come-first-served queue.
+  const queuePosition =
+    gig.is_urgent && myApplication?.status === 'pending'
+      ? (gig.application_count ?? 1)
+      : null
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -103,6 +136,12 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill status={gig.status} />
               <Badge className="tier-ring">{GIG_TYPE_LABEL[gig.gig_type]}</Badge>
+              {gig.is_urgent && (
+                <Badge tone="rose" title="First-come-first-served: applicants are reviewed in the order they arrive">
+                  <IconBolt className="size-3" />
+                  Urgent
+                </Badge>
+              )}
               {gig.is_remote && (
                 <Badge tone="teal">
                   <IconWifi className="size-3" />
@@ -187,16 +226,23 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
             )}
           </Panel>
 
-          {/* Contact reveal — the payoff of the two-table design */}
-          {(isOwner || isAssignee) && (
-            <ContactPanel
-              phone={contact?.phone ?? null}
-              alt={contact?.alt_contact ?? null}
-              counterpartyPhone={
-                isOwner ? (acceptedApplication?.phone ?? null) : null
-              }
-              isOwner={isOwner}
-            />
+          {/* The thread, which replaced the old phone-number reveal entirely */}
+          {threadOpen && (
+            <Panel className="p-5">
+              <p className="inline-flex items-center gap-2 text-[14px] font-semibold text-chalk">
+                <IconChat className="size-4 text-cyan" />
+                Private thread open
+              </p>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-mist">
+                {isOwner
+                  ? 'You hired someone for this gig, so a thread is open between the two of you. No phone numbers, no email addresses — everything stays here, which also means an admin can read it if a dispute is raised.'
+                  : 'You were hired for this gig. Talk to the hirer in your thread — no phone numbers or email addresses change hands.'}
+              </p>
+              <ButtonLink href={`/inbox/${gig.id}`} size="sm" className="mt-4">
+                <IconChat className="size-3.5" />
+                Open the thread
+              </ButtonLink>
+            </Panel>
           )}
 
           {/* Claim / status / applicants, by role */}
@@ -205,8 +251,8 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
               gigId={gig.id}
               reward={formatRupees(gig.reward_amount)}
               signedIn={Boolean(session)}
-              role={role}
-              isStudentEligible={Boolean(session?.isStudentEligible)}
+              isUrgent={gig.is_urgent}
+              queuePosition={queuePosition}
               hasApplied={Boolean(myApplication && myApplication.status !== 'withdrawn')}
               applicationStatus={myApplication?.status ?? null}
             />
@@ -221,11 +267,23 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
             />
           )}
 
+          {/* The dispute window (item 8) — collapsed until someone needs it */}
+          {(isOwner || isAssignee) && gig.status !== 'open' && (
+            <DisputePanel
+              gigId={gig.id}
+              windowLabel={window.label}
+              windowOpen={window.open}
+              existing={disputes}
+            />
+          )}
+
           {isOwner && (
             <ApplicantList
               gigId={gig.id}
               status={gig.status}
+              isUrgent={gig.is_urgent}
               applications={applications}
+              stats={applicantStats}
             />
           )}
 
@@ -262,6 +320,7 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
                   count={gig.hirer?.rating_count ?? 0}
                   size="sm"
                 />
+                {gig.hirer?.id_verified_at && <VerifiedBadge label="Verified hirer" />}
                 {gig.hirer?.department && (
                   <p className="truncate text-[12.5px] text-dim">{gig.hirer.department}</p>
                 )}
@@ -302,12 +361,25 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
             <ul className="mt-3 space-y-2.5 text-[13.5px] leading-relaxed text-mist">
               <li className="flex gap-2">
                 <span className="mt-1.5 size-1 shrink-0 rounded-full bg-cyan" />
-                Only <span className="text-chalk">@itbhu.ac.in</span> accounts, verified through
-                Google, can apply. The database refuses anything else.
+                <span>
+                  <span className="text-chalk">Nobody sees a phone number or an email</span> —
+                  not the hirer, not the applier. A private thread opens the moment someone is
+                  hired.
+                </span>
               </li>
               <li className="flex gap-2">
                 <span className="mt-1.5 size-1 shrink-0 rounded-full bg-cyan" />
-                Phone numbers are hidden from both sides until the hirer accepts an applicant.
+                <span>
+                  Hirers can verify themselves with a government ID. Only the last four digits are
+                  ever stored — <Link href="/about" className="text-cyan hover:underline">how that works</Link>.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-1.5 size-1 shrink-0 rounded-full bg-cyan" />
+                <span>
+                  Disputes stay open for {DISPUTE_WINDOW_HOURS} hours after the last status change.
+                  Average resolution: <span className="text-chalk">{DISPUTE_SLA_LABEL}</span>.
+                </span>
               </li>
               <li className="flex gap-2">
                 <span className="mt-1.5 size-1 shrink-0 rounded-full bg-cyan" />
@@ -315,8 +387,9 @@ export default async function GigDetailPage({ params }: { params: Promise<{ id: 
               </li>
             </ul>
             <p className="mt-4 border-t border-line pt-3 text-[12.5px] leading-relaxed text-dim">
-              Money changes hands directly — GigNest does not hold payments. Agree the terms in
-              writing before you start.
+              Free to post and free to apply. GigNest takes {PLATFORM_FEE_LABEL} on payout — ₹0 if
+              you are a student with an approved fee waiver. Money changes hands directly, so agree
+              the terms in writing before you start.
             </p>
           </Panel>
         </aside>
@@ -345,79 +418,26 @@ function ReviewTarget({
   )
 }
 
-function ContactPanel({
-  phone,
-  alt,
-  counterpartyPhone,
-  isOwner,
-}: {
-  phone: string | null
-  alt: string | null
-  counterpartyPhone: string | null
-  isOwner: boolean
-}) {
-  const shown = isOwner ? counterpartyPhone : phone
-
-  if (!shown && !alt) {
-    return (
-      <Notice tone="info" title="Contact details unlock on hiring">
-        {isOwner
-          ? "Accept an applicant and their phone number appears here — and yours appears for them. Neither side can see the other's until then."
-          : 'Your hirer’s number will appear here once your application is accepted.'}
-      </Notice>
-    )
-  }
-
-  return (
-    <Panel className="p-5">
-      <p className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-lime">
-        <IconLock className="size-3.5" />
-        Contact unlocked
-      </p>
-      <p className="mt-1 text-[13.5px] text-mist">
-        {isOwner
-          ? 'You hired someone, so you can both reach each other now.'
-          : 'You were accepted for this gig.'}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {shown && (
-          <a
-            href={`tel:${shown.replace(/\s/g, '')}`}
-            className="hud inline-flex items-center gap-2 rounded-lg border border-lime/30 bg-lime/[0.08] px-3 py-2 text-[15px] text-lime transition-colors hover:bg-lime/15"
-          >
-            <IconPhone className="size-4" />
-            {shown}
-          </a>
-        )}
-        {alt && (
-          <span className="inline-flex items-center rounded-lg border border-line bg-white/[0.02] px-3 py-2 text-[14px] text-mist">
-            {alt}
-          </span>
-        )}
-      </div>
-    </Panel>
-  )
-}
-
 /**
- * Everything that is *not* "signed-in eligible student on an open gig" gets a
- * plain explanation instead of a form. Being explicit about why you cannot
- * apply is the whole pitch of the exclusivity model.
+ * Anyone signed in and onboarded can apply — that is the whole marketplace, and
+ * it is why this function no longer has a role branch. The institute email did
+ * not disappear; it moved to the fee waiver on /verify, where it costs nobody a
+ * job.
  */
 function ClaimSection({
   gigId,
   reward,
   signedIn,
-  role,
-  isStudentEligible,
+  isUrgent,
+  queuePosition,
   hasApplied,
   applicationStatus,
 }: {
   gigId: string
   reward: string
   signedIn: boolean
-  role?: string
-  isStudentEligible: boolean
+  isUrgent: boolean
+  queuePosition: number | null
   hasApplied: boolean
   applicationStatus: string | null
 }) {
@@ -426,8 +446,9 @@ function ClaimSection({
       <Panel className="p-5">
         <h2 className="text-base font-semibold text-chalk">Want this gig?</h2>
         <p className="mt-1.5 text-[14.5px] leading-relaxed text-mist">
-          Sign in with your <span className="hud text-cyan">@itbhu.ac.in</span> Google account to
-          apply. That address is what proves you are an IIT BHU student — it is the only way in.
+          Sign in to apply — <span className="text-chalk">any Google account works</span>. You do
+          not have to be a student. Applying is free; if you are hired, GigNest takes{' '}
+          {PLATFORM_FEE_LABEL} on payout, and students with an approved fee waiver pay ₹0.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <ButtonLink href={`/login?next=/gigs/${gigId}`}>Sign in to apply</ButtonLink>
@@ -443,40 +464,15 @@ function ClaimSection({
     return (
       <Notice tone={applicationStatus === 'accepted' ? 'success' : 'info'} title="Application sent">
         {applicationStatus === 'accepted'
-          ? 'You were accepted. Contact details are unlocked above.'
+          ? 'You were hired. Your private thread with the hirer is open above.'
           : applicationStatus === 'rejected'
             ? 'The hirer went with someone else this time. Plenty more on the board.'
-            : 'Waiting on the hirer. You will see their number here the moment they accept.'}
+            : isUrgent && queuePosition
+              ? `This gig is first-come-first-served. You are number ${queuePosition} in the queue — the hirer reviews applicants in the order they arrived, and you move up as they pass on the people ahead of you.`
+              : 'Waiting on the hirer. If they hire you, a private thread opens here — no phone numbers or email addresses either way.'}
       </Notice>
     )
   }
 
-  if (role !== 'student') {
-    return (
-      <Panel className="p-5">
-        <h2 className="inline-flex items-center gap-2 text-base font-semibold text-chalk">
-          <IconLock className="size-4 text-amber" />
-          Students only
-        </h2>
-        <p className="mt-1.5 text-[14.5px] leading-relaxed text-mist">
-          {isStudentEligible
-            ? 'Your email qualifies, but your account is set up to post work. Switch your role in onboarding to start claiming gigs.'
-            : 'Claiming gigs is exclusive to verified IIT (BHU) Varanasi students — an @itbhu.ac.in Google account. You can post as much work as you like with this account.'}
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {isStudentEligible ? (
-            <ButtonLink href="/onboarding" size="sm">
-              Switch to a student account
-            </ButtonLink>
-          ) : (
-            <ButtonLink href="/gigs/new" variant="secondary" size="sm">
-              Post a gig instead
-            </ButtonLink>
-          )}
-        </div>
-      </Panel>
-    )
-  }
-
-  return <ApplyForm gigId={gigId} reward={reward} />
+  return <ApplyForm gigId={gigId} reward={reward} isUrgent={isUrgent} />
 }

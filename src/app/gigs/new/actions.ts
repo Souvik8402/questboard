@@ -15,7 +15,6 @@ import {
   optionalText,
   requireEnum,
   requireInt,
-  requirePhone,
   requireText,
   runAction,
 } from '@/lib/validate'
@@ -25,9 +24,9 @@ const TYPE_VALUES = GIG_TYPES.map((t) => t.value) as GigType[]
 /**
  * Post a gig.
  *
- * Anyone signed in may post — the exclusivity is on *claiming*, not offering.
- * A phone number is mandatory, but it lands in `gig_contacts`, which RLS
- * keeps hidden until the hirer accepts an applicant.
+ * Anyone signed in may post, and anyone signed in may apply — there is no
+ * exclusivity on either side any more. No contact details are collected: the
+ * hirer and the person they hire talk in the gig thread.
  */
 export async function createGig(_prev: unknown, form: FormData): Promise<ActionResult> {
   return runAction(async () => {
@@ -65,6 +64,7 @@ export async function createGig(_prev: unknown, form: FormData): Promise<ActionR
     })
     const deadline = optionalDate(form, 'deadline', 'Deadline')
     const isRemote = checkbox(form, 'is_remote')
+    const isUrgent = checkbox(form, 'is_urgent')
     const locationLabel = optionalText(form, 'location_label', {
       label: 'Location',
       max: 160,
@@ -72,8 +72,6 @@ export async function createGig(_prev: unknown, form: FormData): Promise<ActionR
     const lat = optionalNumber(form, 'lat', { label: 'Latitude', min: -90, max: 90 })
     const lng = optionalNumber(form, 'lng', { label: 'Longitude', min: -180, max: 180 })
     const skills = intList(form, 'skills', 8)
-    const phone = requirePhone(form, 'phone')
-    const altContact = optionalText(form, 'alt_contact', { label: 'Alternate contact', max: 160 })
 
     if (!isRemote && !locationLabel && lat === null) {
       throw new FieldError(
@@ -82,7 +80,7 @@ export async function createGig(_prev: unknown, form: FormData): Promise<ActionR
       )
     }
     if (skills.length === 0) {
-      throw new FieldError('Pick at least one skill tag so the right students find this.', 'skills')
+      throw new FieldError('Pick at least one skill tag so the right people find this.', 'skills')
     }
 
     const supabase = await createClient()
@@ -98,6 +96,7 @@ export async function createGig(_prev: unknown, form: FormData): Promise<ActionR
         estimated_hours: estimatedHours,
         deadline,
         is_remote: isRemote,
+        is_urgent: isUrgent,
         location_label: locationLabel,
         // A pin only makes sense for on-site work.
         lat: isRemote ? null : lat,
@@ -108,35 +107,31 @@ export async function createGig(_prev: unknown, form: FormData): Promise<ActionR
 
     if (error) throw new Error(error.message)
 
-    // Tags and the phone number are separate inserts. If either fails the gig
-    // still exists, so report it instead of pretending everything worked.
-    const [{ error: skillError }, { error: contactError }] = await Promise.all([
-      supabase
-        .from('gig_skills')
-        .insert(skills.map((skillId) => ({ gig_id: gig.id, skill_id: skillId }))),
-      supabase
-        .from('gig_contacts')
-        .insert({ gig_id: gig.id, phone, alt_contact: altContact }),
-    ])
+    // Tags are a separate insert. If it fails the gig still exists, so report
+    // that instead of pretending everything worked.
+    const { error: skillError } = await supabase
+      .from('gig_skills')
+      .insert(skills.map((skillId) => ({ gig_id: gig.id, skill_id: skillId })))
 
     revalidatePath('/gigs')
     revalidatePath('/gigs/map')
     revalidatePath('/dashboard')
     revalidatePath('/')
 
-    if (skillError || contactError) {
+    if (skillError) {
       return {
         ok: true,
-        message: `Gig posted, but ${
-          skillError ? 'the skill tags' : 'your phone number'
-        } could not be saved. Edit the gig from your dashboard to fix it.`,
+        message:
+          'Gig posted, but the skill tags could not be saved. Edit the gig from your dashboard to fix it.',
         redirectTo: `/gigs/${gig.id}`,
       }
     }
 
     return {
       ok: true,
-      message: 'Gig posted. Students matching your tags will see it immediately.',
+      message: isUrgent
+        ? 'Gig posted as urgent. Applicants arrive in a queue and you review the earliest one first.'
+        : 'Gig posted. Anyone matching your tags will see it immediately.',
       redirectTo: `/gigs/${gig.id}`,
     }
   })

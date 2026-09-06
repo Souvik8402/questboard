@@ -73,6 +73,44 @@ export function deadlineInfo(iso: string | null | undefined): DeadlineInfo | nul
   return { label, urgent: hours < 48, expired: false }
 }
 
+export interface DisputeWindow {
+  /** Still inside the window — either side may raise a dispute. */
+  open: boolean
+  closesAt: Date
+  /** "Open for another 41h" / "Closed 2 days ago" */
+  label: string
+}
+
+/**
+ * The dispute window runs for DISPUTE_WINDOW_HOURS from the last status change,
+ * not from when the gig was posted — the clock should start when the work
+ * actually moved, otherwise a month-long gig has no window left by the time
+ * anything goes wrong.
+ */
+export function disputeWindow(
+  lastChangeIso: string | null | undefined,
+  windowHours: number,
+): DisputeWindow {
+  const from = lastChangeIso ? new Date(lastChangeIso).getTime() : Date.now()
+  const base = Number.isFinite(from) ? from : Date.now()
+  const closesAt = new Date(base + windowHours * 3_600_000)
+  const msLeft = closesAt.getTime() - Date.now()
+
+  if (msLeft <= 0) {
+    return { open: false, closesAt, label: `Window closed ${relativeTime(closesAt.toISOString())}` }
+  }
+
+  const hours = Math.round(msLeft / 3_600_000)
+  const label =
+    hours < 1
+      ? `Open for another ${Math.max(1, Math.round(msLeft / 60_000))} min`
+      : hours < 24
+        ? `Open for another ${hours}h`
+        : `Open for another ${Math.floor(hours / 24)} days`
+
+  return { open: true, closesAt, label }
+}
+
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return ''
   const d = new Date(iso)

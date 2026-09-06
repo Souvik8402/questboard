@@ -45,6 +45,7 @@ export function parseFilters(params: Params): GigFilters {
     minReward: Number.isFinite(min) && min > 0 ? Math.floor(min) : undefined,
     maxReward: Number.isFinite(max) && max > 0 ? Math.floor(max) : undefined,
     remoteOnly: one(params, 'remote') === '1' || one(params, 'remote') === 'on',
+    urgentOnly: one(params, 'urgent') === '1' || one(params, 'urgent') === 'on',
     sort: sortRaw && VALID_SORTS.has(sortRaw) ? (sortRaw as GigSort) : 'recent',
     page: Number.isFinite(page) && page > 0 ? Math.floor(page) : 1,
   }
@@ -63,6 +64,7 @@ export function filtersToQuery(
   if (filters.minReward) sp.set('min', String(filters.minReward))
   if (filters.maxReward) sp.set('max', String(filters.maxReward))
   if (filters.remoteOnly) sp.set('remote', '1')
+  if (filters.urgentOnly) sp.set('urgent', '1')
   if (filters.sort && filters.sort !== 'recent') sp.set('sort', filters.sort)
   if (filters.page && filters.page > 1) sp.set('page', String(filters.page))
 
@@ -84,6 +86,7 @@ export function activeFilterCount(filters: GigFilters): number {
   if (filters.minReward) n++
   if (filters.maxReward) n++
   if (filters.remoteOnly) n++
+  if (filters.urgentOnly) n++
   return n
 }
 

@@ -10,6 +10,7 @@ import { IconLogout, IconPlus } from '@/components/ui/Icons'
 const PUBLIC_LINKS: NavLink[] = [
   { href: '/gigs', label: 'Gig board' },
   { href: '/gigs/map', label: 'Map' },
+  { href: '/learn', label: 'Skill coach' },
 ]
 
 /**
@@ -22,7 +23,12 @@ export async function Nav() {
 
   const links: NavLink[] = [
     ...PUBLIC_LINKS,
-    ...(session ? [{ href: '/dashboard', label: 'Dashboard' }] : []),
+    ...(session
+      ? [
+          { href: '/inbox', label: 'Inbox' },
+          { href: '/dashboard', label: 'Dashboard' },
+        ]
+      : []),
   ]
 
   const signedOutActions = (
@@ -44,7 +50,7 @@ export async function Nav() {
       </ButtonLink>
       <Link
         href={profile ? `/profile/${profile.id}` : '/onboarding'}
-        className="flex items-center gap-2 rounded-xl border border-line bg-white/[0.02] py-1 pl-1 pr-3 transition-colors hover:border-cyan/30 hover:bg-white/[0.06]"
+        className="flex items-center gap-2 rounded-xl border border-line bg-black/[0.02] py-1 pl-1 pr-3 transition-colors hover:border-cyan/30 hover:bg-black/[0.06]"
       >
         <Avatar name={profile?.full_name} src={profile?.avatar_url} size="sm" />
         <span className="max-w-28 truncate text-[14px] font-medium text-chalk">
@@ -61,7 +67,7 @@ export async function Nav() {
           type="submit"
           aria-label="Sign out"
           title="Sign out"
-          className="grid size-9 place-items-center rounded-lg text-dim transition-colors hover:bg-white/5 hover:text-rose"
+          className="grid size-9 place-items-center rounded-lg text-dim transition-colors hover:bg-black/5 hover:text-rose"
         >
           <IconLogout className="size-4" />
         </button>
@@ -85,7 +91,7 @@ export async function Nav() {
       <form action="/auth/signout" method="post">
         <button
           type="submit"
-          className="w-full rounded-xl px-3 py-2 text-[14px] font-medium text-dim transition-colors hover:bg-white/5 hover:text-rose"
+          className="w-full rounded-xl px-3 py-2 text-[14px] font-medium text-dim transition-colors hover:bg-black/5 hover:text-rose"
         >
           Sign out
         </button>
