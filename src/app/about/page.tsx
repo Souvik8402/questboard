@@ -78,7 +78,7 @@ export default function AboutPage() {
       <section className="mx-auto mt-14 grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { k: 'Free', v: 'to post and to apply' },
-          { k: '0%', v: 'platform fee for verified students' },
+          { k: 'Waived off', v: 'platform fee for verified students' },
           { k: 'Anywhere, anytime', v: 'one-off to month-long' },
           { k: 'In the app', v: 'chat, never a phone number' },
         ].map((f) => (
