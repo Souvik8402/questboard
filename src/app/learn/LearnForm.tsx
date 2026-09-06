@@ -8,6 +8,38 @@ import { Notice } from '@/components/ui/Panel'
 import { IconSparkles } from '@/components/ui/Icons'
 
 /**
+ * The plan comes back as plain text with `**bold**` step titles — the one bit of
+ * markdown the prompt allows. Rendering it in a bare <pre> printed the asterisks
+ * literally, so split each paragraph on the bold runs and emit real <strong>.
+ * Anything without asterisks (the built-in demo curriculum) passes through
+ * untouched.
+ */
+function PlanBody({ plan }: { plan: string }) {
+  return (
+    <div className="space-y-3.5 rounded-xl bg-void/60 p-5 text-[14px] leading-relaxed text-mist">
+      {plan
+        .split(/\n\s*\n/)
+        .map((block) => block.trim())
+        .filter(Boolean)
+        .map((block, i) => (
+          <p key={i} className="whitespace-pre-wrap">
+            {block.split(/\*\*(.+?)\*\*/g).map((part, j) =>
+              // Odd indices are the captured inside-the-asterisks text.
+              j % 2 === 1 ? (
+                <strong key={j} className="font-semibold text-chalk">
+                  {part}
+                </strong>
+              ) : (
+                part
+              ),
+            )}
+          </p>
+        ))}
+    </div>
+  )
+}
+
+/**
  * The free skill coach. Three inputs, one server action that builds a 5-step
  * plan — from Gemini when a key is configured, from a built-in curriculum in
  * demo mode. The two render identically so the route never looks broken.
@@ -109,9 +141,7 @@ export function LearnForm() {
                 : 'Demo mode — the AI key is not set, so this is the built-in plan you would get until you add GEMINI_API_KEY.'}
             </Notice>
             <div className="glass rounded-card p-6">
-              <pre className="whitespace-pre-wrap rounded-xl bg-void/60 p-5 font-sans text-[14px] leading-relaxed text-mist">
-                {state.plan}
-              </pre>
+              <PlanBody plan={state.plan} />
             </div>
           </div>
         ) : null}

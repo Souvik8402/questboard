@@ -56,7 +56,10 @@ function buildPrompt(req: CoachRequest): string {
 }
 
 interface GeminiResponse {
-  candidates?: { content?: { parts?: { text?: string }[] } }[]
+  candidates?: {
+    content?: { parts?: { text?: string }[] }
+    finishReason?: string
+  }[]
   promptFeedback?: { blockReason?: string }
   error?: { message?: string }
 }
@@ -81,10 +84,25 @@ export async function askCoach(req: CoachRequest): Promise<string | null> {
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: buildPrompt(req) }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 900 },
+      generationConfig: {
+        temperature: 0.7,
+        /**
+         * This budget covers reasoning *and* the reply. gemini-3.6-flash is a
+         * thinking model, and at 900 it spent ~845 tokens thinking and had 51
+         * left to write with — which shipped a plan that stopped in the middle
+         * of step one. Keep the headroom well above what five steps need.
+         */
+        maxOutputTokens: 2400,
+        // A study plan does not need extended reasoning, and capping it keeps
+        // the wait short. Gemini 3 spells this `thinkingLevel`; the older
+        // `thinkingBudget` is rejected outright.
+        thinkingConfig: { thinkingLevel: 'low' },
+      },
     }),
-    // A learner will wait a few seconds, not thirty.
-    signal: AbortSignal.timeout(20_000),
+    // Thinking models are not fast: a five-step plan measures 20-25s, so a 20s
+    // ceiling aborted requests that were about to succeed. The form disables
+    // itself and says "Making your plan…" for the duration.
+    signal: AbortSignal.timeout(45_000),
   })
 
   const data = (await response.json().catch(() => ({}))) as GeminiResponse
@@ -108,6 +126,12 @@ export async function askCoach(req: CoachRequest): Promise<string | null> {
     ?.map((p) => p.text ?? '')
     .join('')
     .trim()
+
+  // Running out of budget yields a plan that stops mid-sentence. Say so rather
+  // than passing a half-written answer off as the finished thing.
+  if (data.candidates?.[0]?.finishReason === 'MAX_TOKENS') {
+    throw new Error('Gemini ran out of room before finishing the plan. Try a shorter goal.')
+  }
 
   return text ? text : null
 }

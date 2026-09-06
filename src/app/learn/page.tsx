@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     'Tell the free GigNest AI coach what you want to learn and how many hours you have — it hands back a five-step plan with free resources and a real rupees figure.',
 }
 
+/**
+ * Applies to the `coachAction` server action on this route. Gemini is a thinking
+ * model and a five-step plan measures 20-25s, comfortably past Vercel's default
+ * ceiling — which is why the deployed site returned a half-written plan while
+ * localhost was fine. 60s is the most a Hobby project is allowed.
+ */
+export const maxDuration = 60
+
 export default function LearnPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
