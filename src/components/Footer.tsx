@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { INSTITUTE_NAME } from '@/lib/constants'
 
@@ -29,14 +30,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div className="space-y-3">
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="grid size-8 place-items-center rounded-lg bg-linear-to-br from-cyan to-violet">
-                <svg viewBox="0 0 24 24" fill="none" className="size-4.5 text-white">
-                  <path
-                    d="M12 3.2l2.3 4.9 5.4.7-3.9 3.8.9 5.4-4.7-2.6-4.7 2.6.9-5.4-3.9-3.8 5.4-.7L12 3.2Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </span>
+              <Image src="/logo.png" alt="" width={32} height={32} className="size-8" />
               <span className="text-[16px] font-semibold tracking-tight text-chalk">
                 Gig<span className="text-cyan">Nest</span>
               </span>

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -71,14 +72,14 @@ export function NavClient({
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-          <span className="relative grid size-8 place-items-center rounded-lg bg-linear-to-br from-cyan to-violet shadow-[0_6px_18px_-6px_rgba(36,95,115,0.55)]">
-            <svg viewBox="0 0 24 24" fill="none" className="size-4.5 text-white">
-              <path
-                d="M12 3.2l2.3 4.9 5.4.7-3.9 3.8.9 5.4-4.7-2.6-4.7 2.6.9-5.4-3.9-3.8 5.4-.7L12 3.2Z"
-                fill="currentColor"
-              />
-            </svg>
-          </span>
+          <Image
+            src="/logo.png"
+            alt=""
+            width={36}
+            height={36}
+            priority
+            className="size-9 shrink-0 transition-transform duration-300 group-hover:-translate-y-px"
+          />
           <span className="text-[16px] font-semibold tracking-tight text-chalk">
             Gig<span className="text-cyan">Nest</span>
           </span>
