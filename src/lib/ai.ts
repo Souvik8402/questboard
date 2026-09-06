@@ -22,11 +22,12 @@ const API_KEY = process.env.GEMINI_API_KEY ?? ''
 export const hasGemini = looksReal(API_KEY) && !API_KEY.includes('YOUR')
 
 /**
- * gemini-2.5-flash is the right pick here: it is on the free tier, it is fast
+ * gemini-3.6-flash is the right pick here: it is on the free tier, it is fast
  * enough that a learner is not left staring at a spinner, and a study plan does
- * not need a frontier model.
+ * not need a frontier model. (Google deprecated gemini-2.5-flash for new users;
+ * the endpoint now recommends this one.)
  */
-const MODEL = 'gemini-2.5-flash'
+const MODEL = 'gemini-3.6-flash'
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`
 
 export interface CoachRequest {

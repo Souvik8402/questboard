@@ -292,7 +292,7 @@ into a five-step plan.
 - One server action ([`src/app/learn/actions.ts`](src/app/learn/actions.ts)) validates
   a `skill`, a `goal` and `hours` per week, then calls `askCoach()` in
   [`src/lib/ai.ts`](src/lib/ai.ts) — a single HTTPS call to Google Gemini
-  (`gemini-2.5-flash`, free tier) with a system prompt that insists on five numbered
+  (`gemini-3.6-flash`, free tier) with a system prompt that insists on five numbered
   steps, free resources by name, a portfolio piece to show a hirer, and a per-gig
   rupee figure.
 - **Server only.** `GEMINI_API_KEY` has no `NEXT_PUBLIC_` prefix, so the key never
